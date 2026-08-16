@@ -367,3 +367,65 @@ select:focus-visible {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ---- Charts draw themselves in, once, on first paint --------------------- */
+@keyframes cg-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.cg-draw {
+  stroke-dasharray: 1;
+  animation: cg-draw 900ms var(--ease-out-cg) both;
+}
+
+@keyframes cg-rise {
+  from {
+    opacity: 0;
+    transform: scaleY(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cg-rise {
+  transform-origin: bottom;
+  animation: cg-rise 700ms var(--ease-out-cg) both;
+}
+
+@keyframes cg-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  70% {
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.cg-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cg-pop 420ms var(--ease-out-cg) both;
+}
+
+/* A ranked bar filling to its share of the total. */
+@keyframes cg-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.cg-grow-x {
+  transform-origin: left;
+  animation: cg-grow-x 620ms var(--ease-out-cg) both;
+}
