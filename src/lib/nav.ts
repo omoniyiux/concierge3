@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import {
   ActionsIcon,
   AgentIcon,
+  AssistantsIcon,
   BrainIcon,
   ConversationsIcon,
   InsightsIcon,
@@ -9,6 +10,7 @@ import {
   LeadsIcon,
   OverviewIcon,
   PagesIcon,
+  ReturnIcon,
   RoutingIcon,
 } from "@/components/icons";
 
@@ -22,13 +24,19 @@ export type NavItem = {
 export type NavGroup = { label: string | null; items: NavItem[] };
 
 /**
- * Nine destinations, grouped by spacing rather than headings. The grouping
- * still follows the product's model -- understand, engage, automate, grow --
- * but the gaps say it without four labels taking up the rail.
+ * Eleven destinations in five groups, separated by spacing rather than
+ * headings. Every group is two or three rows, so the rail has one rhythm
+ * instead of a pair of lonely singles above a block of five: the site
+ * itself, the front desk, what it does, what it returns, what it runs on.
  */
 export const NAV: NavGroup[] = [
-  { label: null, items: [{ path: "overview", label: "Overview", Icon: OverviewIcon }] },
-  { label: null, items: [{ path: "brain", label: "Site Brain", Icon: BrainIcon }] },
+  {
+    label: null,
+    items: [
+      { path: "overview", label: "Overview", Icon: OverviewIcon },
+      { path: "brain", label: "Site Brain", Icon: BrainIcon },
+    ],
+  },
   {
     label: null,
     items: [
@@ -47,7 +55,14 @@ export const NAV: NavGroup[] = [
   {
     label: null,
     items: [
+      { path: "ledger", label: "Return", Icon: ReturnIcon },
+      { path: "assistants", label: "Assistants", Icon: AssistantsIcon },
       { path: "insights", label: "Insights", Icon: InsightsIcon },
+    ],
+  },
+  {
+    label: null,
+    items: [
       { path: "pages", label: "Pages", Icon: PagesIcon },
       { path: "integrations", label: "Integrations", Icon: IntegrationsIcon },
     ],
