@@ -106,6 +106,22 @@ export const InsightsIcon = (p: IconProps) => (
   </I>
 );
 
+/** Assistants — a reply arriving from somewhere that is not your site. */
+export const AssistantsIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M20.4 13.6a6.2 6.2 0 0 1-6.2 6.2H8.6L4 22.4l1.4-4.2a6.2 6.2 0 0 1 3.2-11.5h5.6a6.2 6.2 0 0 1 6.2 6.2Z" />
+    <path d="M10.4 12.8h.01M14 12.8h.01" />
+  </I>
+);
+
+/** Return — a ledger rule with the entries stacked against it. */
+export const ReturnIcon = (p: IconProps) => (
+  <I {...p}>
+    <path d="M4 4v16h16" />
+    <path d="M7.6 16.4V12M11.6 16.4V8.2M15.6 16.4v-2.6M19.6 16.4V5.6" />
+  </I>
+);
+
 export const IntegrationsIcon = (p: IconProps) => (
   <I {...p}>
     <path d="M9 3.6v4.2M15 3.6v4.2" />
