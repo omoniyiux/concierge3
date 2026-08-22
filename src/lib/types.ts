@@ -65,6 +65,20 @@ export interface Site {
   updatedAt: string;
   /** Percentage 0–100 across the six launch steps. */
   launchProgress: number;
+  /** ISO 4217. Every value in the ledger is quoted in this. */
+  currency: string;
+  openingHours: OpeningHours;
+}
+
+/**
+ * When the business is actually open. This exists so "after hours" can be
+ * stamped on a conversation at the moment it happens — opening hours change,
+ * and a conversation from March cannot be re-judged against today's.
+ */
+export interface OpeningHours {
+  timezone: string;
+  /** Seven entries, Sunday first. null means closed that day. */
+  days: ({ opens: number; closes: number } | null)[];
 }
 
 /* ---- Site Brain --------------------------------------------------------- */
@@ -160,7 +174,21 @@ export interface AgentConfig {
   /** 0–1, derived from Site Brain coverage and source quality. */
   confidence: number;
   voiceEnabled: boolean;
+  /** How far it may go on its own. The dial owners actually turn. */
+  autonomy: AgentAutonomy;
+  /** Channels it may carry a conversation onto once the visitor has left. */
+  followUpChannels: MessageChannel[];
 }
+
+/**
+ * Graduated, because the gap between "off" and "answering my customers
+ * unsupervised" is where cautious owners stall. Most start at `approve` and
+ * move to `send` once they have read a fortnight of drafts.
+ */
+export type AgentAutonomy =
+  | "suggest" // drafts land in the inbox; nothing leaves without a person
+  | "approve" // drafts are written and queued; one tap sends them
+  | "send"; // it follows up on its own, within the rules
 
 /* ---- Conversations ------------------------------------------------------ */
 
@@ -171,16 +199,41 @@ export type VisitorIntent =
 
 export type MessageAuthor = "visitor" | "agent" | "human" | "system";
 
+/**
+ * Where the message physically travelled. A conversation is one thread even
+ * when it moves from the website to a phone — the channel belongs to each
+ * message, not to the thread, so the history stays honest about how each
+ * turn reached the person.
+ *
+ * Direction is deliberately absent: `author` already settles it, and two
+ * fields that must agree eventually disagree.
+ */
+export type MessageChannel = "web" | "sms" | "whatsapp" | "email";
+
 export interface Message {
   id: ID;
   author: MessageAuthor;
   authorName?: string;
   body: string;
   at: string;
+  channel: MessageChannel;
   /** Present on agent turns so the owner can audit what it answered from. */
   citations?: { itemId: ID; title: string }[];
   confidence?: number;
   actionRef?: ID;
+}
+
+/**
+ * Permission to reach someone, recorded as the moment it was given rather
+ * than as a setting that can be quietly flipped later. Without one of these
+ * for a channel, Concierge will not send on it — and says why.
+ */
+export interface ContactConsent {
+  channel: MessageChannel;
+  address: string;
+  grantedAt: string;
+  /** The words the visitor actually saw when they agreed. */
+  basis: string;
 }
 
 export interface Conversation {
@@ -201,6 +254,45 @@ export interface Conversation {
   actionsTaken: ID[];
   /** Set when the agent could not answer — feeds the Insights gap list. */
   unanswered?: string;
+  /**
+   * Stamped when the conversation starts, against the opening hours in force
+   * at that moment. Never recomputed.
+   */
+  afterHours: boolean;
+  /** What this conversation produced. Empty is a legitimate answer. */
+  outcomeIds: ID[];
+  /** Where the thread is reachable now. It starts on the website and moves. */
+  channel: MessageChannel;
+  /** Every permission the visitor has given, with the moment they gave it. */
+  consent: ContactConsent[];
+  /** Set the moment a person takes the thread off the agent. */
+  takenOverBy?: { name: string; at: string };
+}
+
+/* ---- Follow-up: the thread outliving the visit --------------------------- */
+
+export type FollowUpState = "suggested" | "approved" | "sent" | "declined";
+
+/**
+ * A message Concierge wants to send after the visitor has gone. It exists as
+ * an object rather than a side effect so the owner can read it, change it,
+ * and decide — which is the only version of this feature a cautious owner
+ * will ever switch on.
+ */
+export interface FollowUp {
+  id: ID;
+  siteId: ID;
+  conversationId: ID;
+  channel: MessageChannel;
+  to: string;
+  body: string;
+  /** Why Concierge believes this one is worth sending, in the owner's terms. */
+  reason: string;
+  state: FollowUpState;
+  draftedAt: string;
+  /** Held until this time, so nothing lands at three in the morning. */
+  sendAfter: string;
+  sentAt?: string;
 }
 
 /* ---- Leads -------------------------------------------------------------- */
@@ -259,17 +351,113 @@ export interface ActionDef {
   outcome: string;
   placements: ActionPlacement[];
   completions30d: number;
+  /**
+   * What one completion is worth, in minor units. Supplied by the owner
+   * during setup — Concierge never invents a figure — and used to value
+   * outcomes this action produces.
+   */
+  unitValue?: number;
+  /** How that figure was arrived at, shown wherever it is used. */
+  unitValueNote?: string;
+}
+
+/* ---- Outcomes: what the work was actually worth -------------------------- */
+
+/**
+ * The unit of return. Every one of these points back at the conversation that
+ * produced it, so no figure on the ledger is ever unaccountable.
+ */
+export type OutcomeKind =
+  | "booking" // a slot taken in the calendar
+  | "payment" // money collected
+  | "quote" // a priced quote issued
+  | "lead-routed" // a qualified lead delivered to a person
+  | "answer" // resolved without a human being touched
+  | "recovered"; // a visitor who left and came back through a follow-up
+
+/**
+ * Value is either confirmed by a system of record or estimated from figures
+ * the owner supplied. The ledger never adds the two together silently: an
+ * owner who catches Concierge inflating one number stops believing all of
+ * them, and belief is the whole product.
+ */
+export type ValueBasis = "confirmed" | "estimated" | "none";
+
+export interface Outcome {
+  id: ID;
+  siteId: ID;
+  conversationId: ID;
+  kind: OutcomeKind;
+  /** Written for the owner: "Booked a hygienist appointment for 14 Sept". */
+  summary: string;
+  at: string;
+  /** Minor units of the site currency. Zero when the outcome carries no value. */
+  value: number;
+  basis: ValueBasis;
+  /** The arithmetic behind an estimate, shown wherever the estimate is. */
+  valueNote?: string;
+  /** Copied from the conversation, so the ledger can split without a join. */
+  afterHours: boolean;
+  actionId?: ID;
+  leadId?: ID;
+  destinationId?: ID;
+}
+
+/** A period's roll-up. Everything the return surface needs in one object. */
+export interface LedgerPeriod {
+  siteId: ID;
+  label: string;
+  start: string;
+  end: string;
+  conversations: number;
+  afterHoursConversations: number;
+  /** Kept apart on purpose. Never summed into one headline. */
+  confirmedValue: number;
+  estimatedValue: number;
+  previousConfirmedValue: number;
+  previousEstimatedValue: number;
+  /** Twenty-four buckets, local to the site, for the opening-hours ribbon. */
+  hourHistogram: number[];
+  /** Conversations that ended without anyone being called or emailed. */
+  resolvedWithoutHuman: number;
+  /** The above, at the minutes a phone enquiry actually costs the business. */
+  hoursSaved: number;
+}
+
+/**
+ * The artefact an owner forwards to their partner, and an agency forwards to
+ * its client. It is the retention mechanic, so it is a first-class object
+ * rather than a rendering of the dashboard.
+ */
+export interface OwnerReport {
+  id: ID;
+  siteId: ID;
+  periodLabel: string;
+  state: "sent" | "scheduled" | "draft";
+  /** One sentence, the same one that opens the email. */
+  headline: string;
+  recipients: string[];
+  sentAt?: string;
+  scheduledFor?: string;
 }
 
 /* ---- Routing ------------------------------------------------------------ */
 
-export type DestinationKind = "email" | "slack" | "sms" | "webhook" | "taskologic" | "telegram" | "inbox";
+export type DestinationKind =
+  "email" | "slack" | "sms" | "webhook" | "ticket" | "taskologic" | "telegram" | "inbox";
 
 export type DestinationStatus = "connected" | "untested" | "failing" | "paused";
 
-/** The six moments the PRD says can fire a route. */
+/**
+ * What can fire a route. Six of these are things a visitor does — those are
+ * the ones routing coverage is measured against, because a visitor moment
+ * with nowhere to go is a dropped request. The last two are one-off lifecycle
+ * events; they are routable but they are not coverage.
+ */
 export type RoutingMoment =
   | "specialist-requested"
+  | "team-replied"
+  | "ticket-created"
   | "call-requested"
   | "conversation-started"
   | "high-intent"
@@ -286,6 +474,37 @@ export interface Destination {
   moments: RoutingMoment[];
   lastDeliveryAt?: string;
   lastTestedAt?: string;
+  /** Set on webhook-shaped destinations that sign their payloads. */
+  signingSecret?: string;
+}
+
+/* ---- The routing inbox -------------------------------------------------- */
+
+/**
+ * Concierge's own destination. It exists so that routing is useful before a
+ * single external tool is connected — a handoff always lands somewhere, even
+ * on day one, and the owner is never blocked behind an OAuth screen.
+ */
+export type InboxState = "unread" | "open" | "answered" | "closed";
+
+export interface InboxItem {
+  id: ID;
+  siteId: ID;
+  moment: RoutingMoment;
+  /** What the visitor called themselves, or "Anonymous visitor". */
+  visitor: string;
+  /** One line: what they want. */
+  summary: string;
+  /** The sentence that triggered the handoff. */
+  detail: string;
+  page: string;
+  at: string;
+  state: InboxState;
+  conversationId?: ID;
+  email?: string;
+  phone?: string;
+  /** Destinations this same handoff was also sent to. */
+  alsoSentTo: ID[];
 }
 
 export type RuleOperator = "is" | "is-not" | "contains" | "greater-than" | "less-than";
@@ -338,16 +557,278 @@ export interface Integration {
 
 /* ---- Concierge Pages ---------------------------------------------------- */
 
+/**
+ * Pages is a builder for owners who have no website at all, so the unit of
+ * authoring is a *section*, not an element. An owner picks "Services" and
+ * fills in services; they never position a div. That constraint is the
+ * product: every edit a person can make still produces a page that looks
+ * deliberate, which is the only promise worth making to someone who has
+ * never built a site.
+ */
 export type PageSectionKind =
   "hero" | "services" | "about" | "testimonials" | "pricing" | "faq" | "contact" | "gallery";
 
-export interface PageSection {
+/* -- Shared content pieces ------------------------------------------------- */
+
+/**
+ * A button. It either opens one of the site's Actions — the same booking or
+ * quote flow the Agent uses — or it links somewhere. Pointing at an Action is
+ * the reason a Concierge page converts better than a hand-built one, so it is
+ * the first-class case and `href` is the fallback.
+ */
+export interface PageCta {
+  label: string;
+  actionId?: ID;
+  href?: string;
+}
+
+/**
+ * `src` is empty until the owner adds one; renderers show a placeholder that
+ * holds the space rather than collapsing, so the layout does not lurch when a
+ * photograph finally arrives. It is a URL or, before there is an asset store
+ * to put files in, a data URI.
+ */
+export interface PageImage {
+  src: string;
+  alt: string;
+}
+
+/**
+ * The name of one of the site icons. Typed as a plain string rather than a
+ * union of the current catalogue on purpose: a stored document must survive an
+ * icon being renamed or retired, and an unknown name should quietly render
+ * nothing instead of failing to parse. The renderer validates on the way out.
+ */
+export type SiteIconRef = string;
+
+/* -- Per-kind content ------------------------------------------------------ */
+
+export interface HeroContent {
+  headline: string;
+  subheadline: string;
+  cta?: PageCta;
+  secondaryCta?: PageCta;
+  image?: PageImage;
+}
+
+export interface ServiceItem {
   id: ID;
-  kind: PageSectionKind;
+  name: string;
+  description: string;
+  /** Free text. A moving firm quotes "from $400", not a number. */
+  price?: string;
+  icon?: SiteIconRef;
+  image?: PageImage;
+}
+
+export interface ServicesContent {
+  heading: string;
+  intro?: string;
+  items: ServiceItem[];
+}
+
+export interface AboutContent {
+  heading: string;
+  body: string;
+  image?: PageImage;
+  /** Short proof points: "Family run since 2009". */
+  highlights: string[];
+}
+
+export interface Testimonial {
+  id: ID;
+  quote: string;
+  author: string;
+  /** A face makes a quote land. Optional, because most owners have none. */
+  avatar?: PageImage;
+  /** "Moved from Austin to Dallas" — context that makes the quote land. */
+  detail?: string;
+  rating?: number;
+}
+
+export interface TestimonialsContent {
+  heading: string;
+  items: Testimonial[];
+}
+
+export interface PricingTier {
+  id: ID;
+  name: string;
+  price: string;
+  /** "per move", "per hour". Free text for the same reason as ServiceItem. */
+  cadence?: string;
+  description?: string;
+  features: string[];
+  cta?: PageCta;
+  featured: boolean;
+}
+
+export interface PricingContent {
+  heading: string;
+  intro?: string;
+  tiers: PricingTier[];
+  /** The honest small print: "Final price confirmed after a survey." */
+  note?: string;
+}
+
+export interface FaqItem {
+  id: ID;
+  question: string;
+  answer: string;
+  /**
+   * Set when this answer came from the Site Brain rather than being typed
+   * here. It is what lets a published page and the Agent stay in agreement
+   * instead of drifting into two different stories.
+   */
+  knowledgeItemId?: ID;
+}
+
+export interface FaqContent {
+  heading: string;
+  items: FaqItem[];
+}
+
+export interface ContactContent {
+  heading: string;
+  body?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  /** The Action rendered as the form. */
+  actionId?: ID;
+  /** Reads the site's opening hours rather than restating them here. */
+  showHours: boolean;
+}
+
+export interface GalleryItem {
+  id: ID;
+  image: PageImage;
+  caption?: string;
+}
+
+export interface GalleryContent {
+  heading: string;
+  intro?: string;
+  items: GalleryItem[];
+}
+
+/* -- Look: a closed set, not CSS ------------------------------------------- */
+
+export type SectionBackground = "default" | "subtle" | "inverse" | "brand";
+export type SectionSpacing = "compact" | "normal" | "roomy" | "grand";
+export type SectionAlign = "left" | "center";
+export type SectionWidth = "narrow" | "normal" | "wide";
+export type SectionColumns = 1 | 2 | 3 | 4;
+
+/**
+ * Five dials, all of them enumerations. Deliberately not CSS: an owner cannot
+ * express an ugly page in this vocabulary, and every combination is something
+ * the renderers have been designed against.
+ *
+ * The shape is uniform across kinds even though not every dial applies to
+ * every kind — a hero has no column count. Renderers ignore what they do not
+ * use and the inspector only offers what is meaningful, which is cheaper than
+ * a per-kind style type and keeps the override table below single-shaped.
+ */
+export interface SectionStyle {
+  background: SectionBackground;
+  spacing: SectionSpacing;
+  align: SectionAlign;
+  width: SectionWidth;
+  columns: SectionColumns;
+}
+
+/* -- Sections -------------------------------------------------------------- */
+
+interface PageSectionBase {
+  id: ID;
+  /** The owner's name for it in the sections list. Not shown on the page. */
   title: string;
   enabled: boolean;
-  summary: string;
+  /** The look at the widest breakpoint. Narrower ones override it. */
+  style: SectionStyle;
 }
+
+/**
+ * `kind` discriminates, so narrowing a section also narrows its content and
+ * no second field has to agree with the first.
+ *
+ * There is deliberately no stored `summary`: it is derived from the content by
+ * `sectionSummary`, because a description that is typed once and never updated
+ * starts lying the moment a fifth testimonial is added.
+ */
+export type PageSection =
+  | (PageSectionBase & { kind: "hero"; content: HeroContent })
+  | (PageSectionBase & { kind: "services"; content: ServicesContent })
+  | (PageSectionBase & { kind: "about"; content: AboutContent })
+  | (PageSectionBase & { kind: "testimonials"; content: TestimonialsContent })
+  | (PageSectionBase & { kind: "pricing"; content: PricingContent })
+  | (PageSectionBase & { kind: "faq"; content: FaqContent })
+  | (PageSectionBase & { kind: "contact"; content: ContactContent })
+  | (PageSectionBase & { kind: "gallery"; content: GalleryContent });
+
+/* -- Responsive ------------------------------------------------------------ */
+
+/**
+ * Three widths, widest first. `desktop` is the base every section is authored
+ * at; the other two only ever hold overrides, so a page with no responsive
+ * work carries no extra data at all.
+ */
+export type PageBreakpoint = "desktop" | "tablet" | "mobile";
+
+export type SectionStyleProperty = keyof SectionStyle;
+
+/**
+ * One dial and the value it is being set to. Distributing over the property
+ * keeps `value` tied to the property it belongs to, so a patch carrying
+ * `{ property: "columns", value: "roomy" }` cannot be constructed.
+ */
+export type SectionStylePatch = {
+  [P in SectionStyleProperty]: { property: P; value: SectionStyle[P] };
+}[SectionStyleProperty];
+
+/** The same pairing, addressed to one section at one breakpoint. */
+export type SectionStyleDecl = {
+  sectionId: ID;
+  breakpoint: PageBreakpoint;
+} & SectionStylePatch;
+
+/** `${sectionId}:${breakpoint}:${property}` — see `styleDeclKey`. */
+export type SectionStyleDeclKey = string;
+
+/**
+ * A flat table rather than styles nested inside sections. One key answers "is
+ * this dial set at this breakpoint?", which is exactly what the inspector has
+ * to show, and clearing an override is deleting one entry instead of pruning
+ * a tree.
+ */
+export type SectionStyleOverrides = Record<SectionStyleDeclKey, SectionStyleDecl>;
+
+/* -- Theme ----------------------------------------------------------------- */
+
+export type ThemeFontPairing = "grotesk" | "editorial" | "humanist" | "classic";
+export type ThemeRadius = "square" | "soft" | "round";
+export type ThemeButtonShape = "square" | "rounded" | "pill";
+export type ThemeDensity = "tight" | "regular" | "airy";
+
+/**
+ * The look of the *customer's* website, which is not Concierge's look and must
+ * never inherit it. Concierge's own surfaces are square-cornered and monochrome
+ * by conviction; a florist may want soft corners and a serif, and is right to.
+ * The builder chrome and the page being edited are two separate style worlds,
+ * and keeping them apart is what the editor's iframe is for.
+ */
+export interface PageTheme {
+  /** Hex. The customer's brand colour, not the Concierge accent. */
+  brandColor: string;
+  mode: "light" | "dark";
+  fonts: ThemeFontPairing;
+  radius: ThemeRadius;
+  buttonShape: ThemeButtonShape;
+  density: ThemeDensity;
+}
+
+/* -- Pages and the document ------------------------------------------------ */
 
 export interface ConciergePage {
   id: ID;
@@ -356,8 +837,84 @@ export interface ConciergePage {
   title: string;
   navLabel: string;
   sections: PageSection[];
+  /**
+   * Lives on the page, not the document, so a page stays self-contained:
+   * duplicating one brings its responsive rules with it.
+   */
+  styleOverrides: SectionStyleOverrides;
   published: boolean;
   updatedAt: string;
+}
+
+/**
+ * Everything the builder loads and the publisher writes, in one object. The
+ * theme sits here rather than on a page because it is the site's, and a site
+ * whose pages disagreed about their own typography would not look like a site.
+ */
+export interface PageDocument {
+  /** Bumped whenever this shape changes, so stored documents can be migrated. */
+  version: number;
+  siteId: ID;
+  theme: PageTheme;
+  pages: ConciergePage[];
+  updatedAt: string;
+}
+
+/* ---- The answer layer: what machines can read ---------------------------- */
+
+/**
+ * Concierge already holds the thing every assistant is guessing at: an
+ * owner-approved, structured, current set of answers about the business.
+ * These are the surfaces that publish it outward, so the answer a customer
+ * gets in ChatGPT comes from the same knowledge as the answer they would
+ * get on the site.
+ */
+export type PublishedSurfaceKind =
+  | "structured-data" // schema.org JSON-LD, emitted by the same script tag
+  | "llms-txt" // a maintained index of the approved answers
+  | "answer-mirror" // clean Markdown of each approved item
+  | "mcp" // a hosted endpoint an assistant can call directly
+  | "agent-card"; // what this business can do, at a well-known address
+
+export type PublishedSurfaceState = "live" | "ready" | "off" | "blocked";
+
+export interface PublishedSurface {
+  id: ID;
+  siteId: ID;
+  kind: PublishedSurfaceKind;
+  url: string;
+  state: PublishedSurfaceState;
+  /** Approved items currently exposed. Never includes restricted material. */
+  itemsExposed: number;
+  lastPublishedAt?: string;
+  /** Times an assistant fetched it in the last 30 days. */
+  fetches30d: number;
+  /** Set when state is "blocked": what stops it, and the one fix. */
+  blocker?: { reason: string; remedy: string };
+}
+
+export type AssistantName = "chatgpt" | "claude" | "perplexity" | "gemini";
+
+/**
+ * How an assistant answered when asked about this business. Ordered by how
+ * much it costs the owner: an absent answer loses the customer entirely, an
+ * outdated one loses them at the door.
+ */
+export type MentionVerdict = "accurate" | "incomplete" | "outdated" | "absent";
+
+export interface AssistantAnswer {
+  id: ID;
+  siteId: ID;
+  assistant: AssistantName;
+  question: string;
+  verdict: MentionVerdict;
+  /** What it actually said, quoted rather than summarised. */
+  quote: string;
+  checkedAt: string;
+  /** The approved item that would put it right, when one exists. */
+  fixWithItemId?: ID;
+  /** Where the answer should live when nothing covers it yet. */
+  suggestedCategory?: KnowledgeCategory;
 }
 
 /* ---- Insights ----------------------------------------------------------- */
