@@ -46,7 +46,13 @@ export function BrokenLinkSticker({ size = 44, className }: P) {
       <rect x="40" y="37" width="8" height="5" rx="2.5" fill="#D8422E" />
 
       {/* the gap, and the spark across it */}
-      <path d="M37 27.5 33.5 36l5 1.5L35 45" stroke="#FFC46B" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M37 27.5 33.5 36l5 1.5L35 45"
+        stroke="#FFC46B"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -103,12 +109,23 @@ export function IdeaSticker({ size = 44, className }: P) {
         d="M36 8a18 18 0 0 0-11 32.2c1.4 1.1 2.2 2.7 2.2 4.4V47h6V26.5L28.6 20a1.8 1.8 0 0 1 2.6-2.5L36 22.2V8Z"
         fill="url(#cg-idea-glass)"
       />
-      <path d="M36 47V26.6M36 26.6l-5.6-5.6M36 26.6l5.6-5.6" stroke="#FFF6E6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M36 47V26.6M36 26.6l-5.6-5.6M36 26.6l5.6-5.6"
+        stroke="#FFF6E6"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
 
       <rect x="27" y="49" width="18" height="6.4" rx="3.2" fill="#D97A0B" />
       <rect x="29.6" y="57.6" width="12.8" height="6" rx="3" fill="#B9640A" />
 
-      <path d="M58 20h5M55.5 10.5 59 7M14 20H9M16.5 10.5 13 7" stroke="#FFC46B" strokeWidth="3.4" strokeLinecap="round" />
+      <path
+        d="M58 20h5M55.5 10.5 59 7M14 20H9M16.5 10.5 13 7"
+        stroke="#FFC46B"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
