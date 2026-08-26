@@ -2,6 +2,8 @@
 
 import {
   forwardRef,
+  useRef,
+  useState,
   type ButtonHTMLAttributes,
   type HTMLAttributes,
   type InputHTMLAttributes,
@@ -249,10 +251,13 @@ export function SectionHead({
    FORM CONTROLS
    ========================================================================== */
 
+// Each fragment keeps its trailing space: without them the joins ran class
+// names together ("text-text-primaryplaceholder:…") and silently dropped the
+// placeholder colour, the focus ring and the disabled treatment.
 const FIELD_BASE =
-  "w-full border border-line-strong bg-surface text-[12px] text-text-primary" +
-  "placeholder:text-text-muted transition-[border-color,box-shadow] duration-[var(--dur-micro)]" +
-  "focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/8" +
+  "w-full border border-line-strong bg-surface text-[12px] text-text-primary " +
+  "placeholder:text-text-muted transition-[border-color,box-shadow] duration-[var(--dur-micro)] " +
+  "focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/8 " +
   "disabled:bg-surface-subtle disabled:text-text-disabled";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
@@ -457,7 +462,34 @@ export function RadioCard({
 
 /* ============================================================================
    NAVIGATION WITHIN A SURFACE
+
+   One shape for every "pick one of these" control in the product: tabs on a
+   page, filters above a table, the Agent's own sub-navigation. An underline
+   alone was too quiet to find on a grey canvas, so the choice is now drawn —
+   the selected one is filled with ink, the rest are outlined and sit on
+   white. Selection is legible without colour, which keeps it working for
+   anyone who cannot separate the two by hue.
    ========================================================================== */
+
+export const TAB_ROW = "flex flex-wrap items-center gap-1.5";
+
+export function tabClass(active: boolean, className?: string) {
+  return cx(
+    "relative inline-flex h-8 shrink-0 select-none items-center gap-2 border px-3.5 text-[12.5px] font-medium",
+    "transition-[background-color,border-color,color] duration-[var(--dur-micro)] ease-[var(--ease-out-cg)]",
+    active
+      ? "border-ink bg-ink text-text-inverse"
+      : "border-line-strong bg-surface text-text-secondary hover:border-ink hover:text-text-primary",
+    className,
+  );
+}
+
+export function tabCountClass(active: boolean) {
+  return cx(
+    "inline-flex h-[16px] min-w-[16px] items-center justify-center px-1 text-[10px] font-semibold tabular-nums",
+    active ? "bg-white/22 text-text-inverse" : "bg-surface-sunken text-text-secondary",
+  );
+}
 
 export function Tabs<T extends string>({
   tabs,
@@ -471,7 +503,7 @@ export function Tabs<T extends string>({
   label: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className="flex items-center gap-1 border-b border-divider">
+    <div role="tablist" aria-label={label} className={TAB_ROW}>
       {tabs.map((t) => {
         const active = t.value === value;
         return (
@@ -480,23 +512,10 @@ export function Tabs<T extends string>({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(t.value)}
-            className={cx(
-              "relative -mb-px flex h-10 items-center gap-2 px-3 text-[12.5px] font-medium transition-colors duration-[var(--dur-micro)]",
-              active ? "text-text-primary" : "text-text-tertiary hover:text-text-secondary",
-            )}
+            className={tabClass(active)}
           >
             {t.label}
-            {typeof t.count === "number" && (
-              <span
-                className={cx(
-                  "px-1.5 py-px text-[10px] font-semibold tabular-nums",
-                  active ? "bg-ink text-text-inverse" : "bg-surface-sunken text-text-tertiary",
-                )}
-              >
-                {t.count}
-              </span>
-            )}
-            {active && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-ink" />}
+            {typeof t.count === "number" && <span className={tabCountClass(active)}>{t.count}</span>}
           </button>
         );
       })}
@@ -516,7 +535,7 @@ export function SegmentedControl<T extends string>({
   label: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className="inline-flex items-center gap-0.5 bg-surface-subtle p-1">
+    <div role="tablist" aria-label={label} className={TAB_ROW}>
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -525,12 +544,7 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(o.value)}
-            className={cx(
-              "h-8 px-3.5 text-[13px] font-medium transition-all duration-[var(--dur-micro)]",
-              active
-                ? "bg-surface text-text-primary shadow-xs"
-                : "text-text-tertiary hover:text-text-primary",
-            )}
+            className={tabClass(active)}
           >
             {o.label}
           </button>
@@ -641,7 +655,10 @@ export function ProgressBar({
       className="w-full overflow-hidden rounded-full bg-surface-sunken"
     >
       <div
-        className={cx("h-full rounded-full transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]", bg)}
+        className={cx(
+          "h-full rounded-full transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]",
+          bg,
+        )}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -749,6 +766,12 @@ export function ErrorState({
    TOOLTIP — icon-only controls and truncated text only.
    ========================================================================== */
 
+/**
+ * Positioned `fixed` against the trigger's measured rect rather than absolutely
+ * inside it. An absolute tooltip is clipped by any scrolling ancestor, which is
+ * why the collapsed sidebar's destinations showed nothing on hover while
+ * Settings — the one row outside that scroll container — worked.
+ */
 export function Tooltip({
   label,
   side = "right",
@@ -758,25 +781,42 @@ export function Tooltip({
   side?: "right" | "top" | "bottom";
   children: ReactNode;
 }) {
-  const pos =
-    side === "right"
-      ? "left-[calc(100%+8px)] top-1/2 -translate-y-1/2"
-      : side === "top"
-        ? "bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2"
-        : "top-[calc(100%+8px)] left-1/2 -translate-x-1/2";
+  const anchor = useRef<HTMLSpanElement>(null);
+  const [at, setAt] = useState<{ top: number; left: number } | null>(null);
+
+  function show() {
+    const el = anchor.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (side === "right") setAt({ top: r.top + r.height / 2, left: r.right + 8 });
+    else if (side === "top") setAt({ top: r.top - 8, left: r.left + r.width / 2 });
+    else setAt({ top: r.bottom + 8, left: r.left + r.width / 2 });
+  }
+
+  const hide = () => setAt(null);
+
+  const transform =
+    side === "right" ? "translateY(-50%)" : side === "top" ? "translate(-50%, -100%)" : "translate(-50%, 0)";
+
   return (
-    <span className="group/tip relative inline-flex">
+    <span
+      ref={anchor}
+      className="relative inline-flex"
+      onPointerEnter={show}
+      onPointerLeave={hide}
+      onFocusCapture={show}
+      onBlurCapture={hide}
+    >
       {children}
-      <span
-        role="tooltip"
-        className={cx(
-          "pointer-events-none absolute z-50 whitespace-nowrap bg-ink px-2 py-1 text-[13px] font-medium text-text-inverse",
-          "opacity-0 shadow-md transition-opacity duration-[var(--dur-micro)] group-hover/tip:opacity-100 group-focus-within/tip:opacity-100",
-          pos,
-        )}
-      >
-        {label}
-      </span>
+      {at && (
+        <span
+          role="tooltip"
+          style={{ position: "fixed", top: at.top, left: at.left, transform }}
+          className="pointer-events-none z-50 whitespace-nowrap bg-ink px-2 py-1 text-[13px] font-medium text-text-inverse shadow-md"
+        >
+          {label}
+        </span>
+      )}
     </span>
   );
 }
