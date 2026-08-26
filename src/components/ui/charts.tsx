@@ -1,15 +1,32 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { cx } from "@/lib/cx";
 import type { MetricPoint } from "@/lib/types";
 
 /* ============================================================================
    CHARTS
    Hand-rolled SVG — no charting dependency. Every chart answers a business
- question; none of them exist to fill space. One accent colour, one ink
- colour, nothing rainbow.
+   question; none of them exist to fill space.
+
+   Motion here is not decoration: a line draws in the direction time runs, a
+   bar grows to its share, a gauge fills to its value. Each one plays once, on
+   first paint, and the global prefers-reduced-motion rule turns them off.
    ========================================================================== */
+
+/** True once the browser has painted, and only when motion is welcome. */
+function useMotionReady() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return ready;
+}
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 function path(points: MetricPoint[], w: number, h: number, pad = 2) {
   const vals = points.map((p) => p.value);
@@ -24,50 +41,104 @@ function path(points: MetricPoint[], w: number, h: number, pad = 2) {
   });
 }
 
-/** Inline trend, used beside a number. Never carries an axis. */
+/* ---------------------------------------------------------------------------
+   SPARKLINE
+   Trend beside a number. It colours itself: a series that ends above where it
+   started is green, one that ends below is red. Grey said nothing at all.
+   ------------------------------------------------------------------------- */
+
+const TREND_INK = {
+  up: { line: "#0F7A4A", wash: "#0F7A4A" },
+  down: { line: "#C42A1D", wash: "#C42A1D" },
+  flat: { line: "#6B6B6B", wash: "#6B6B6B" },
+  accent: { line: "var(--color-accent)", wash: "var(--color-accent)" },
+  ink: { line: "#1A1A1A", wash: "#1A1A1A" },
+} as const;
+
 export function Sparkline({
   points,
   width = 72,
   height = 24,
-  tone = "ink",
+  tone = "auto",
   className,
 }: {
   points: MetricPoint[];
   width?: number;
   height?: number;
-  tone?: "ink" | "accent" | "success" | "danger";
+  /** "auto" reads the direction of the series itself. */
+  tone?: "auto" | "ink" | "accent" | "success" | "danger";
   className?: string;
 }) {
+  const gid = useId();
+  const ready = useMotionReady();
   if (points.length < 2) return null;
-  const pts = path(points, width, height);
-  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join("");
-  const stroke =
-    tone === "accent"
-      ? "var(--color-accent)"
+
+  const first = points[0].value;
+  const last = points[points.length - 1].value;
+  const direction = last > first ? "up" : last < first ? "down" : "flat";
+  const key =
+    tone === "auto"
+      ? direction
       : tone === "success"
-        ? "var(--color-success)"
+        ? "up"
         : tone === "danger"
-          ? "var(--color-danger)"
-          : "var(--color-text-secondary)";
+          ? "down"
+          : tone === "accent"
+            ? "accent"
+            : "ink";
+  const { line, wash } = TREND_INK[key];
+
+  const pts = path(points, width, height, 3);
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join("");
+  const area = `${d} L${pts[pts.length - 1].x.toFixed(1)},${height} L${pts[0].x.toFixed(1)},${height} Z`;
+  const end = pts[pts.length - 1];
+
   return (
-    <svg width={width} height={height} className={cx("overflow-visible", className)} aria-hidden>
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      className={cx("overflow-visible", className)}
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id={`${gid}-wash`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={wash} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={wash} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gid}-wash)`} className={ready ? "cg-rise" : "opacity-0"} />
       <path
         d={d}
         fill="none"
-        stroke={stroke}
-        strokeWidth="1.5"
+        stroke={line}
+        strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
+        pathLength={1}
+        className={ready ? "cg-draw" : "opacity-0"}
       />
-      <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="2" fill={stroke} />
+      <circle
+        cx={end.x}
+        cy={end.y}
+        r="2.6"
+        fill={line}
+        className={ready ? "cg-pop [animation-delay:520ms]" : "opacity-0"}
+      />
     </svg>
   );
 }
 
-/** The one chart with axes. Used where trend over time is the point. */
+/* ---------------------------------------------------------------------------
+   AREA CHART
+   The one chart with axes. Labels are sized in viewBox units, so they are set
+   deliberately large — the SVG is scaled down to the card width and anything
+   under 12 here arrives unreadable.
+   ------------------------------------------------------------------------- */
+
 export function AreaChart({
   points,
-  height = 200,
+  height = 240,
   label,
   valueSuffix = "",
 }: {
@@ -77,16 +148,17 @@ export function AreaChart({
   valueSuffix?: string;
 }) {
   const gid = useId();
+  const ready = useMotionReady();
   const w = 720;
   const h = height;
-  const padL = 34;
-  const padB = 24;
-  const padT = 12;
+  const padL = 44;
+  const padB = 34;
+  const padT = 14;
   const vals = points.map((p) => p.value);
   const max = Math.max(...vals);
   const min = 0;
   const span = max - min || 1;
-  const innerW = w - padL - 12;
+  const innerW = w - padL - 16;
   const innerH = h - padT - padB;
   const step = points.length > 1 ? innerW / (points.length - 1) : 0;
 
@@ -106,22 +178,32 @@ export function AreaChart({
   return (
     <figure className="w-full">
       <figcaption className="sr-only">{label}</figcaption>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height }} role="img" aria-label={label}>
+      {/* No fixed pixel height: the viewBox sets the ratio and the SVG takes the
+          card's width, so the drawing fills its box instead of being letterboxed
+          inside one and leaving a band of white underneath. */}
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        className="block w-full"
+        style={{ height: "auto" }}
+        role="img"
+        aria-label={label}
+      >
         <defs>
           <linearGradient id={`${gid}-fill`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.14" />
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.20" />
             <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
           </linearGradient>
         </defs>
 
         {ticks.map((t) => (
           <g key={t.v}>
-            <line x1={padL} x2={w - 12} y1={t.y} y2={t.y} stroke="var(--color-divider)" strokeWidth="1" />
+            <line x1={padL} x2={w - 16} y1={t.y} y2={t.y} stroke="var(--color-line)" strokeWidth="1" />
             <text
-              x={padL - 8}
-              y={t.y + 3.5}
+              x={padL - 12}
+              y={t.y + 5}
               textAnchor="end"
-              className="fill-[var(--color-text-muted)] text-[9.5px]"
+              fill="var(--color-text-tertiary)"
+              style={{ fontSize: 14, fontVariantNumeric: "tabular-nums" }}
             >
               {t.v}
               {valueSuffix}
@@ -129,39 +211,71 @@ export function AreaChart({
           </g>
         ))}
 
-        <path d={area} fill={`url(#${gid}-fill)`} />
+        <path d={area} fill={`url(#${gid}-fill)`} className={ready ? "cg-rise" : "opacity-0"} />
         <path
           d={line}
           fill="none"
           stroke="var(--color-accent)"
-          strokeWidth="1.8"
+          strokeWidth="2.4"
           strokeLinecap="round"
           strokeLinejoin="round"
+          pathLength={1}
+          className={ready ? "cg-draw" : "opacity-0"}
         />
 
         {pts.map((q, i) =>
-          i % 3 === 0 || i === pts.length - 1 ? (
+          // Every third day, plus the last one — but never a label close enough
+          // to the last that the two collide.
+          (i % 3 === 0 && pts.length - 1 - i >= 3) || i === pts.length - 1 ? (
             <text
               key={q.p.date}
-              x={q.x}
-              y={h - 6}
-              textAnchor="middle"
-              className="fill-[var(--color-text-muted)] text-[9.5px]"
+              x={Math.min(q.x, w - 34)}
+              y={h - 8}
+              textAnchor={i === pts.length - 1 ? "end" : "middle"}
+              fill="var(--color-text-tertiary)"
+              style={{ fontSize: 14 }}
             >
               {new Date(q.p.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             </text>
           ) : null,
         )}
-        <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="3.2" fill="var(--color-accent)" />
+
+        <circle
+          cx={pts[pts.length - 1].x}
+          cy={pts[pts.length - 1].y}
+          r="5"
+          fill="var(--color-surface)"
+          stroke="var(--color-accent)"
+          strokeWidth="3"
+          className={ready ? "cg-pop [animation-delay:640ms]" : "opacity-0"}
+        />
       </svg>
     </figure>
   );
 }
 
-/**
- * Ranked bars. Better than a pie for"what are visitors actually asking?"—
- * it stays readable, sorts meaningfully and needs no legend.
- */
+/* ---------------------------------------------------------------------------
+   BAR LIST
+   Better than a pie for "what are visitors actually asking?" — it stays
+   readable, sorts meaningfully and needs no legend.
+
+   Each row carries its own hue so a reader can hold "booking is the blue one"
+   across the page. The fill is a soft left-to-right gradient that fades as the
+   bar runs out, which keeps the eye on where it starts. Both ends are pale
+   enough that ink text on them clears 15:1, so colour never has to be read as
+   text — the number at the right says the same thing.
+   ------------------------------------------------------------------------- */
+
+const BAR_HUES = [
+  { from: "#CBE2FF", to: "#EFF6FF" }, // sky
+  { from: "#FFD1E4", to: "#FFF0F6" }, // pink
+  { from: "#DCD2FF", to: "#F3F0FF" }, // violet
+  { from: "#FFE0B8", to: "#FFF6E8" }, // amber
+  { from: "#C8EDDE", to: "#EEF9F4" }, // green
+  { from: "#FFD2C7", to: "#FFF1ED" }, // coral
+  { from: "#CBEAEF", to: "#EFF9FA" }, // teal
+];
+
 export function BarList({
   items,
   valueLabel,
@@ -171,37 +285,53 @@ export function BarList({
   valueLabel?: string;
   className?: string;
 }) {
+  const ready = useMotionReady();
   const max = Math.max(...items.map((i) => i.value), 1);
   return (
-    <ul className={cx("space-y-1", className)}>
-      {items.map((item) => (
-        <li key={item.label} className="group relative">
-          <div className="relative flex items-center gap-3 px-2.5 py-2">
-            <span
-              aria-hidden
-              className="absolute inset-y-0 left-0 bg-accent-soft transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]"
-              style={{ width: `${(item.value / max) * 100}%` }}
-            />
-            <span className="relative min-w-0 flex-1">
-              <span className="block truncate text-[12.5px] font-medium">{item.label}</span>
-              {item.sub && (
-                <span className="block truncate text-[11.5px] text-text-tertiary">{item.sub}</span>
-              )}
-            </span>
-            <span className="relative shrink-0 text-[11.5px] font-semibold tabular-nums">
-              {item.value}
-              {valueLabel && (
-                <span className="ml-1 text-[12px] font-normal text-text-tertiary">{valueLabel}</span>
-              )}
-            </span>
-          </div>
-        </li>
-      ))}
+    <ul className={cx("space-y-1.5", className)}>
+      {items.map((item, i) => {
+        const hue = BAR_HUES[i % BAR_HUES.length];
+        return (
+          <li key={item.label} className="relative">
+            <div className="relative flex items-center gap-3 py-2 pl-3.5 pr-3">
+              <span
+                aria-hidden
+                className={cx("absolute inset-y-0 left-0", ready && "cg-grow-x")}
+                style={{
+                  width: `${Math.max((item.value / max) * 100, 12)}%`,
+                  background: `linear-gradient(90deg, ${hue.from} 0%, ${hue.to} 100%)`,
+                  animationDelay: `${i * 60}ms`,
+                }}
+              />
+              <span className="relative min-w-0 flex-1">
+                <span className="block truncate text-[12.5px] font-semibold text-text-primary">
+                  {item.label}
+                </span>
+                {item.sub && (
+                  <span className="mt-0.5 block truncate text-[11.5px] text-text-secondary">{item.sub}</span>
+                )}
+              </span>
+              <span className="relative shrink-0 text-[13px] font-semibold tabular-nums">
+                {item.value}
+                {valueLabel && (
+                  <span className="ml-1 text-[11.5px] font-normal text-text-tertiary">{valueLabel}</span>
+                )}
+              </span>
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 }
 
-/** A single proportion, shown honestly. Used for coverage and readiness. */
+/* ---------------------------------------------------------------------------
+   RADIAL GAUGE
+   A single proportion, shown honestly. The ring sweeps to its value and the
+   figure counts with it, so the number reads as something measured rather
+   than something printed.
+   ------------------------------------------------------------------------- */
+
 export function RadialGauge({
   value,
   size = 64,
@@ -211,12 +341,47 @@ export function RadialGauge({
   value: number;
   size?: number;
   label: string;
-  tone?: "accent" | "success" | "ink";
+  tone?: "accent" | "success" | "ink" | "danger";
 }) {
-  const r = (size - 8) / 2;
+  const stroke = Math.max(5, Math.round(size * 0.095));
+  const r = (size - stroke - 2) / 2;
   const c = 2 * Math.PI * r;
-  const stroke =
-    tone === "success" ? "var(--color-success)" : tone === "ink" ? "var(--color-ink)" : "var(--color-accent)";
+  const colour =
+    tone === "success"
+      ? "var(--color-success)"
+      : tone === "danger"
+        ? "var(--color-danger)"
+        : tone === "ink"
+          ? "var(--color-ink)"
+          : "var(--color-accent)";
+
+  const [shown, setShown] = useState(0);
+  const frame = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      // Straight to the value, but scheduled rather than set inline: a
+      // synchronous setState in an effect body forces a second render pass.
+      frame.current = requestAnimationFrame(() => setShown(value));
+      return () => {
+        if (frame.current) cancelAnimationFrame(frame.current);
+      };
+    }
+    const start = performance.now();
+    const from = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 900);
+      // Same curve as --ease-out-cg, so the ring and the figure agree.
+      const eased = 1 - Math.pow(1 - t, 3);
+      setShown(Math.round(from + (value - from) * eased));
+      if (t < 1) frame.current = requestAnimationFrame(tick);
+    };
+    frame.current = requestAnimationFrame(tick);
+    return () => {
+      if (frame.current) cancelAnimationFrame(frame.current);
+    };
+  }, [value]);
+
   return (
     <div
       className="relative shrink-0"
@@ -231,23 +396,25 @@ export function RadialGauge({
           r={r}
           fill="none"
           stroke="var(--color-surface-sunken)"
-          strokeWidth="4"
+          strokeWidth={stroke}
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={stroke}
-          strokeWidth="4"
+          stroke={colour}
+          strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
-          strokeDashoffset={c * (1 - value / 100)}
-          className="transition-[stroke-dashoffset] duration-[600ms] ease-[var(--ease-out-cg)]"
+          strokeDashoffset={c * (1 - shown / 100)}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[11.5px] font-semibold tabular-nums">
-        {value}%
+      <span
+        className="t-num absolute inset-0 flex items-center justify-center"
+        style={{ fontSize: Math.max(11, Math.round(size * 0.24)) }}
+      >
+        {shown}%
       </span>
     </div>
   );
