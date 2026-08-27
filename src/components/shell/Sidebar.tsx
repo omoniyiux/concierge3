@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ConciergeMark, ConciergeWordmark } from "@/components/shell/ConciergeMark";
 import { SiteSwitcher } from "@/components/shell/SiteSwitcher";
 import { Avatar } from "@/components/shell/Avatar";
-import { BellIcon, HelpIcon, PanelIcon, SearchIcon, SettingsIcon } from "@/components/icons";
+import { BellIcon, CloseIcon, HelpIcon, PanelIcon, SearchIcon, SettingsIcon } from "@/components/icons";
 import { IconButton, Tooltip } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { NAV } from "@/lib/nav";
@@ -20,7 +20,12 @@ function attentionFor(path: string): number | "dot" | null {
   return null;
 }
 
-export function Sidebar({ siteId }: { siteId: string }) {
+/**
+ * @param onClose  Supplied only by the mobile drawer. The close control then
+ *   sits in the brand row itself, on the same baseline and the same gutter as
+ *   search — floating it over the row from the shell left it half a row high.
+ */
+export function Sidebar({ siteId, onClose }: { siteId: string; onClose?: () => void }) {
   const pathname = usePathname();
   const { sidebarCollapsed: collapsed, toggleSidebar, setMobileNavOpen, setCommandOpen } = useWorkspace();
 
@@ -66,6 +71,13 @@ export function Sidebar({ siteId }: { siteId: string }) {
             >
               <PanelIcon size={18} />
             </IconButton>
+            {/* Takes the collapse button's place on a phone, where there is no
+                rail to collapse to. */}
+            {onClose && (
+              <IconButton label="Close navigation" size={32} onClick={onClose} className="lg:hidden">
+                <CloseIcon size={18} />
+              </IconButton>
+            )}
           </>
         )}
       </div>
@@ -90,7 +102,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
         )}
 
         {NAV.map((group, gi) => (
-          <div key={gi} className={gi > 0 ? "mt-5" : ""}>
+          <div key={gi} className={gi > 0 ? "mt-5" : "mt-1"}>
             {group.label && !collapsed && (
               <p className="flex h-[30px] items-center px-2.5 text-[13.5px] text-text-tertiary">
                 {group.label}
@@ -117,7 +129,10 @@ export function Sidebar({ siteId }: { siteId: string }) {
                     {!collapsed && attention !== null && (
                       <span className="ml-auto shrink-0">
                         {attention === "dot" ? (
-                          <span className="block h-1.5 w-1.5 rounded-full bg-danger" aria-label="Needs attention" />
+                          <span
+                            className="block h-1.5 w-1.5 rounded-full bg-danger"
+                            aria-label="Needs attention"
+                          />
                         ) : (
                           <span className="bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums text-accent-ink">
                             {attention}
@@ -139,8 +154,8 @@ export function Sidebar({ siteId }: { siteId: string }) {
       </div>
 
       {/* System ---------------------------------------------------------- */}
-      <div className={cx("shrink-0 pb-3", collapsed ? "px-2" : "px-3")}>
-        <ul className={cx("space-y-0.5", collapsed && "flex flex-col items-center")}>
+      <div className={cx("shrink-0 pb-3 pt-5", collapsed ? "px-2" : "px-3")}>
+        <ul className={cx("space-y-1", collapsed && "flex flex-col items-center")}>
           {[
             { href: `/sites/${siteId}/settings`, label: "Settings", Icon: SettingsIcon },
             { href: "/help", label: "Help", Icon: HelpIcon },
@@ -164,7 +179,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
         {!collapsed && (
           <Link
             href="/account"
-            className="mt-2 flex items-center gap-2.5 rounded-[10px] py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
+            className="mt-3 flex items-center gap-2.5 py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
           >
             <Avatar size={32} />
             <span className="mr-auto truncate text-[14px] font-semibold">Olaifa Promise</span>
