@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { CommandMenu } from "@/components/shell/CommandMenu";
-import { CloseIcon, PanelIcon, SearchIcon } from "@/components/icons";
+import { PanelIcon, SearchIcon } from "@/components/icons";
 import { getSite } from "@/lib/demo-data";
 import { IconButton } from "@/components/ui";
 import { cx } from "@/lib/cx";
@@ -55,16 +55,10 @@ export function AppShell({ siteId, children }: { siteId: string; children: React
             onClick={() => setMobileNavOpen(false)}
             className="absolute inset-0 bg-ink/25"
           />
-          <div className="cg-enter absolute inset-y-0 left-0 flex w-[264px]">
-            <Sidebar siteId={siteId} />
-            <IconButton
-              label="Close navigation"
-              size={32}
-              className="absolute right-2 top-3 bg-surface"
-              onClick={() => setMobileNavOpen(false)}
-            >
-              <CloseIcon size={16} />
-            </IconButton>
+          {/* The drawer is exactly the sidebar's width: the extra few pixels
+              left a sliver of overlay down its edge. */}
+          <div className="cg-enter absolute inset-y-0 left-0 flex w-[var(--sidebar-w)]">
+            <Sidebar siteId={siteId} onClose={() => setMobileNavOpen(false)} />
           </div>
         </div>
       )}
