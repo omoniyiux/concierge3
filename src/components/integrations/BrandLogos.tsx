@@ -131,3 +131,104 @@ export function GmailLogo({ size, className }: P) {
     </Mark>
   );
 }
+
+/* ---- Website platforms ---------------------------------------------------
+   The install guides are chosen by recognising a logo, not by reading a list
+   of names, so each platform carries its own mark in its own colour. Drawn to
+   the same rules as the marks above: real geometry, real brand colour, no
+   third-party asset host. */
+
+export function WordPressLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="24" fill="#21759B" />
+      <path
+        d="M9.5 24a14.5 14.5 0 0 0 8.2 13.1L10.7 18A14.4 14.4 0 0 0 9.5 24Zm24.3-.7c0-1.8-.6-3-1.2-4-.7-1.2-1.4-2.2-1.4-3.4 0-1.3 1-2.6 2.4-2.6h.2a14.5 14.5 0 0 0-21.9 2.7h.9c1.5 0 3.8-.2 3.8-.2.8 0 .9 1.1.1 1.2 0 0-.8.1-1.6.1l5.1 15.2 3.1-9.2-2.2-6c-.8 0-1.5-.1-1.5-.1-.8 0-.7-1.2.1-1.2 0 0 2.3.2 3.7.2 1.5 0 3.8-.2 3.8-.2.8 0 .9 1.1.1 1.2 0 0-.8.1-1.6.1l5 15 1.4-4.7c.7-2 1.1-3.5 1.1-4.7Z"
+        fill="#fff"
+      />
+      <path
+        d="M24.3 25.2 20.1 37.3a14.5 14.5 0 0 0 8.9-.2h-.1l-4.6-11.9Zm12.4-8.1a11 11 0 0 1 .1 1.5c0 1.5-.3 3.2-1.1 5.3l-4.6 13.2A14.5 14.5 0 0 0 36.7 17Z"
+        fill="#fff"
+      />
+    </Mark>
+  );
+}
+
+export function ShopifyLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 48 48">
+      <path
+        d="M31.5 9.6c-.2 0-.4-.1-.5 0l-1.7.5a8.6 8.6 0 0 0-.6-1.4c-.9-1.7-2.2-2.6-3.7-2.6h-.4l-.2-.2a3 3 0 0 0-2.4-1c-2.6.1-5.2 2-7.3 5.4a21 21 0 0 0-3 7.6l-3.9 1.2c-1.2.4-1.2.4-1.3 1.5L3.5 40.4l22 3.8V9.6ZM26 11.4l-4.4 1.4c.4-1.6 1.2-3.3 2.1-4.4.4-.4.9-.9 1.5-1.2.6 1.2.8 2.9.8 4.2Zm-3.3-6.3c.5 0 .9.1 1.2.3-.6.3-1.1.8-1.6 1.3-1.3 1.4-2.2 3.5-2.6 5.6l-3.6 1.1c.7-3.3 3.4-8.2 6.6-8.3Zm-4.6 17.5c.2 2.8 7.5 3.4 7.9 9.9.3 5.1-2.7 8.6-7.1 8.9-5.3.3-8.2-2.8-8.2-2.8l1.1-4.8s2.9 2.2 5.3 2.1c1.5-.1 2.1-1.4 2-2.3-.2-3.7-6.2-3.5-6.6-9.4-.3-5 3-10.1 10.2-10.5 2.8-.2 4.3.5 4.3.5l-1.7 6.3s-1.9-.9-4.2-.7c-3.3.2-3.3 2.3-3 2.8Z"
+        fill="#95BF47"
+      />
+      <path
+        d="M31.5 9.6V44.2l10.1-2.5s-4.3-29.3-4.4-29.5c0-.2-.2-.3-.4-.3h-.1l-2.1-.1-1.5-1.5c-.2-.2-.4-.3-.6-.4l-1 .2Z"
+        fill="#5E8E3E"
+      />
+    </Mark>
+  );
+}
+
+export function WebflowLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 48 48">
+      <rect width="48" height="48" fill="#146EF5" />
+      <path
+        d="M35.6 15.4 30.9 26h-.1l-2.2-10.6h-4l-2.3 10.6h-.1l-4.5-10.6H12l8 17.2h4.2l2.4-10.7h.1l2.4 10.7h4.1l7.8-17.2h-5.4Z"
+        fill="#fff"
+      />
+    </Mark>
+  );
+}
+
+export function SquarespaceLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 48 48">
+      <rect width="48" height="48" fill="#101010" />
+      <path
+        d="M16.2 20.3a5.3 5.3 0 0 1 7.6 0l6.7 6.9 2.5-2.6-6.7-6.9a8.8 8.8 0 0 0-12.6 0l-2.6 2.6 2.5 2.6 2.6-2.6Z"
+        fill="#fff"
+      />
+      <path
+        d="M31.8 27.7a5.3 5.3 0 0 1-7.6 0l-6.7-6.9-2.5 2.6 6.7 6.9a8.8 8.8 0 0 0 12.6 0l2.6-2.6-2.5-2.6-2.6 2.6Z"
+        fill="#8A8A8A"
+      />
+    </Mark>
+  );
+}
+
+export function WixLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 48 48">
+      <rect width="48" height="48" fill="#0C0C0C" />
+      <text
+        x="24"
+        y="30"
+        textAnchor="middle"
+        fill="#fff"
+        fontSize="15"
+        fontWeight="600"
+        fontFamily="var(--font-display), system-ui, sans-serif"
+        letterSpacing="-0.5"
+      >
+        WiX
+      </text>
+    </Mark>
+  );
+}
+
+export function CustomHtmlLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 48 48">
+      <rect width="48" height="48" fill="#FF6200" />
+      <path
+        d="M18.5 17 11 24l7.5 7M29.5 17 37 24l-7.5 7M26.5 14l-5 20"
+        stroke="#fff"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Mark>
+  );
+}
