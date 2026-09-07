@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { ArrowRight, RoutingIcon } from "@/components/icons";
-import { AlertIcon, BrainIcon, CheckIcon, SparkIcon } from "@/components/icons";
-import { cx } from "@/lib/cx";
+import { CheckIcon } from "@/components/icons";
+import { BrokenLinkSticker, IdeaSticker, ReviewSticker } from "@/components/stickers/attention";
 import { Badge } from "@/components/ui";
 import type { Tone } from "@/components/ui";
 
@@ -21,11 +21,11 @@ export type AttentionItem = {
 
 const SEVERITY: Record<
   AttentionItem["severity"],
-  { tone: Tone; label: string; Icon: typeof AlertIcon; tile: string }
+  { tone: Tone; label: string; Sticker: typeof BrokenLinkSticker }
 > = {
-  urgent: { tone: "restricted", label: "Needs fixing", Icon: AlertIcon, tile: "bg-danger-soft text-danger" },
-  review: { tone: "review", label: "Needs review", Icon: BrainIcon, tile: "bg-warning-soft text-warning" },
-  opportunity: { tone: "accent", label: "Opportunity", Icon: SparkIcon, tile: "bg-accent-soft text-accent-ink" },
+  urgent: { tone: "restricted", label: "Needs fixing", Sticker: BrokenLinkSticker },
+  review: { tone: "review", label: "Needs review", Sticker: ReviewSticker },
+  opportunity: { tone: "accent", label: "Opportunity", Sticker: IdeaSticker },
 };
 
 /**
@@ -52,7 +52,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
   return (
     <ul className="divide-y divide-line-strong overflow-hidden border border-line-strong bg-surface">
       {items.map((item) => {
-        const { tone, label, Icon, tile } = SEVERITY[item.severity];
+        const { tone, label, Sticker } = SEVERITY[item.severity];
         return (
           <li key={item.id}>
             {/* No fill change on hover — repainting a whole row grey reads as a
@@ -61,14 +61,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
               href={item.href}
               className="group flex items-start gap-4 px-6 py-4 transition-colors duration-[var(--dur-micro)]"
             >
-              <span
-                className={cx(
-                  "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                  tile,
-                )}
-              >
-                <Icon size={17} />
-              </span>
+              <Sticker size={38} className="-mt-1 shrink-0" />
 
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-2">
