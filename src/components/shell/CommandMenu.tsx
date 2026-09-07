@@ -1,93 +1,83 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  AgentsIcon,
-  ChatIcon,
-  GridIcon,
-  HomeIcon,
-  SearchIcon,
-  SlidersIcon,
-  WhatsAppIcon,
-} from "@/components/icons";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { ArrowRight, SearchIcon } from "@/components/icons";
+import { cx } from "@/lib/cx";
+import { ALL_NAV_ITEMS } from "@/lib/nav";
+import { CONVERSATIONS, INTEGRATIONS, LEADS, SITES } from "@/lib/demo-data";
 import { useWorkspace } from "@/lib/workspace";
-import { CONNECTORS, THREADS } from "@/lib/data";
 
-type Entry = {
-  id: string;
-  label: string;
-  group: string;
-  Icon: typeof HomeIcon;
-  run: () => void;
-};
+type Entry = { id: string; label: string; sub?: string; group: string; run: () => void };
 
-/** Global command surface — ⌘K. It searches the workspace, it does not
- *  turn every keystroke into an AI request. */
-export function CommandMenu() {
-  const { searchOpen } = useWorkspace();
-  // Mounting only while open keeps the query and selection fresh without
-  // reconciling state in an effect.
-  return searchOpen ? <CommandPalette /> : null;
+export function CommandMenu({ siteId }: { siteId: string }) {
+  const { commandOpen } = useWorkspace();
+  return commandOpen ? <Palette siteId={siteId} /> : null;
 }
 
-function CommandPalette() {
-  const { setSearchOpen, setActiveThread, setChatMode, setPhoneModalOpen } = useWorkspace();
+function Palette({ siteId }: { siteId: string }) {
+  const { setCommandOpen } = useWorkspace();
   const router = useRouter();
-  const [query, setQuery] = useState("");
+  const [q, setQ] = useState("");
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const entries = useMemo<Entry[]>(() => {
-    const go = (href: string) => () => {
-      router.push(href);
-      setSearchOpen(false);
-    };
-    return [
-      { id: "home", label: "Home", group: "Go to", Icon: HomeIcon, run: go("/home") },
-      { id: "agents", label: "Agents", group: "Go to", Icon: AgentsIcon, run: go("/agents") },
-      { id: "connectors", label: "Connectors & MCPs", group: "Go to", Icon: GridIcon, run: go("/connectors") },
-      { id: "account", label: "Account settings", group: "Go to", Icon: SlidersIcon, run: go("/account") },
-      {
-        id: "whatsapp",
-        label: "Connect WhatsApp",
-        group: "Go to",
-        Icon: WhatsAppIcon,
-        run: () => {
-          setPhoneModalOpen(true);
-          setSearchOpen(false);
-        },
-      },
-      ...THREADS.map((t) => ({
-        id: `thread-${t.id}`,
-        label: t.title,
-        group: "Conversations",
-        Icon: ChatIcon,
-        run: () => {
-          setActiveThread(t.id);
-          setChatMode("docked");
-          setSearchOpen(false);
-        },
-      })),
-      ...CONNECTORS.slice(0, 12).map((c) => ({
-        id: `conn-${c.id}`,
-        label: c.name,
-        group: "Connectors",
-        Icon: GridIcon,
-        run: go("/connectors"),
-      })),
-    ];
-  }, [router, setSearchOpen, setActiveThread, setChatMode, setPhoneModalOpen]);
-
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return entries.slice(0, 8);
-    return entries.filter((e) => e.label.toLowerCase().includes(q)).slice(0, 10);
-  }, [entries, query]);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  const entries = useMemo<Entry[]>(() => {
+    const go = (href: string) => () => {
+      router.push(href);
+      setCommandOpen(false);
+    };
+    return [
+      ...ALL_NAV_ITEMS.map((n) => ({
+        id: `nav-${n.slug}`,
+        label: n.label,
+        group: "Go to",
+        run: go(`/sites/${siteId}/${n.slug}`),
+      })),
+      { id: "nav-settings", label: "Settings", group: "Go to", run: go(`/sites/${siteId}/settings`) },
+      { id: "nav-onboard", label: "Add a website", group: "Actions", run: go("/onboarding") },
+      ...SITES.filter((s) => s.id !== siteId).map((s) => ({
+        id: `site-${s.id}`,
+        label: s.name,
+        sub: s.url,
+        group: "Switch site",
+        run: go(`/sites/${s.id}/overview`),
+      })),
+      ...CONVERSATIONS.slice(0, 6).map((c) => ({
+        id: `conv-${c.id}`,
+        label: c.visitorName,
+        sub: c.preview,
+        group: "Conversations",
+        run: go(`/sites/${siteId}/conversations?c=${c.id}`),
+      })),
+      ...LEADS.slice(0, 5).map((l) => ({
+        id: `lead-${l.id}`,
+        label: l.name,
+        sub: l.service ?? "Lead",
+        group: "Leads",
+        run: go(`/sites/${siteId}/leads?l=${l.id}`),
+      })),
+      ...INTEGRATIONS.slice(0, 8).map((i) => ({
+        id: `int-${i.id}`,
+        label: i.name,
+        sub: i.description,
+        group: "Integrations",
+        run: go(`/sites/${siteId}/integrations`),
+      })),
+    ];
+  }, [router, setCommandOpen, siteId]);
+
+  const results = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return entries.filter((e) => e.group === "Go to" || e.group === "Actions").slice(0, 9);
+    return entries
+      .filter((e) => e.label.toLowerCase().includes(needle) || e.sub?.toLowerCase().includes(needle))
+      .slice(0, 12);
+  }, [entries, q]);
 
   const grouped = results.reduce<Record<string, Entry[]>>((acc, e) => {
     (acc[e.group] ??= []).push(e);
@@ -95,26 +85,26 @@ function CommandPalette() {
   }, {});
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[14vh]">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-[12vh]">
       <button
         type="button"
         aria-label="Close search"
-        onClick={() => setSearchOpen(false)}
-        className="absolute inset-0 bg-black/15 backdrop-blur-[3px]"
+        onClick={() => setCommandOpen(false)}
+        className="absolute inset-0 bg-ink/20 backdrop-blur-[2px]"
       />
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Search Symphony"
-        className="sym-enter relative w-full max-w-[560px] overflow-hidden rounded-2xl bg-surface shadow-xl"
+        aria-label="Search Concierge"
+        className="cg-enter relative w-full max-w-[560px] overflow-hidden rounded-2xl border border-line bg-surface shadow-xl"
       >
-        <div className="flex h-[56px] items-center gap-3 border-b border-line px-4">
-          <SearchIcon size={20} className="shrink-0 text-text-tertiary" />
+        <div className="flex h-12 items-center gap-2.5 border-b border-line px-3.5">
+          <SearchIcon size={17} className="shrink-0 text-text-muted" />
           <input
             ref={inputRef}
-            value={query}
+            value={q}
             onChange={(e) => {
-              setQuery(e.target.value);
+              setQ(e.target.value);
               setCursor(0);
             }}
             onKeyDown={(e) => {
@@ -128,40 +118,41 @@ function CommandPalette() {
               }
               if (e.key === "Enter") results[cursor]?.run();
             }}
-            placeholder="Search Symphony"
-            aria-label="Search Symphony"
-            className="h-full flex-1 bg-transparent text-[16px] outline-none placeholder:text-text-muted"
+            placeholder="Search sites, conversations, leads and settings"
+            aria-label="Search Concierge"
+            className="h-full flex-1 bg-transparent text-[14px] outline-none placeholder:text-text-muted"
           />
-          <kbd className="rounded-md border border-line px-1.5 py-0.5 text-[11px] font-medium text-text-muted">
-            ESC
-          </kbd>
+          <kbd className="rounded border border-line px-1.5 py-px text-[11px] text-text-muted">ESC</kbd>
         </div>
 
-        <div className="sym-scroll max-h-[52vh] overflow-y-auto p-2">
+        <div className="cg-scroll max-h-[48vh] overflow-y-auto p-1.5">
           {results.length === 0 ? (
-            <p className="px-3 py-8 text-center text-[14px] text-text-tertiary">
-              Nothing matches &ldquo;{query}&rdquo; yet. Try an agent, a conversation or a connector.
+            <p className="px-3 py-10 text-center text-[13px] text-text-tertiary">
+              Nothing matches &ldquo;{q}&rdquo;. Try a site, a visitor name or a settings page.
             </p>
           ) : (
             Object.entries(grouped).map(([group, items]) => (
               <div key={group} className="mb-1">
-                <p className="px-3 pb-1 pt-2 text-[12px] font-semibold uppercase tracking-wide text-text-muted">
-                  {group}
-                </p>
+                <p className="t-eyebrow px-2.5 pb-1 pt-2 text-text-muted">{group}</p>
                 {items.map((e) => {
                   const idx = results.indexOf(e);
+                  const active = idx === cursor;
                   return (
                     <button
                       key={e.id}
                       type="button"
                       onMouseEnter={() => setCursor(idx)}
                       onClick={e.run}
-                      className={`flex h-11 w-full items-center gap-3 rounded-[10px] px-3 text-left text-[14px] ${
-                        idx === cursor ? "bg-surface-hover" : ""
-                      }`}
+                      className={cx(
+                        "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left",
+                        active ? "bg-surface-hover" : "",
+                      )}
                     >
-                      <e.Icon size={18} className="text-text-secondary" />
-                      {e.label}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13px] font-medium">{e.label}</span>
+                        {e.sub && <span className="block truncate text-[12px] text-text-tertiary">{e.sub}</span>}
+                      </span>
+                      {active && <ArrowRight size={14} className="shrink-0 text-text-muted" />}
                     </button>
                   );
                 })}

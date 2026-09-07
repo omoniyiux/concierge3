@@ -3,62 +3,56 @@
 import {
   forwardRef,
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
 } from "react";
+import { CheckIcon, ChevronDown, DotIcon, SearchIcon } from "@/components/icons";
+import Link from "next/link";
+import { cx } from "@/lib/cx";
 
-/* ==================================================================
-   BUTTON
-   One clear primary action per surface. Primary is ink (black);
-   `brand` is reserved for upgrade/commercial moments only.
-   ================================================================== */
+export { cx } from "@/lib/cx";
 
-type Variant = "primary" | "secondary" | "tertiary" | "brand" | "danger";
+/* ============================================================================
+   BUTTON — ink is primary. Orange is reserved for the single moment on a
+   surface where Concierge itself is acting or being launched.
+   ========================================================================== */
+
+type Variant = "primary" | "secondary" | "tertiary" | "accent" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANT: Record<Variant, string> = {
   primary:
-    "bg-ink text-white hover:bg-ink-hover active:bg-ink-pressed disabled:bg-[#e2e2e2] disabled:text-text-disabled",
+    "bg-ink text-text-inverse hover:bg-ink-hover active:bg-ink-pressed disabled:bg-surface-sunken disabled:text-text-disabled",
   secondary:
-    "bg-surface text-text-primary border border-line-strong hover:bg-[#fafafa] active:bg-surface-subtle disabled:text-text-disabled disabled:border-line",
+    "bg-surface text-text-primary border border-line-strong hover:border-line-hover hover:bg-surface-subtle active:bg-surface-hover disabled:text-text-disabled disabled:border-line disabled:bg-surface",
   tertiary:
-    "bg-transparent text-text-primary hover:bg-surface-hover active:bg-[#e0dfdf] disabled:text-text-disabled",
-  brand:
-    "bg-brand text-ink hover:bg-brand-hover active:bg-brand-pressed disabled:bg-[#e9e9e9] disabled:text-text-disabled",
+    "bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary active:bg-surface-sunken disabled:text-text-disabled",
+  accent:
+    "bg-accent text-white hover:bg-accent-hover active:bg-accent-pressed disabled:bg-surface-sunken disabled:text-text-disabled",
   danger:
-    "bg-danger text-white hover:brightness-95 active:brightness-90 disabled:bg-[#e2e2e2] disabled:text-text-disabled",
+    "bg-danger text-white hover:brightness-110 active:brightness-95 disabled:bg-surface-sunken disabled:text-text-disabled",
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-8 px-3 text-[12px] rounded-lg gap-1.5",
-  md: "h-9 px-3.5 text-[13px] rounded-lg gap-2",
-  lg: "h-11 px-4 text-[13.5px] rounded-[10px] gap-2",
+  sm: "h-7 px-2.5 text-[12.5px] gap-1.5 rounded-md",
+  md: "h-9 px-3.5 text-[13px] gap-2 rounded-lg",
+  lg: "h-11 px-4.5 text-[14px] gap-2 rounded-lg",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   loading?: boolean;
-  pill?: boolean;
   block?: boolean;
   leading?: ReactNode;
   trailing?: ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  {
-    variant = "primary",
-    size = "md",
-    loading = false,
-    pill = false,
-    block = false,
-    leading,
-    trailing,
-    className = "",
-    children,
-    disabled,
-    ...rest
-  },
+  { variant = "primary", size = "md", loading, block, leading, trailing, className, children, disabled, ...rest },
   ref,
 ) {
   return (
@@ -66,20 +60,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={[
-        "relative inline-flex shrink-0 items-center justify-center font-semibold",
-        "transition-[background-color,color,border-color,opacity] duration-[120ms] ease-[var(--ease-out-symphony)]",
-        "disabled:cursor-not-allowed select-none",
+      className={cx(
+        "relative inline-flex shrink-0 select-none items-center justify-center font-medium",
+        "transition-[background-color,border-color,color,opacity] duration-[var(--dur-micro)] ease-[var(--ease-out-cg)]",
+        "disabled:cursor-not-allowed",
         VARIANT[variant],
         SIZE[size],
-        pill ? "!rounded-full" : "",
-        block ? "w-full" : "",
+        block && "w-full",
         className,
-      ].join(" ")}
+      )}
       {...rest}
     >
       {loading && <Spinner className="absolute" />}
-      <span className={loading ? "contents opacity-0" : "contents"}>
+      <span className={cx("contents", loading && "opacity-0")}>
         {leading}
         {children}
         {trailing}
@@ -88,20 +81,69 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-function Spinner({ className = "" }: { className?: string }) {
+/** Navigation that looks like a button. Keeps anchors out of <button>. */
+export function LinkButton({
+  href,
+  variant = "primary",
+  size = "md",
+  block,
+  leading,
+  trailing,
+  className,
+  children,
+  external,
+  ...rest
+}: {
+  href: string;
+  variant?: Variant;
+  size?: Size;
+  block?: boolean;
+  leading?: ReactNode;
+  trailing?: ReactNode;
+  className?: string;
+  children: ReactNode;
+  external?: boolean;
+} & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">) {
+  const cls = cx(
+    "relative inline-flex shrink-0 select-none items-center justify-center font-medium",
+    "transition-[background-color,border-color,color,opacity] duration-[var(--dur-micro)] ease-[var(--ease-out-cg)]",
+    VARIANT[variant],
+    SIZE[size],
+    block && "w-full",
+    className,
+  );
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={cls} {...rest}>
+        {leading}
+        {children}
+        {trailing}
+      </a>
+    );
+  }
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" className={`animate-spin ${className}`} aria-hidden>
-      <circle cx="8" cy="8" r="6.4" stroke="currentColor" strokeWidth="2" opacity="0.25" fill="none" />
-      <path d="M14.4 8A6.4 6.4 0 0 0 8 1.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <Link href={href} className={cls} {...rest}>
+      {leading}
+      {children}
+      {trailing}
+    </Link>
+  );
+}
+
+export function Spinner({ className, size = 15 }: { className?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" className={cx("animate-spin", className)} aria-hidden>
+      <circle cx="8" cy="8" r="6.3" stroke="currentColor" strokeWidth="1.8" opacity="0.22" fill="none" />
+      <path d="M14.3 8A6.3 6.3 0 0 0 8 1.7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
 
-/** Compact square icon button — always needs an accessible label. */
+/** Icon-only control. Always carries an accessible label. */
 export const IconButton = forwardRef<
   HTMLButtonElement,
   ButtonHTMLAttributes<HTMLButtonElement> & { label: string; size?: number; tone?: "default" | "muted" }
->(function IconButton({ label, size = 34, tone = "default", className = "", children, ...rest }, ref) {
+>(function IconButton({ label, size = 30, tone = "muted", className, children, ...rest }, ref) {
   return (
     <button
       ref={ref}
@@ -109,12 +151,13 @@ export const IconButton = forwardRef<
       title={label}
       aria-label={label}
       style={{ width: size, height: size }}
-      className={[
-        "inline-flex items-center justify-center rounded-lg transition-colors duration-[120ms]",
+      className={cx(
+        "inline-flex shrink-0 items-center justify-center rounded-lg transition-colors duration-[var(--dur-micro)]",
         tone === "muted" ? "text-text-tertiary" : "text-text-primary",
-        "hover:bg-surface-hover active:bg-[#e0dfdf] disabled:text-text-disabled disabled:hover:bg-transparent",
+        "hover:bg-surface-hover hover:text-text-primary active:bg-surface-sunken",
+        "disabled:cursor-not-allowed disabled:text-text-disabled disabled:hover:bg-transparent",
         className,
-      ].join(" ")}
+      )}
       {...rest}
     >
       {children}
@@ -122,61 +165,157 @@ export const IconButton = forwardRef<
   );
 });
 
-/* ==================================================================
-   SURFACES
-   ================================================================== */
+/* ============================================================================
+   SURFACES — a card must earn its border.
+   ========================================================================== */
 
 export function Card({
-  className = "",
-  as: Tag = "div",
+  className,
+  interactive,
   children,
   ...rest
-}: {
-  className?: string;
-  as?: "div" | "section" | "article" | "li";
-  children: ReactNode;
-} & React.HTMLAttributes<HTMLElement>) {
+}: HTMLAttributes<HTMLDivElement> & { interactive?: boolean }) {
   return (
-    <Tag className={`rounded-2xl bg-surface ${className}`} {...rest}>
+    <div
+      className={cx(
+        "rounded-xl border border-line bg-surface",
+        interactive && "transition-colors duration-[var(--dur-micro)] hover:border-line-strong",
+        className,
+      )}
+      {...rest}
+    >
       {children}
-    </Tag>
+    </div>
   );
 }
 
-/* ==================================================================
+export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cx("rounded-2xl border border-line bg-surface", className)} {...rest}>
+      {children}
+    </div>
+  );
+}
+
+/** Section head used inside panels: title, optional hint, optional action. */
+export function SectionHead({
+  title,
+  hint,
+  action,
+  className,
+}: {
+  title: string;
+  hint?: string;
+  action?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cx("flex items-start justify-between gap-4", className)}>
+      <div className="min-w-0">
+        <h2 className="t-section">{title}</h2>
+        {hint && <p className="t-body-sm mt-1 text-text-tertiary">{hint}</p>}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
+  );
+}
+
+/* ============================================================================
    FORM CONTROLS
-   ================================================================== */
+   ========================================================================== */
+
+const FIELD_BASE =
+  "w-full rounded-lg border border-line-strong bg-surface text-[13px] text-text-primary " +
+  "placeholder:text-text-muted transition-[border-color,box-shadow] duration-[var(--dur-micro)] " +
+  "focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/8 " +
+  "disabled:bg-surface-subtle disabled:text-text-disabled";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
-  function Input({ className = "", ...rest }, ref) {
+  function Input({ className, ...rest }, ref) {
+    return <input ref={ref} className={cx(FIELD_BASE, "h-9 px-3", className)} {...rest} />;
+  },
+);
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
+  function Textarea({ className, ...rest }, ref) {
+    return <textarea ref={ref} className={cx(FIELD_BASE, "min-h-[88px] resize-y px-3 py-2 leading-[1.55]", className)} {...rest} />;
+  },
+);
+
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
+  function Select({ className, children, ...rest }, ref) {
     return (
-      <input
-        ref={ref}
-        className={[
-          "h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-[14px]",
-          "placeholder:text-text-muted",
-          "transition-[border-color,box-shadow] duration-[120ms]",
-          "focus:border-ink focus:outline-none focus:ring-2 focus:ring-black/5",
-          "disabled:bg-surface-subtle disabled:text-text-disabled",
-          className,
-        ].join(" ")}
-        {...rest}
-      />
+      <div className="relative">
+        <select ref={ref} className={cx(FIELD_BASE, "h-9 appearance-none pl-3 pr-9", className)} {...rest}>
+          {children}
+        </select>
+        <ChevronDown
+          size={15}
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+        />
+      </div>
     );
   },
 );
+
+export function SearchInput({
+  className,
+  ...rest
+}: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div className={cx("relative", className)}>
+      <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+      <input className={cx(FIELD_BASE, "h-9 pl-9 pr-3")} {...rest} />
+    </div>
+  );
+}
+
+export function Field({
+  label,
+  hint,
+  error,
+  htmlFor,
+  children,
+  className,
+}: {
+  label: string;
+  hint?: string;
+  error?: string;
+  htmlFor?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-[12.5px] font-medium text-text-primary">
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <p className="mt-1.5 text-[12px] text-danger">{error}</p>
+      ) : hint ? (
+        <p className="mt-1.5 text-[12px] text-text-tertiary">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
 
 export function Toggle({
   checked,
   onChange,
   label,
   disabled,
+  size = "md",
 }: {
   checked: boolean;
   onChange: (next: boolean) => void;
   label: string;
   disabled?: boolean;
+  size?: "sm" | "md";
 }) {
+  const w = size === "sm" ? 34 : 40;
+  const h = size === "sm" ? 20 : 23;
+  const k = size === "sm" ? 14 : 17;
   return (
     <button
       type="button"
@@ -185,56 +324,144 @@ export function Toggle({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={[
-        "relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-[180ms] ease-[var(--ease-out-symphony)]",
-        checked ? "bg-ink" : "bg-[#dcdcdc]",
-        disabled ? "cursor-not-allowed opacity-50" : "",
-      ].join(" ")}
+      style={{ width: w, height: h }}
+      className={cx(
+        "relative shrink-0 rounded-full transition-colors duration-[var(--dur-base)] ease-[var(--ease-out-cg)]",
+        checked ? "bg-ink" : "bg-surface-sunken",
+        disabled && "cursor-not-allowed opacity-45",
+      )}
     >
       <span
-        className={[
-          // left-0 anchors the knob: a button's UA text-align would
-          // otherwise centre its static position and throw the travel off.
-          "absolute left-0 top-[3px] h-5 w-5 rounded-full bg-white shadow-sm",
-          "transition-transform duration-[180ms] ease-[var(--ease-out-symphony)]",
-          checked ? "translate-x-[23px]" : "translate-x-[3px]",
-        ].join(" ")}
+        style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 3 : 3}px)` }}
+        className="absolute top-1/2 left-0 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-[var(--dur-base)] ease-[var(--ease-out-cg)]"
       />
     </button>
   );
 }
 
-/** Segmented control — Tools / Channels. */
-export function Segmented<T extends string>({
-  options,
+export function Checkbox({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  label: string;
+  description?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cx(
+        "flex w-full items-start gap-2.5 rounded-lg border p-3 text-left transition-colors duration-[var(--dur-micro)]",
+        checked ? "border-ink/25 bg-surface-subtle" : "border-line bg-surface hover:border-line-strong",
+        disabled && "cursor-not-allowed opacity-50",
+      )}
+    >
+      <span
+        className={cx(
+          "mt-px flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[5px] border transition-colors",
+          checked ? "border-ink bg-ink text-white" : "border-line-strong bg-surface",
+        )}
+      >
+        {checked && <CheckIcon size={12} strokeWidth={2.6} />}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[13px] font-medium">{label}</span>
+        {description && <span className="mt-0.5 block text-[12.5px] leading-[1.45] text-text-tertiary">{description}</span>}
+      </span>
+    </button>
+  );
+}
+
+export function RadioCard({
+  selected,
+  onSelect,
+  label,
+  description,
+  icon,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  label: string;
+  description?: string;
+  icon?: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={cx(
+        "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-all duration-[var(--dur-micro)]",
+        selected
+          ? "border-ink bg-surface shadow-xs ring-1 ring-ink"
+          : "border-line bg-surface hover:border-line-strong",
+      )}
+    >
+      {icon && (
+        <span className={cx("mt-px shrink-0", selected ? "text-accent" : "text-text-tertiary")}>{icon}</span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13.5px] font-medium">{label}</span>
+        {description && (
+          <span className="mt-1 block text-[12.5px] leading-[1.5] text-text-tertiary">{description}</span>
+        )}
+      </span>
+    </button>
+  );
+}
+
+/* ============================================================================
+   NAVIGATION WITHIN A SURFACE
+   ========================================================================== */
+
+export function Tabs<T extends string>({
+  tabs,
   value,
   onChange,
   label,
 }: {
-  options: { value: T; label: string }[];
+  tabs: { value: T; label: string; count?: number }[];
   value: T;
-  onChange: (next: T) => void;
+  onChange: (v: T) => void;
   label: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className="inline-flex items-center gap-2">
-      {options.map((opt) => {
-        const active = opt.value === value;
+    <div role="tablist" aria-label={label} className="flex items-center gap-1 border-b border-line">
+      {tabs.map((t) => {
+        const active = t.value === value;
         return (
           <button
-            key={opt.value}
+            key={t.value}
             role="tab"
             aria-selected={active}
-            onClick={() => onChange(opt.value)}
-            className={[
-              "h-[46px] min-w-[97px] rounded-xl px-7 text-[14px] font-semibold",
-              "transition-colors duration-[120ms]",
-              active
-                ? "bg-ink text-white"
-                : "bg-surface text-text-tertiary hover:bg-[#fafafa] hover:text-text-primary",
-            ].join(" ")}
+            onClick={() => onChange(t.value)}
+            className={cx(
+              "relative -mb-px flex h-9 items-center gap-2 px-3 text-[13px] font-medium transition-colors duration-[var(--dur-micro)]",
+              active ? "text-text-primary" : "text-text-tertiary hover:text-text-secondary",
+            )}
           >
-            {opt.label}
+            {t.label}
+            {typeof t.count === "number" && (
+              <span
+                className={cx(
+                  "rounded-full px-1.5 py-px text-[11px] font-semibold tabular-nums",
+                  active ? "bg-ink text-text-inverse" : "bg-surface-sunken text-text-tertiary",
+                )}
+              >
+                {t.count}
+              </span>
+            )}
+            {active && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-ink" />}
           </button>
         );
       })}
@@ -242,22 +469,136 @@ export function Segmented<T extends string>({
   );
 }
 
-/* ==================================================================
-   DATA DISPLAY
-   ================================================================== */
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  label: string;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label={label}
+      className="inline-flex items-center gap-0.5 rounded-lg border border-line bg-surface-subtle p-0.5"
+    >
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <button
+            key={o.value}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(o.value)}
+            className={cx(
+              "h-7 rounded-[7px] px-3 text-[12.5px] font-medium transition-all duration-[var(--dur-micro)]",
+              active ? "bg-surface text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-primary",
+            )}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ============================================================================
+   STATUS — colour is never the only signal.
+   ========================================================================== */
+
+const TONES = {
+  neutral: "bg-surface-subtle text-text-secondary border-line",
+  approved: "bg-approved-soft text-approved border-success-line",
+  review: "bg-review-soft text-review border-warning-line",
+  restricted: "bg-restricted-soft text-restricted border-danger-line",
+  accent: "bg-accent-soft text-accent-ink border-accent-line",
+  info: "bg-info-soft text-info border-info-line",
+  live: "bg-approved-soft text-approved border-success-line",
+} as const;
+
+export type Tone = keyof typeof TONES;
+
+export function Badge({
+  tone = "neutral",
+  dot,
+  pulse,
+  children,
+  className,
+}: {
+  tone?: Tone;
+  dot?: boolean;
+  pulse?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cx(
+        "inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11.5px] font-medium",
+        TONES[tone],
+        className,
+      )}
+    >
+      {dot && <DotIcon size={6} className={pulse ? "cg-live-dot" : undefined} />}
+      {children}
+    </span>
+  );
+}
+
+/** A metric with its change. Never a bare number without context. */
+export function Stat({
+  label,
+  value,
+  delta,
+  hint,
+  className,
+}: {
+  label: string;
+  value: string;
+  delta?: number;
+  hint?: string;
+  className?: string;
+}) {
+  const up = (delta ?? 0) > 0;
+  const flat = delta === 0 || delta === undefined;
+  return (
+    <div className={className}>
+      <p className="t-eyebrow text-text-muted">{label}</p>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="t-num text-[26px] leading-none">{value}</span>
+        {!flat && (
+          <span
+            className={cx("text-[12px] font-medium tabular-nums", up ? "text-success" : "text-danger")}
+          >
+            {up ? "↑" : "↓"} {Math.abs(delta!)}%
+          </span>
+        )}
+      </div>
+      {hint && <p className="mt-1.5 text-[12px] text-text-tertiary">{hint}</p>}
+    </div>
+  );
+}
 
 export function ProgressBar({
   value,
   max = 100,
   label,
   tone = "ink",
+  height = 6,
 }: {
   value: number;
   max?: number;
   label: string;
-  tone?: "ink" | "brand";
+  tone?: "ink" | "accent" | "success";
+  height?: number;
 }) {
   const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  const bg = tone === "accent" ? "bg-accent" : tone === "success" ? "bg-success" : "bg-ink";
   return (
     <div
       role="progressbar"
@@ -265,162 +606,143 @@ export function ProgressBar({
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={max}
-      className="h-[7px] w-full overflow-hidden rounded-full bg-surface-sunken"
+      style={{ height }}
+      className="w-full overflow-hidden rounded-full bg-surface-sunken"
     >
       <div
-        className={`h-full rounded-full transition-[width] duration-[300ms] ease-[var(--ease-out-symphony)] ${
-          tone === "brand" ? "bg-brand" : "bg-ink"
-        }`}
+        className={cx("h-full rounded-full transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]", bg)}
         style={{ width: `${pct}%` }}
       />
     </div>
   );
 }
 
-const STATUS_TONE = {
-  working: { dot: "bg-[#0C6EFC]", text: "text-[#0C6EFC]", bg: "bg-[#E8F1FF]" },
-  waiting: { dot: "bg-[#E39112]", text: "text-[#9A5F00]", bg: "bg-[#FFF4E2]" },
-  approval: { dot: "bg-[#674FE6]", text: "text-[#4E38C4]", bg: "bg-[#EEEBFC]" },
-  completed: { dot: "bg-success", text: "text-success", bg: "bg-[#E6F6F1]" },
-  failed: { dot: "bg-danger", text: "text-danger", bg: "bg-danger-soft" },
-  offline: { dot: "bg-text-muted", text: "text-text-tertiary", bg: "bg-surface-subtle" },
-} as const;
+/* ============================================================================
+   EMPTY / LOADING / ERROR
+   Each answers: what is this, why does it matter, what do I do next.
+   ========================================================================== */
 
-export type StatusKind = keyof typeof STATUS_TONE;
-
-/** Status is never colour alone — the dot always travels with a label. */
-export function StatusPill({ kind, children }: { kind: StatusKind; children: ReactNode }) {
-  const tone = STATUS_TONE[kind];
+export function EmptyState({
+  icon,
+  title,
+  body,
+  action,
+  secondaryAction,
+  className,
+}: {
+  icon?: ReactNode;
+  title: string;
+  body: string;
+  action?: ReactNode;
+  secondaryAction?: ReactNode;
+  className?: string;
+}) {
   return (
-    <span
-      className={`inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold ${tone.bg} ${tone.text}`}
-    >
-      <span className={`h-[6px] w-[6px] rounded-full ${tone.dot}`} aria-hidden />
-      {children}
-    </span>
+    <div className={cx("flex flex-col items-center px-6 py-14 text-center", className)}>
+      {icon && (
+        <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface-subtle text-text-tertiary">
+          {icon}
+        </div>
+      )}
+      <h3 className="t-section max-w-[28ch]">{title}</h3>
+      <p className="t-body mt-2.5 max-w-[46ch] text-text-tertiary">{body}</p>
+      {(action || secondaryAction) && (
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+          {action}
+          {secondaryAction}
+        </div>
+      )}
+    </div>
   );
 }
 
-export function Badge({ children, className = "" }: { children: ReactNode; className?: string }) {
+/** Loading copy always says who is working and on what. */
+export function WorkingState({ title, detail }: { title: string; detail?: string }) {
   return (
-    <span
-      className={`inline-flex h-6 items-center rounded-full bg-surface-subtle px-2.5 text-[12px] font-semibold text-text-secondary ${className}`}
-    >
-      {children}
-    </span>
-  );
-}
-
-/* ==================================================================
-   LOADING / EMPTY / ERROR
-   Because this is an AI product, the waiting state has to say who is
-   working and on what — never "Loading…".
-   ================================================================== */
-
-/** The Symphony ring, rotating — used wherever a widget is still resolving. */
-export function RingLoader({ size = 62 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 300 300" className="sym-loader" aria-hidden>
-      <g fill="#DCDCDC">
-        <rect x="129" y="41" width="40" height="40" rx="7" />
-        <circle cx="208" cy="88" r="11.5" />
-        <circle cx="233" cy="148" r="16.5" />
-        <circle cx="211" cy="212" r="14.5" />
-        <rect x="133" y="222" width="36" height="36" rx="11" />
-        <rect x="71" y="192" width="38" height="38" rx="11" />
-        <rect x="39" y="130" width="36" height="36" rx="10" />
-        <rect x="66" y="66" width="40" height="40" rx="9" />
-      </g>
-    </svg>
-  );
-}
-
-/** Contextual working state: who is doing what, right now. */
-export function WorkingState({ agent, task }: { agent: string; task: string }) {
-  return (
-    <div className="flex items-center gap-3 text-[14px] text-text-tertiary" role="status">
-      <RingLoader size={26} />
-      <span>
-        <span className="font-semibold text-text-primary">{agent}</span> {task}
-        <TypingDots />
-      </span>
+    <div className="flex items-center gap-3" role="status">
+      <Spinner className="text-accent" size={16} />
+      <div>
+        <p className="text-[13px] font-medium">
+          {title}
+          <TypingDots />
+        </p>
+        {detail && <p className="mt-0.5 text-[12.5px] text-text-tertiary">{detail}</p>}
+      </div>
     </div>
   );
 }
 
 export function TypingDots() {
   return (
-    <span className="ml-1 inline-flex gap-[3px] align-baseline" aria-hidden>
+    <span className="ml-1 inline-flex gap-[3px] align-middle" aria-hidden>
       {[0, 1, 2].map((i) => (
         <span
           key={i}
           className="inline-block h-[3px] w-[3px] rounded-full bg-current"
-          style={{ animation: `sym-typing 1.3s ${i * 0.16}s infinite ease-in-out` }}
+          style={{ animation: `cg-typing 1.3s ${i * 0.15}s infinite ease-in-out` }}
         />
       ))}
     </span>
   );
 }
 
-export function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`rounded-lg bg-[#e6e6e6] ${className}`} />;
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cx("cg-skeleton rounded-md", className)} />;
 }
 
-/**
- * The product's own failure card. It says what happened, why, and what
- * happens next — never "Error".
- */
-export function DidntLoadCard({
-  reason = "Something went wrong on our side — it will retry on the next refresh.",
-  className = "",
+/** Errors state what happened, why, and the one thing that fixes it. */
+export function ErrorState({
+  title,
+  reason,
+  remedy,
+  action,
+  className,
 }: {
-  reason?: string;
+  title: string;
+  reason: string;
+  remedy?: string;
+  action?: ReactNode;
   className?: string;
 }) {
   return (
-    <div className={`flex flex-col justify-between rounded-2xl bg-[#e9e9e9] p-6 ${className}`} role="status">
-      <RingLoader />
-      <div className="mt-8">
-        <p className="text-[27px] leading-tight tracking-[-0.02em]">
-          <span className="type-display leading-[1.1]">This</span>{" "}
-          <span className="type-serif">didn&rsquo;t load</span>
-        </p>
-        <p className="mt-2 max-w-[34ch] text-[13px] leading-[1.45] text-text-tertiary">{reason}</p>
-      </div>
+    <div className={cx("rounded-xl border border-danger-line bg-danger-soft p-5", className)} role="alert">
+      <p className="text-[13.5px] font-semibold text-danger">{title}</p>
+      <p className="t-body-sm mt-1.5 text-text-secondary">{reason}</p>
+      {remedy && <p className="t-body-sm mt-1 text-text-secondary">{remedy}</p>}
+      {action && <div className="mt-3.5">{action}</div>}
     </div>
   );
 }
 
-/** Empty states explain what the area is, why it's empty, what's next. */
-export function EmptyState({
-  title,
-  body,
-  action,
+/* ============================================================================
+   TOOLTIP — icon-only controls and truncated text only.
+   ========================================================================== */
+
+export function Tooltip({
+  label,
+  side = "right",
+  children,
 }: {
-  title: string;
-  body: string;
-  action?: ReactNode;
+  label: string;
+  side?: "right" | "top" | "bottom";
+  children: ReactNode;
 }) {
+  const pos =
+    side === "right"
+      ? "left-[calc(100%+8px)] top-1/2 -translate-y-1/2"
+      : side === "top"
+        ? "bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2"
+        : "top-[calc(100%+8px)] left-1/2 -translate-x-1/2";
   return (
-    <div className="mx-auto max-w-[46ch] py-16 text-center">
-      <h2 className="type-display text-[24px] leading-[1.15]">{title}</h2>
-      <p className="mt-3 text-[13.5px] leading-[1.55] text-text-tertiary">{body}</p>
-      {action && <div className="mt-6 flex justify-center">{action}</div>}
-    </div>
-  );
-}
-
-/* ==================================================================
-   TOOLTIP — for icon-only controls and truncated text only.
-   ================================================================== */
-
-export function Tooltip({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <span className="group/tt relative inline-flex">
+    <span className="group/tip relative inline-flex">
       {children}
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1.5 text-[12px] font-medium text-white opacity-0 shadow-md transition-opacity duration-[120ms] group-hover/tt:opacity-100 group-focus-within/tt:opacity-100"
+        className={cx(
+          "pointer-events-none absolute z-50 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[11.5px] font-medium text-text-inverse",
+          "opacity-0 shadow-md transition-opacity duration-[var(--dur-micro)] group-hover/tip:opacity-100 group-focus-within/tip:opacity-100",
+          pos,
+        )}
       >
         {label}
       </span>

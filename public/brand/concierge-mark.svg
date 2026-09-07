@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Concierge">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#0B0B0C"/>
+  <path d="M 49.835 48.059 A 24.000 24.000 0 1 1 49.835 15.941 L 43.519 21.628 A 15.500 15.500 0 1 0 43.519 42.372 Z" fill="#FF7A00"/>
+  <path d="M 49.000 24.000 H 53.000 V 30.000 H 59.000 V 34.000 H 53.000 V 40.000 H 49.000 V 34.000 H 43.000 V 30.000 H 49.000 Z" fill="#FFB347"/>
+</svg>

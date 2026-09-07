@@ -1,48 +1,90 @@
 @import "tailwindcss";
 
-/* ============================================================
-   SYMPHONY DESIGN TOKENS
-   Sampled from product: brand #B9FD82, canvas #F3F3F3
-   ============================================================ */
+/* ============================================================================
+   CONCIERGE DESIGN SYSTEM
+   ----------------------------------------------------------------------------
+   Design discipline borrowed from the Symphony study: calm canvas, borders
+   before shadows, restrained colour, one primary action per surface, type
+   doing the work of hierarchy.
+
+   Identity is Concierge's own: warm paper neutrals (#FAFAF8) instead of cool
+   grey, near-black ink, and a single orange accent (#FF7A00) sampled from
+   poweredbyconcierge.com. Orange is a signal, never a decoration.
+   ========================================================================== */
+
 @theme {
-  /* Brand */
-  --color-brand: #b9fd82;
-  --color-brand-hover: #aaf76b;
-  --color-brand-pressed: #9bee59;
-  --color-brand-soft: #e9ffd8;
+  /* ---- Brand ------------------------------------------------------------ */
+  --color-accent: #ff7a00;
+  --color-accent-hover: #e06a00;
+  --color-accent-pressed: #c85a00;
+  --color-accent-light: #ffb347;
+  --color-accent-soft: #fff1e2;
+  --color-accent-subtle: #fff8f1;
+  --color-accent-line: #f5d9bd;
+  --color-accent-ink: #9f4700;
 
-  /* Ink — primary action colour in Symphony is black, not blue */
-  --color-ink: #000000;
-  --color-ink-hover: #1c1c1c;
-  --color-ink-pressed: #2e2e2e;
+  /* ---- Ink: the primary action colour ----------------------------------- */
+  --color-ink: #0a0a0a;
+  --color-ink-hover: #26251f;
+  --color-ink-pressed: #3a3933;
 
-  /* Text */
-  --color-text-primary: #000000;
-  --color-text-secondary: #4a4a4a;
-  --color-text-tertiary: #6b6b6b;
-  --color-text-muted: #8c8c8c;
-  --color-text-disabled: #b5b5b5;
+  /* ---- Text ------------------------------------------------------------- */
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #5e5d59;
+  --color-text-tertiary: #6b6a66;
+  --color-text-muted: #8f8d87;
+  --color-text-disabled: #b0aea8;
+  --color-text-inverse: #fafaf8;
 
-  /* Surfaces */
-  --color-canvas: #f3f3f3;
+  /* ---- Surfaces: warm paper, not cool grey ------------------------------ */
+  --color-canvas: #fafaf8;
   --color-surface: #ffffff;
-  --color-surface-subtle: #f3f3f3;
-  --color-surface-hover: #e9e8e8;
-  --color-surface-sunken: #eaeaea;
+  --color-surface-subtle: #f5f5f1;
+  --color-surface-hover: #f1f1ec;
+  --color-surface-sunken: #ecece6;
+  --color-surface-inverse: #0a0a0a;
 
-  /* Lines */
-  --color-line: #e5e5e5;
-  --color-line-strong: #d4d4d4;
-  --color-divider: #ececec;
+  /* ---- Lines ------------------------------------------------------------ */
+  --color-line: #e8e8e3;
+  --color-line-strong: #d4d4ce;
+  --color-line-hover: #bdbcb6;
+  --color-divider: #efefea;
 
-  /* Semantic */
-  --color-success: #1a8f5e;
-  --color-warning: #faad4d;
-  --color-danger: #d0402f;
-  --color-danger-soft: #fbeae6;
-  --color-notify: #ff7043;
+  /* ---- Semantic --------------------------------------------------------- */
+  --color-success: #1c7a4e;
+  --color-success-soft: #e8f4ec;
+  --color-success-line: #c2e0cd;
 
-  /* Radius */
+  --color-warning: #a86a12;
+  --color-warning-soft: #fdf2e1;
+  --color-warning-line: #edd6ad;
+
+  --color-danger: #b42318;
+  --color-danger-soft: #fdeceb;
+  --color-danger-line: #f0c4c0;
+
+  --color-info: #2c5aa0;
+  --color-info-soft: #eaf0fa;
+  --color-info-line: #c5d5ee;
+
+  /* ---- Knowledge status: Site Brain's own vocabulary -------------------- */
+  --color-approved: #1c7a4e;
+  --color-approved-soft: #e8f4ec;
+  --color-review: #a86a12;
+  --color-review-soft: #fdf2e1;
+  --color-restricted: #b42318;
+  --color-restricted-soft: #fdeceb;
+  --color-suggested: #6b6a66;
+  --color-suggested-soft: #f1f1ec;
+  --color-missing: #8f8d87;
+  --color-missing-soft: #f5f5f1;
+
+  /* ---- Type ------------------------------------------------------------- */
+  --font-sans: var(--font-inter-tight), "Inter Tight", system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Newsreader, Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  /* ---- Radius ----------------------------------------------------------- */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -52,29 +94,29 @@
   --radius-3xl: 20px;
   --radius-4xl: 24px;
 
-  /* Shadows — border-first, shadow-second */
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 4%);
-  --shadow-sm: 0 2px 6px rgb(0 0 0 / 6%);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 8%);
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 10%);
-  --shadow-xl: 0 16px 40px rgb(0 0 0 / 12%);
-  --shadow-panel: 0 2px 24px rgb(0 0 0 / 8%);
+  /* ---- Elevation: used sparingly, borders do most of the work ----------- */
+  --shadow-xs: 0 1px 2px rgb(10 10 10 / 4%);
+  --shadow-sm: 0 1px 3px rgb(10 10 10 / 5%), 0 1px 2px rgb(10 10 10 / 3%);
+  --shadow-md: 0 4px 12px rgb(10 10 10 / 7%);
+  --shadow-lg: 0 8px 24px rgb(10 10 10 / 9%);
+  --shadow-xl: 0 20px 48px rgb(10 10 10 / 12%);
 
-  /* Type */
-  --font-display: var(--font-madefor-display), "Wix Madefor Display", system-ui, sans-serif;
-  --font-sans: var(--font-madefor-text), "Wix Madefor Text", system-ui, sans-serif;
-  --font-serif: var(--font-serif-accent), Georgia, "Times New Roman", serif;
-
-  /* Motion */
-  --ease-out-symphony: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* ---- Motion ----------------------------------------------------------- */
+  --ease-out-cg: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out-cg: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
+/* ---- Layout constants ---------------------------------------------------- */
 :root {
-  --sidebar-width: 260px;
-  --rail-width: 60px;
-  --shell-header: 68px;
-  --content-max: 1010px;
-  --chat-dock: 400px;
+  --sidebar-w: 248px;
+  --sidebar-rail-w: 64px;
+  --topbar-h: 56px;
+  --content-max: 1120px;
+  --content-max-wide: 1360px;
+
+  --dur-micro: 120ms;
+  --dur-base: 180ms;
+  --dur-large: 260ms;
 }
 
 * {
@@ -91,103 +133,206 @@ body {
   background: var(--color-canvas);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
+  letter-spacing: -0.006em;
   overscroll-behavior: none;
 }
 
-/* Focus: visible, never colour-only */
+/* ============================================================================
+   TYPE SCALE
+   Inter Tight runs tight and confident; display sizes get negative tracking,
+   small UI text gets none so it stays legible at 12–13px.
+   ========================================================================== */
+@layer components {
+  .t-display {
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.032em;
+  }
+  .t-page {
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -0.026em;
+  }
+  .t-section {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.018em;
+  }
+  .t-card {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.011em;
+  }
+  .t-body {
+    font-size: 14px;
+    line-height: 1.55;
+    letter-spacing: -0.006em;
+  }
+  .t-body-sm {
+    font-size: 13px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+  }
+  .t-meta {
+    font-size: 12.5px;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+  /* Eyebrow: the small tracked-out label above every page title. */
+  .t-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .t-num {
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-serif {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.012em;
+  }
+  .t-mono {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ---- Focus: always visible, never colour-only ---------------------------- */
 :focus-visible {
-  outline: 2px solid #0c6efc;
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* Quiet scrollbars — the workspace should stay calm */
-.sym-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #d4d4d4 transparent;
-}
-.sym-scroll::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.sym-scroll::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 999px;
-}
-.sym-scroll::-webkit-scrollbar-thumb:hover {
-  background: #c2c2c2;
-}
-.sym-scroll::-webkit-scrollbar-track {
-  background: transparent;
+/* Form controls carry their own focus treatment (border + soft ring), so the
+   global outline would double up on them. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
 }
 
-.sym-no-scrollbar::-webkit-scrollbar {
+/* ---- Quiet scrollbars ---------------------------------------------------- */
+.cg-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4ce transparent;
+}
+.cg-scroll::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+.cg-scroll::-webkit-scrollbar-thumb {
+  background: #dcdcd6;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.cg-scroll::-webkit-scrollbar-thumb:hover {
+  background: #c4c3bd;
+  background-clip: padding-box;
+}
+.cg-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cg-no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.sym-no-scrollbar {
+.cg-no-scrollbar {
   scrollbar-width: none;
 }
 
-/* Display type — Madefor Display runs tight and confident.
-   Declared in the components layer so leading/tracking utilities win. */
-@layer components {
-.type-display {
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.03em;
+/* ============================================================================
+   MOTION — communicates state, progress and relationship. Never decoration.
+   ========================================================================== */
+@keyframes cg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cg-enter {
+  animation: cg-fade-up var(--dur-large) var(--ease-out-cg) both;
 }
 
-.type-serif {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+@keyframes cg-shimmer {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
-}
-
-/* Skeleton shimmer — subtle, low contrast, non-distracting */
-@keyframes sym-shimmer {
-  0% { opacity: 0.45; }
-  50% { opacity: 1; }
-  100% { opacity: 0.45; }
-}
-.sym-shimmer > * {
-  animation: sym-shimmer 1.6s ease-in-out infinite;
-}
-
-@keyframes sym-spin-dots {
-  to { transform: rotate(360deg); }
-}
-.sym-loader {
-  animation: sym-spin-dots 2.4s linear infinite;
+.cg-skeleton {
+  background: var(--color-surface-sunken);
+  animation: cg-shimmer 1.7s ease-in-out infinite;
 }
 
-@keyframes sym-pulse-ring {
-  0% { transform: scale(0.85); opacity: 0.7; }
-  70% { transform: scale(1.6); opacity: 0; }
-  100% { transform: scale(1.6); opacity: 0; }
+/* A crawl in progress: the sweep reads as "reading your site". */
+@keyframes cg-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
 }
-.sym-pulse::after {
+.cg-sweep::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 999px;
-  background: currentColor;
-  animation: sym-pulse-ring 2s var(--ease-out-symphony) infinite;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 122 0 / 18%),
+    transparent
+  );
+  animation: cg-sweep 1.6s var(--ease-in-out-cg) infinite;
 }
 
-@keyframes sym-fade-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
+@keyframes cg-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
-.sym-enter {
-  animation: sym-fade-up 240ms var(--ease-out-symphony) both;
+.cg-live-dot {
+  animation: cg-pulse 2s var(--ease-in-out-cg) infinite;
 }
 
-@keyframes sym-typing {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
-  30% { transform: translateY(-3px); opacity: 1; }
+@keyframes cg-typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

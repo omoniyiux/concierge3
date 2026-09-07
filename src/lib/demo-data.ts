@@ -1,0 +1,961 @@
+/* ============================================================================
+   DEMO FIXTURES
+   ----------------------------------------------------------------------------
+   Clearly-marked development data so the workspace looks alive while the UI is
+   being built. Nothing here is a production claim. Every surface reads these
+   through the same shapes a real API will return, so swapping the source is a
+   data-layer change, not a component rewrite.
+   ========================================================================== */
+
+import type {
+  ActionDef,
+  ActivityEvent,
+  AgentConfig,
+  ConciergePage,
+  Conversation,
+  Destination,
+  DeliveryRecord,
+  Integration,
+  IntentBreakdown,
+  KnowledgeItem,
+  Lead,
+  Metric,
+  Organization,
+  RoutingRule,
+  Site,
+  SiteBrain,
+  TeamMember,
+  UnansweredQuestion,
+} from "./types";
+
+export const IS_DEMO_DATA = true;
+
+/* ---- Organization -------------------------------------------------------- */
+
+export const ORG: Organization = {
+  id: "org_1",
+  name: "Collab Auto",
+  slug: "collab-auto",
+  plan: "growth",
+  isAgency: false,
+  seatsUsed: 3,
+  seatsIncluded: 5,
+  siteLimit: 5,
+};
+
+export const SITES: Site[] = [
+  {
+    id: "site_northlane",
+    orgId: "org_1",
+    name: "Northlane Dental",
+    url: "northlanedental.com",
+    product: "agent",
+    status: "live",
+    installState: "detected",
+    accentColor: "#FF7A00",
+    createdAt: "2026-07-02T09:00:00Z",
+    updatedAt: "2026-09-07T06:40:00Z",
+    launchProgress: 100,
+  },
+  {
+    id: "site_minishop",
+    orgId: "org_1",
+    name: "Mini Shop",
+    url: "mini-shop.testamplify.com",
+    product: "agent",
+    status: "review",
+    installState: "detected",
+    accentColor: "#FF7A00",
+    createdAt: "2026-08-19T11:20:00Z",
+    updatedAt: "2026-09-06T18:05:00Z",
+    launchProgress: 67,
+  },
+  {
+    id: "site_atlasmoving",
+    orgId: "org_1",
+    name: "Atlas Moving Co.",
+    url: "atlasmoving.concierge.site",
+    product: "pages",
+    status: "learning",
+    installState: "not-installed",
+    accentColor: "#FF7A00",
+    createdAt: "2026-09-05T15:00:00Z",
+    updatedAt: "2026-09-07T07:55:00Z",
+    launchProgress: 34,
+  },
+];
+
+export const DEFAULT_SITE_ID = "site_northlane";
+
+export function getSite(siteId: string): Site {
+  return SITES.find((s) => s.id === siteId) ?? SITES[0];
+}
+
+/* ---- Site Brain ---------------------------------------------------------- */
+
+export const BRAIN: SiteBrain = {
+  siteId: "site_northlane",
+  ready: true,
+  itemCount: 42,
+  approvedCount: 38,
+  needsReviewCount: 3,
+  missingCount: 1,
+  coverage: 86,
+  lastLearnedAt: "2026-09-06T22:14:00Z",
+};
+
+const src = (label: string, url?: string) => ({
+  id: `src_${label.replace(/\W+/g, "_").toLowerCase()}`,
+  kind: (url ? "crawl" : "manual") as "crawl" | "manual",
+  label,
+  url,
+  fetchedAt: "2026-09-06T22:10:00Z",
+});
+
+export const KNOWLEDGE: KnowledgeItem[] = [
+  {
+    id: "k_business",
+    siteId: "site_northlane",
+    category: "business",
+    title: "Business summary",
+    body:
+      "Northlane Dental is a family and cosmetic dental practice in Austin, Texas, open since 2011. Three dentists and two hygienists see patients across general dentistry, cosmetic work and emergency appointments. Same-day emergency slots are held every weekday morning.",
+    status: "approved",
+    confidence: 0.94,
+    required: true,
+    sources: [src("About page", "/about"), src("Homepage", "/")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_customer",
+    siteId: "site_northlane",
+    category: "business",
+    title: "Ideal customer",
+    body:
+      "Families within 15 miles of North Austin, and adults 25–55 researching cosmetic treatments such as veneers, whitening and Invisalign. A meaningful share arrive through emergency searches and convert to ongoing patients.",
+    status: "approved",
+    confidence: 0.88,
+    required: true,
+    sources: [src("Services page", "/services"), src("Owner interview")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_next_step",
+    siteId: "site_northlane",
+    category: "services",
+    title: "Recommended next step",
+    body:
+      "For new patients, recommend the New Patient Exam ($89, includes X-rays and cleaning). For cosmetic enquiries, recommend a free 15-minute consultation before quoting any price.",
+    status: "approved",
+    confidence: 0.91,
+    required: true,
+    sources: [src("Pricing page", "/pricing")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_goals",
+    siteId: "site_northlane",
+    category: "business",
+    title: "Priority conversion goals",
+    body:
+      "1. Book a new patient exam. 2. Capture emergency callers with a phone handoff. 3. Collect consultation requests for Invisalign and veneers.",
+    status: "approved",
+    confidence: 0.9,
+    required: true,
+    sources: [src("Owner interview")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_escalation",
+    siteId: "site_northlane",
+    category: "rules",
+    title: "Human escalation rules",
+    body:
+      "Hand off to a person immediately when a visitor reports pain, swelling, bleeding or a knocked-out tooth; when they ask about an existing treatment plan; or when they ask about insurance claims already filed.",
+    status: "approved",
+    confidence: 0.96,
+    required: true,
+    sources: [src("Owner interview")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_never",
+    siteId: "site_northlane",
+    category: "restrictions",
+    title: "Things Concierge should never promise",
+    body:
+      "Never diagnose a condition. Never quote a final treatment price without a consultation. Never confirm insurance coverage. Never promise an appointment time that has not been checked against the calendar.",
+    status: "approved",
+    confidence: 0.97,
+    required: true,
+    sources: [src("Owner interview")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_tone",
+    siteId: "site_northlane",
+    category: "voice",
+    title: "Brand tone",
+    body:
+      "Calm, plain-spoken and reassuring. Short sentences. No dental jargon unless the visitor uses it first. Never alarming, never salesy.",
+    status: "approved",
+    confidence: 0.85,
+    required: true,
+    sources: [src("Homepage", "/"), src("Blog", "/blog")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_hours",
+    siteId: "site_northlane",
+    category: "policies",
+    title: "Opening hours",
+    body:
+      "Monday to Thursday 8:00–17:00, Friday 8:00–14:00. Closed weekends. Emergency line answered until 20:00 on weekdays.",
+    status: "needs-review",
+    confidence: 0.62,
+    required: false,
+    sources: [src("Contact page", "/contact")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_pricing",
+    siteId: "site_northlane",
+    category: "pricing",
+    title: "Treatment pricing",
+    body:
+      "New Patient Exam $89. Standard cleaning $120. Whitening from $349. Invisalign from $3,900. Veneers quoted after consultation.",
+    status: "needs-review",
+    confidence: 0.58,
+    required: false,
+    sources: [src("Pricing page", "/pricing")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_insurance",
+    siteId: "site_northlane",
+    category: "policies",
+    title: "Insurance and payment",
+    body:
+      "The practice accepts most PPO plans and offers in-house financing. Specific coverage is confirmed by the front desk, never by Concierge.",
+    status: "needs-review",
+    confidence: 0.54,
+    required: false,
+    sources: [src("FAQ page", "/faq")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_parking",
+    siteId: "site_northlane",
+    category: "faqs",
+    title: "Parking and access",
+    body: "",
+    status: "missing",
+    confidence: 0,
+    required: false,
+    sources: [],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_emergency",
+    siteId: "site_northlane",
+    category: "faqs",
+    title: "Emergency appointments",
+    body:
+      "Same-day emergency slots are held 8:00–10:00 each weekday. Visitors reporting pain should be routed to the practice phone line rather than booked online.",
+    status: "approved",
+    confidence: 0.89,
+    required: false,
+    sources: [src("Emergency page", "/emergency")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_invisalign",
+    siteId: "site_northlane",
+    category: "services",
+    title: "Invisalign programme",
+    body:
+      "12–18 month typical treatment, monthly check-ins, financing available from $149/month. Free consultation includes a 3D scan.",
+    status: "approved",
+    confidence: 0.87,
+    required: false,
+    sources: [src("Invisalign page", "/invisalign")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_competitor",
+    siteId: "site_northlane",
+    category: "restrictions",
+    title: "Competitor comparisons",
+    body: "Concierge must not compare the practice to named local competitors or comment on their pricing.",
+    status: "restricted",
+    confidence: 1,
+    required: false,
+    sources: [src("Owner interview")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+  {
+    id: "k_newpatient_form",
+    siteId: "site_northlane",
+    category: "policies",
+    title: "New patient paperwork",
+    body: "New patients complete a medical history form online before the first visit. The link is sent by email after booking.",
+    status: "suggested",
+    confidence: 0.71,
+    required: false,
+    sources: [src("Booking confirmation email")],
+    updatedAt: "2026-09-06T22:12:00Z",
+  },
+];
+
+/* ---- Agent --------------------------------------------------------------- */
+
+export const AGENT: AgentConfig = {
+  siteId: "site_northlane",
+  name: "Northlane Concierge",
+  mode: "receptionist",
+  greeting: "Hi — I can help with appointments, treatments and pricing at Northlane Dental. What brings you in?",
+  role: "Front-desk assistant for a family and cosmetic dental practice.",
+  tone: "warm",
+  rules: [
+    "Answer only from approved Site Brain knowledge.",
+    "Offer the New Patient Exam when a visitor has not been seen before.",
+    "Ask for a preferred day and time before creating a booking request.",
+  ],
+  neverPromise: [
+    "Never diagnose a condition or symptom.",
+    "Never quote a final treatment price without a consultation.",
+    "Never confirm insurance coverage.",
+  ],
+  escalationTriggers: [
+    "Visitor reports pain, swelling or bleeding",
+    "Visitor asks about an existing treatment plan",
+    "Visitor asks to speak to a person",
+  ],
+  quickActions: ["act_booking", "act_call", "act_quote"],
+  confidence: 0.86,
+  voiceEnabled: false,
+};
+
+/* ---- Conversations ------------------------------------------------------- */
+
+export const CONVERSATIONS: Conversation[] = [
+  {
+    id: "c_1",
+    siteId: "site_northlane",
+    visitorName: "Maya Robinson",
+    visitorLocation: "Austin, TX",
+    intent: "booking",
+    status: "qualified",
+    pageUrl: "/invisalign",
+    startedAt: "2026-09-07T07:42:00Z",
+    lastMessageAt: "2026-09-07T07:51:00Z",
+    messageCount: 8,
+    preview: "Do you do payment plans for Invisalign?",
+    leadId: "l_1",
+    routedTo: "Front desk · Email",
+    actionsTaken: ["act_booking"],
+    messages: [
+      { id: "m1", author: "visitor", body: "Hi, do you do payment plans for Invisalign?", at: "2026-09-07T07:42:00Z" },
+      {
+        id: "m2",
+        author: "agent",
+        body:
+          "We do. Invisalign starts at $3,900 and financing is available from $149 a month. The free consultation includes a 3D scan, so you would get an exact figure before committing to anything.",
+        at: "2026-09-07T07:43:00Z",
+        confidence: 0.91,
+        citations: [
+          { itemId: "k_invisalign", title: "Invisalign programme" },
+          { itemId: "k_pricing", title: "Treatment pricing" },
+        ],
+      },
+      { id: "m3", author: "visitor", body: "That's helpful. How soon could I come in?", at: "2026-09-07T07:46:00Z" },
+      {
+        id: "m4",
+        author: "agent",
+        body: "Consultations run Monday to Thursday. Would a morning or an afternoon suit you better?",
+        at: "2026-09-07T07:46:30Z",
+        confidence: 0.88,
+        citations: [{ itemId: "k_hours", title: "Opening hours" }],
+      },
+      { id: "m5", author: "visitor", body: "Mornings. Thursday if you have it.", at: "2026-09-07T07:48:00Z" },
+      {
+        id: "m6",
+        author: "agent",
+        body: "I have put in a consultation request for Thursday morning and passed it to the front desk. Could I take a number to confirm on?",
+        at: "2026-09-07T07:49:00Z",
+        confidence: 0.93,
+        actionRef: "act_booking",
+      },
+      { id: "m7", author: "visitor", body: "512-555-0142", at: "2026-09-07T07:50:00Z" },
+      {
+        id: "m8",
+        author: "system",
+        body: "Booking request sent to Front desk · Email. Lead captured with a score of 92.",
+        at: "2026-09-07T07:51:00Z",
+      },
+    ],
+  },
+  {
+    id: "c_2",
+    siteId: "site_northlane",
+    visitorName: "Website visitor",
+    visitorLocation: "Round Rock, TX",
+    intent: "human",
+    status: "handed-off",
+    pageUrl: "/emergency",
+    startedAt: "2026-09-07T06:12:00Z",
+    lastMessageAt: "2026-09-07T06:15:00Z",
+    messageCount: 4,
+    preview: "I chipped a tooth last night and it really hurts",
+    routedTo: "Emergency line · SMS",
+    actionsTaken: ["act_call"],
+    messages: [
+      { id: "m1", author: "visitor", body: "I chipped a tooth last night and it really hurts", at: "2026-09-07T06:12:00Z" },
+      {
+        id: "m2",
+        author: "agent",
+        body:
+          "That sounds painful — I am not able to advise on symptoms, so let me get you to the practice directly. We hold same-day emergency slots between 8 and 10 each weekday.",
+        at: "2026-09-07T06:13:00Z",
+        confidence: 0.95,
+        citations: [{ itemId: "k_escalation", title: "Human escalation rules" }],
+      },
+      { id: "m3", author: "visitor", body: "Yes please, can someone call me? 512-555-0198", at: "2026-09-07T06:14:00Z" },
+      { id: "m4", author: "system", body: "Call request routed to Emergency line · SMS in 4 seconds.", at: "2026-09-07T06:15:00Z" },
+    ],
+  },
+  {
+    id: "c_3",
+    siteId: "site_northlane",
+    visitorName: "Daniel Osei",
+    visitorLocation: "Austin, TX",
+    intent: "pricing",
+    status: "active",
+    pageUrl: "/pricing",
+    startedAt: "2026-09-07T08:02:00Z",
+    lastMessageAt: "2026-09-07T08:05:00Z",
+    messageCount: 3,
+    preview: "Is the whitening price per session or the full course?",
+    actionsTaken: [],
+    unanswered: "Is teeth whitening covered under a dental plan?",
+    messages: [
+      { id: "m1", author: "visitor", body: "Is the whitening price per session or the full course?", at: "2026-09-07T08:02:00Z" },
+      {
+        id: "m2",
+        author: "agent",
+        body: "Whitening starts at $349 for the full in-practice course. I can put you in touch with the front desk if you would like it confirmed for your case.",
+        at: "2026-09-07T08:03:00Z",
+        confidence: 0.74,
+        citations: [{ itemId: "k_pricing", title: "Treatment pricing" }],
+      },
+      { id: "m3", author: "visitor", body: "Is teeth whitening covered under a dental plan?", at: "2026-09-07T08:05:00Z" },
+    ],
+  },
+  {
+    id: "c_4",
+    siteId: "site_northlane",
+    visitorName: "Priya Raman",
+    visitorLocation: "Cedar Park, TX",
+    intent: "quote",
+    status: "converted",
+    pageUrl: "/veneers",
+    startedAt: "2026-09-06T14:20:00Z",
+    lastMessageAt: "2026-09-06T14:34:00Z",
+    messageCount: 11,
+    preview: "Looking at veneers for my top six teeth",
+    leadId: "l_2",
+    routedTo: "Cosmetic team · Slack",
+    actionsTaken: ["act_quote", "act_booking"],
+    messages: [
+      { id: "m1", author: "visitor", body: "Looking at veneers for my top six teeth", at: "2026-09-06T14:20:00Z" },
+      {
+        id: "m2",
+        author: "agent",
+        body: "Veneers are quoted after a consultation so the dentist can see what you are starting from. The consultation is free and takes about 15 minutes. Shall I request one?",
+        at: "2026-09-06T14:21:00Z",
+        confidence: 0.92,
+        citations: [{ itemId: "k_next_step", title: "Recommended next step" }],
+      },
+      { id: "m3", author: "visitor", body: "Yes please", at: "2026-09-06T14:23:00Z" },
+      { id: "m4", author: "system", body: "Quote request created and routed to Cosmetic team · Slack.", at: "2026-09-06T14:34:00Z" },
+    ],
+  },
+  {
+    id: "c_5",
+    siteId: "site_northlane",
+    visitorName: "Website visitor",
+    intent: "hours",
+    status: "closed",
+    pageUrl: "/contact",
+    startedAt: "2026-09-06T11:05:00Z",
+    lastMessageAt: "2026-09-06T11:06:00Z",
+    messageCount: 2,
+    preview: "Are you open on Saturdays?",
+    actionsTaken: [],
+    messages: [
+      { id: "m1", author: "visitor", body: "Are you open on Saturdays?", at: "2026-09-06T11:05:00Z" },
+      {
+        id: "m2",
+        author: "agent",
+        body: "We are open Monday to Thursday 8:00–17:00 and Friday 8:00–14:00. Weekends are closed, though the emergency line is answered until 20:00 on weekdays.",
+        at: "2026-09-06T11:06:00Z",
+        confidence: 0.83,
+        citations: [{ itemId: "k_hours", title: "Opening hours" }],
+      },
+    ],
+  },
+  {
+    id: "c_6",
+    siteId: "site_northlane",
+    visitorName: "Website visitor",
+    visitorLocation: "Austin, TX",
+    intent: "product",
+    status: "new",
+    pageUrl: "/services",
+    startedAt: "2026-09-07T08:20:00Z",
+    lastMessageAt: "2026-09-07T08:20:00Z",
+    messageCount: 1,
+    preview: "Do you treat children?",
+    actionsTaken: [],
+    unanswered: "Do you treat children under 5?",
+    messages: [{ id: "m1", author: "visitor", body: "Do you treat children under 5?", at: "2026-09-07T08:20:00Z" }],
+  },
+];
+
+/* ---- Leads --------------------------------------------------------------- */
+
+export const LEADS: Lead[] = [
+  {
+    id: "l_1",
+    siteId: "site_northlane",
+    name: "Maya Robinson",
+    email: "maya.robinson@gmail.com",
+    phone: "+1 512 555 0142",
+    intent: "booking",
+    service: "Invisalign consultation",
+    budget: "$3,900–5,000",
+    location: "Austin, TX",
+    urgency: "this-week",
+    qualification: "hot",
+    score: 92,
+    conversationId: "c_1",
+    capturedAt: "2026-09-07T07:51:00Z",
+    routedTo: "Front desk · Email",
+    notes: "Asked specifically about financing. Prefers Thursday mornings.",
+  },
+  {
+    id: "l_2",
+    siteId: "site_northlane",
+    name: "Priya Raman",
+    email: "p.raman@outlook.com",
+    intent: "quote",
+    service: "Veneers — upper six",
+    budget: "Not stated",
+    location: "Cedar Park, TX",
+    urgency: "this-month",
+    qualification: "hot",
+    score: 88,
+    conversationId: "c_4",
+    capturedAt: "2026-09-06T14:34:00Z",
+    routedTo: "Cosmetic team · Slack",
+  },
+  {
+    id: "l_3",
+    siteId: "site_northlane",
+    name: "Tomas Alvarez",
+    phone: "+1 512 555 0198",
+    intent: "human",
+    service: "Emergency — chipped tooth",
+    location: "Round Rock, TX",
+    urgency: "immediate",
+    qualification: "hot",
+    score: 95,
+    conversationId: "c_2",
+    capturedAt: "2026-09-07T06:15:00Z",
+    routedTo: "Emergency line · SMS",
+  },
+  {
+    id: "l_4",
+    siteId: "site_northlane",
+    name: "Grace Whitfield",
+    email: "gwhitfield@fastmail.com",
+    intent: "pricing",
+    service: "Whitening",
+    location: "Austin, TX",
+    urgency: "exploring",
+    qualification: "warm",
+    score: 61,
+    conversationId: "c_3",
+    capturedAt: "2026-09-07T08:05:00Z",
+  },
+  {
+    id: "l_5",
+    siteId: "site_northlane",
+    name: "Website visitor",
+    intent: "product",
+    service: "General enquiry",
+    urgency: "exploring",
+    qualification: "cool",
+    score: 34,
+    conversationId: "c_6",
+    capturedAt: "2026-09-07T08:20:00Z",
+  },
+];
+
+/* ---- Actions ------------------------------------------------------------- */
+
+export const ACTIONS: ActionDef[] = [
+  {
+    id: "act_booking",
+    siteId: "site_northlane",
+    kind: "booking",
+    name: "Book an appointment",
+    description: "Lets a visitor ask for a time. Concierge collects the details and sends a booking request to your team.",
+    provider: "Calendly",
+    readiness: "ready",
+    triggers: ["booking", "hours"],
+    collects: [
+      { key: "name", label: "Full name", required: true, type: "text" },
+      { key: "phone", label: "Phone number", required: true, type: "phone" },
+      { key: "preferred", label: "Preferred day", required: true, type: "date" },
+      { key: "reason", label: "Reason for visit", required: false, type: "text" },
+    ],
+    outcome: "A booking request lands with the front desk and the visitor gets a confirmation message.",
+    placements: ["agent", "website"],
+    completions30d: 34,
+  },
+  {
+    id: "act_quote",
+    siteId: "site_northlane",
+    kind: "quote",
+    name: "Request a quote",
+    description: "For treatments that need a consultation before a price. Captures scope and routes to the right team.",
+    readiness: "ready",
+    triggers: ["quote", "pricing"],
+    collects: [
+      { key: "name", label: "Full name", required: true, type: "text" },
+      { key: "email", label: "Email", required: true, type: "email" },
+      { key: "treatment", label: "Treatment of interest", required: true, type: "select" },
+    ],
+    outcome: "A quote request is routed to the cosmetic team with the conversation attached.",
+    placements: ["agent", "pages"],
+    completions30d: 18,
+  },
+  {
+    id: "act_call",
+    siteId: "site_northlane",
+    kind: "call",
+    name: "Request a call",
+    description: "The fastest handoff. Concierge takes a number and page context, then alerts your team.",
+    readiness: "ready",
+    triggers: ["human", "support"],
+    collects: [
+      { key: "phone", label: "Phone number", required: true, type: "phone" },
+      { key: "window", label: "Best time to call", required: false, type: "select" },
+    ],
+    outcome: "Your team gets the number, the page the visitor was on, and the full transcript.",
+    placements: ["agent", "website", "routing"],
+    completions30d: 27,
+  },
+  {
+    id: "act_lead",
+    siteId: "site_northlane",
+    kind: "lead-capture",
+    name: "Capture contact details",
+    description: "A light-touch fallback when a visitor is not ready to book but is worth following up.",
+    readiness: "ready",
+    triggers: ["product", "unknown"],
+    collects: [
+      { key: "name", label: "Name", required: false, type: "text" },
+      { key: "email", label: "Email", required: true, type: "email" },
+    ],
+    outcome: "The contact is added to Leads and routed by your rules.",
+    placements: ["agent"],
+    completions30d: 41,
+  },
+  {
+    id: "act_payment",
+    siteId: "site_northlane",
+    kind: "payment",
+    name: "Take a payment",
+    description: "Send a visitor into a connected checkout for deposits or booking fees.",
+    provider: "Stripe",
+    readiness: "needs-connection",
+    triggers: ["booking"],
+    collects: [{ key: "amount", label: "Amount", required: true, type: "number" }],
+    outcome: "The visitor completes checkout and the payment is recorded against the conversation.",
+    placements: [],
+    completions30d: 0,
+  },
+  {
+    id: "act_offer",
+    siteId: "site_northlane",
+    kind: "offer",
+    name: "Show an offer",
+    description: "Surface an approved promotion at the right moment in a conversation.",
+    readiness: "needs-setup",
+    triggers: ["pricing"],
+    collects: [],
+    outcome: "The visitor sees the offer and can claim it without leaving the conversation.",
+    placements: [],
+    completions30d: 0,
+  },
+  {
+    id: "act_consult",
+    siteId: "site_northlane",
+    kind: "consultation",
+    name: "Book a free consultation",
+    description: "The 15-minute cosmetic consultation, offered before any price is quoted.",
+    readiness: "ready",
+    triggers: ["quote"],
+    collects: [
+      { key: "name", label: "Full name", required: true, type: "text" },
+      { key: "email", label: "Email", required: true, type: "email" },
+      { key: "preferred", label: "Preferred day", required: true, type: "date" },
+    ],
+    outcome: "A consultation request is created and the cosmetic team is notified.",
+    placements: ["agent", "pages"],
+    completions30d: 12,
+  },
+  {
+    id: "act_video",
+    siteId: "site_northlane",
+    kind: "video",
+    name: "Start a video call",
+    description: "For remote consultations. Sends the visitor a room link once your team accepts.",
+    readiness: "disabled",
+    triggers: ["human"],
+    collects: [],
+    outcome: "A video room opens for the visitor and the assigned team member.",
+    placements: [],
+    completions30d: 0,
+  },
+];
+
+/* ---- Routing ------------------------------------------------------------- */
+
+export const DESTINATIONS: Destination[] = [
+  {
+    id: "d_email",
+    siteId: "site_northlane",
+    kind: "email",
+    name: "Front desk",
+    target: "frontdesk@northlanedental.com",
+    status: "connected",
+    moments: ["specialist-requested", "high-intent", "call-requested"],
+    lastDeliveryAt: "2026-09-07T07:51:00Z",
+    lastTestedAt: "2026-09-05T10:00:00Z",
+  },
+  {
+    id: "d_slack",
+    siteId: "site_northlane",
+    kind: "slack",
+    name: "Cosmetic team",
+    target: "#cosmetic-leads",
+    status: "connected",
+    moments: ["high-intent"],
+    lastDeliveryAt: "2026-09-06T14:34:00Z",
+    lastTestedAt: "2026-09-04T16:20:00Z",
+  },
+  {
+    id: "d_sms",
+    siteId: "site_northlane",
+    kind: "sms",
+    name: "Emergency line",
+    target: "+1 512 555 0100",
+    status: "connected",
+    moments: ["call-requested"],
+    lastDeliveryAt: "2026-09-07T06:15:00Z",
+    lastTestedAt: "2026-09-06T09:00:00Z",
+  },
+  {
+    id: "d_webhook",
+    siteId: "site_northlane",
+    kind: "webhook",
+    name: "Practice CRM",
+    target: "https://crm.northlanedental.com/hooks/concierge",
+    status: "failing",
+    moments: ["conversation-started", "high-intent"],
+    lastDeliveryAt: "2026-09-07T05:02:00Z",
+    lastTestedAt: "2026-09-01T12:00:00Z",
+  },
+];
+
+export const ROUTING_RULES: RoutingRule[] = [
+  {
+    id: "r_1",
+    siteId: "site_northlane",
+    name: "Emergencies go straight to the phone line",
+    enabled: true,
+    conditions: [{ field: "intent", operator: "is", value: "human" }],
+    destinationId: "d_sms",
+    priority: 1,
+    matches30d: 27,
+  },
+  {
+    id: "r_2",
+    siteId: "site_northlane",
+    name: "Cosmetic enquiries to the cosmetic team",
+    enabled: true,
+    conditions: [
+      { field: "intent", operator: "is", value: "quote" },
+      { field: "service", operator: "contains", value: "veneers" },
+    ],
+    destinationId: "d_slack",
+    priority: 2,
+    matches30d: 18,
+  },
+  {
+    id: "r_3",
+    siteId: "site_northlane",
+    name: "High-value leads to the front desk",
+    enabled: true,
+    conditions: [{ field: "lead-value", operator: "greater-than", value: "3000" }],
+    destinationId: "d_email",
+    priority: 3,
+    matches30d: 31,
+  },
+  {
+    id: "r_4",
+    siteId: "site_northlane",
+    name: "Everything else to the front desk",
+    enabled: true,
+    conditions: [{ field: "intent", operator: "is-not", value: "unknown" }],
+    destinationId: "d_email",
+    priority: 4,
+    matches30d: 64,
+  },
+];
+
+export const DELIVERIES: DeliveryRecord[] = [
+  { id: "dl_1", destinationId: "d_email", moment: "high-intent", at: "2026-09-07T07:51:00Z", state: "delivered", conversationId: "c_1" },
+  { id: "dl_2", destinationId: "d_sms", moment: "call-requested", at: "2026-09-07T06:15:00Z", state: "delivered", conversationId: "c_2" },
+  { id: "dl_3", destinationId: "d_webhook", moment: "conversation-started", at: "2026-09-07T05:02:00Z", state: "failed", conversationId: "c_5", error: "503 from crm.northlanedental.com" },
+  { id: "dl_4", destinationId: "d_slack", moment: "high-intent", at: "2026-09-06T14:34:00Z", state: "delivered", conversationId: "c_4" },
+  { id: "dl_5", destinationId: "d_email", moment: "specialist-requested", at: "2026-09-06T11:20:00Z", state: "delivered" },
+  { id: "dl_6", destinationId: "d_webhook", moment: "high-intent", at: "2026-09-06T09:44:00Z", state: "retrying" },
+];
+
+/* ---- Integrations -------------------------------------------------------- */
+
+export const INTEGRATIONS: Integration[] = [
+  { id: "i_email", name: "Email", description: "Send visitor requests to any inbox your team already watches.", category: "routing", status: "connected", accountLabel: "frontdesk@northlanedental.com", connectedAt: "2026-07-02T09:20:00Z", lastSyncAt: "2026-09-07T07:51:00Z" },
+  { id: "i_slack", name: "Slack", description: "Post high-intent conversations into a channel with full context.", category: "routing", status: "connected", accountLabel: "Northlane workspace · #cosmetic-leads", connectedAt: "2026-07-04T13:00:00Z", lastSyncAt: "2026-09-06T14:34:00Z" },
+  { id: "i_webhook", name: "Webhooks", description: "Send structured events to any endpoint you control.", category: "developer", status: "error", accountLabel: "crm.northlanedental.com", connectedAt: "2026-07-10T08:00:00Z" },
+  { id: "i_calendly", name: "Calendly", description: "Let Concierge offer real availability and create bookings.", category: "scheduling", status: "connected", accountLabel: "northlane-dental", connectedAt: "2026-07-15T10:30:00Z", lastSyncAt: "2026-09-07T06:00:00Z" },
+  { id: "i_whatsapp", name: "WhatsApp", description: "Continue conversations on the channel your customers already use.", category: "messaging", status: "available" },
+  { id: "i_sms", name: "SMS", description: "Text a team member the moment a visitor asks for a call.", category: "messaging", status: "connected", accountLabel: "+1 512 555 0100", connectedAt: "2026-07-20T11:00:00Z", lastSyncAt: "2026-09-07T06:15:00Z" },
+  { id: "i_stripe", name: "Stripe", description: "Take deposits and booking fees inside a conversation.", category: "payments", status: "available" },
+  { id: "i_paypal", name: "PayPal", description: "Offer PayPal checkout for deposits and fees.", category: "payments", status: "available" },
+  { id: "i_hubspot", name: "HubSpot", description: "Sync qualified leads into your CRM with the transcript attached.", category: "crm", status: "available" },
+  { id: "i_salesforce", name: "Salesforce", description: "Create leads and tasks from qualified conversations.", category: "crm", status: "coming-soon" },
+  { id: "i_zapier", name: "Zapier", description: "Connect Concierge to thousands of apps without code.", category: "automation", status: "available" },
+  { id: "i_make", name: "Make", description: "Build multi-step automations from Concierge events.", category: "automation", status: "coming-soon" },
+  { id: "i_api", name: "Custom API", description: "Read conversations, leads and knowledge programmatically.", category: "developer", status: "available" },
+];
+
+/* ---- Pages --------------------------------------------------------------- */
+
+export const PAGES: ConciergePage[] = [
+  {
+    id: "p_home",
+    siteId: "site_atlasmoving",
+    slug: "",
+    title: "Home",
+    navLabel: "Home",
+    published: true,
+    updatedAt: "2026-09-07T07:55:00Z",
+    sections: [
+      { id: "s_hero", kind: "hero", title: "Hero", enabled: true, summary: "Moving across Texas, handled properly." },
+      { id: "s_services", kind: "services", title: "Services", enabled: true, summary: "Local moves · Long distance · Packing · Storage" },
+      { id: "s_testimonials", kind: "testimonials", title: "Testimonials", enabled: true, summary: "4 reviews" },
+      { id: "s_contact", kind: "contact", title: "Contact", enabled: true, summary: "Phone, email and a quote request" },
+    ],
+  },
+  {
+    id: "p_services",
+    siteId: "site_atlasmoving",
+    slug: "services",
+    title: "Services",
+    navLabel: "Services",
+    published: true,
+    updatedAt: "2026-09-06T16:20:00Z",
+    sections: [
+      { id: "s_services2", kind: "services", title: "Service list", enabled: true, summary: "Four services with pricing bands" },
+      { id: "s_faq", kind: "faq", title: "FAQ", enabled: true, summary: "6 questions" },
+    ],
+  },
+  {
+    id: "p_pricing",
+    siteId: "site_atlasmoving",
+    slug: "pricing",
+    title: "Pricing",
+    navLabel: "Pricing",
+    published: false,
+    updatedAt: "2026-09-07T07:10:00Z",
+    sections: [
+      { id: "s_pricing", kind: "pricing", title: "Pricing table", enabled: true, summary: "Three tiers, draft" },
+      { id: "s_faq2", kind: "faq", title: "FAQ", enabled: false, summary: "Disabled" },
+    ],
+  },
+];
+
+/* ---- Insights ------------------------------------------------------------ */
+
+const series = (base: number, spread: number): { date: string; value: number }[] =>
+  Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(2026, 7, 25 + i);
+    const wave = Math.sin(i / 2.1) * spread;
+    const drift = (i / 13) * spread * 0.7;
+    return {
+      date: d.toISOString().slice(0, 10),
+      value: Math.max(0, Math.round(base + wave + drift)),
+    };
+  });
+
+export const METRICS: Metric[] = [
+  { key: "visitors", label: "Visitors", value: 2841, delta: 12, format: "number", series: series(180, 46) },
+  { key: "conversations", label: "Conversations", value: 386, delta: 18, format: "number", series: series(24, 9) },
+  { key: "leads", label: "Qualified leads", value: 74, delta: 24, format: "number", series: series(5, 3) },
+  { key: "actions", label: "Actions completed", value: 132, delta: 9, format: "number", series: series(9, 4) },
+  { key: "handoffs", label: "Human handoffs", value: 41, delta: -6, format: "number", series: series(3, 2) },
+  { key: "conversion", label: "Conversion rate", value: 19.2, delta: 4, format: "percent", series: series(17, 4) },
+];
+
+export const UNANSWERED: UnansweredQuestion[] = [
+  { id: "u_1", question: "Is teeth whitening covered under a dental plan?", askCount: 14, lastAskedAt: "2026-09-07T08:05:00Z", suggestedCategory: "policies", status: "open" },
+  { id: "u_2", question: "Do you treat children under 5?", askCount: 11, lastAskedAt: "2026-09-07T08:20:00Z", suggestedCategory: "services", status: "open" },
+  { id: "u_3", question: "Where do I park?", askCount: 9, lastAskedAt: "2026-09-06T15:40:00Z", suggestedCategory: "faqs", status: "open" },
+  { id: "u_4", question: "Do you offer sedation for anxious patients?", askCount: 7, lastAskedAt: "2026-09-06T12:10:00Z", suggestedCategory: "services", status: "open" },
+  { id: "u_5", question: "Can I pay in instalments for a crown?", askCount: 6, lastAskedAt: "2026-09-05T17:30:00Z", suggestedCategory: "pricing", status: "open" },
+  { id: "u_6", question: "Is there step-free access?", askCount: 4, lastAskedAt: "2026-09-05T09:15:00Z", suggestedCategory: "faqs", status: "resolved" },
+];
+
+export const INTENTS: IntentBreakdown[] = [
+  { intent: "booking", count: 142, share: 36.8, conversionRate: 41 },
+  { intent: "pricing", count: 88, share: 22.8, conversionRate: 22 },
+  { intent: "human", count: 61, share: 15.8, conversionRate: 68 },
+  { intent: "product", count: 44, share: 11.4, conversionRate: 12 },
+  { intent: "quote", count: 31, share: 8.0, conversionRate: 55 },
+  { intent: "hours", count: 20, share: 5.2, conversionRate: 4 },
+];
+
+/* ---- Activity ------------------------------------------------------------ */
+
+export const ACTIVITY: ActivityEvent[] = [
+  { id: "a_1", kind: "lead", title: "Maya Robinson qualified", detail: "Invisalign consultation · score 92 · routed to Front desk", at: "2026-09-07T07:51:00Z", siteId: "site_northlane", href: "/sites/site_northlane/leads" },
+  { id: "a_2", kind: "conversation", title: "New conversation on /services", detail: "Asked about treating children under 5 — Concierge could not answer", at: "2026-09-07T08:20:00Z", siteId: "site_northlane", href: "/sites/site_northlane/conversations" },
+  { id: "a_3", kind: "routing", title: "Webhook delivery failed", detail: "Practice CRM returned 503 · retrying", at: "2026-09-07T05:02:00Z", siteId: "site_northlane", href: "/sites/site_northlane/routing" },
+  { id: "a_4", kind: "action", title: "Call request completed", detail: "Routed to Emergency line in 4 seconds", at: "2026-09-07T06:15:00Z", siteId: "site_northlane", href: "/sites/site_northlane/actions" },
+  { id: "a_5", kind: "knowledge", title: "3 knowledge items need review", detail: "Opening hours, Treatment pricing, Insurance and payment", at: "2026-09-06T22:14:00Z", siteId: "site_northlane", href: "/sites/site_northlane/brain" },
+  { id: "a_6", kind: "conversation", title: "Priya Raman converted", detail: "Veneers quote request · routed to Cosmetic team", at: "2026-09-06T14:34:00Z", siteId: "site_northlane", href: "/sites/site_northlane/conversations" },
+];
+
+/* ---- Team ---------------------------------------------------------------- */
+
+export const TEAM: TeamMember[] = [
+  { id: "t_1", name: "Olaifa Promise", email: "olaifapromise1@gmail.com", role: "owner", scopes: ["messages", "routing", "preview", "insights", "settings", "pages", "billing", "team"], siteIds: null, status: "active" },
+  { id: "t_2", name: "Dana Whitmore", email: "dana@northlanedental.com", role: "operator", scopes: ["messages", "insights"], siteIds: ["site_northlane"], status: "active" },
+  { id: "t_3", name: "Sam Okafor", email: "sam@collabauto.co", role: "admin", scopes: ["messages", "routing", "preview", "insights", "settings"], siteIds: null, status: "active" },
+  { id: "t_4", name: "", email: "reception@northlanedental.com", role: "operator", scopes: ["messages"], siteIds: ["site_northlane"], status: "invited", invitedAt: "2026-09-05T14:00:00Z" },
+];
