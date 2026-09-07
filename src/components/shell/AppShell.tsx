@@ -2,12 +2,29 @@
 
 import type { ReactNode } from "react";
 import { Sidebar } from "@/components/shell/Sidebar";
-import { Topbar } from "@/components/shell/Topbar";
 import { CommandMenu } from "@/components/shell/CommandMenu";
-import { CloseIcon } from "@/components/icons";
+import { CloseIcon, PanelIcon, SearchIcon } from "@/components/icons";
+import { getSite } from "@/lib/demo-data";
 import { IconButton} from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { useWorkspace } from "@/lib/workspace";
+
+/** Mobile only: the sidebar is a drawer there, so one slim bar opens it. */
+function MobileBar({ siteId }: { siteId: string }) {
+  const { setMobileNavOpen, setCommandOpen } = useWorkspace();
+  const site = getSite(siteId);
+  return (
+    <div className="flex h-16 shrink-0 items-center gap-2 bg-surface px-3 lg:hidden">
+      <IconButton label="Open navigation" size={38} onClick={() => setMobileNavOpen(true)}>
+        <PanelIcon size={20} />
+      </IconButton>
+      <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{site.name}</span>
+      <IconButton label="Search Concierge" size={38} onClick={() => setCommandOpen(true)}>
+        <SearchIcon size={20} />
+      </IconButton>
+    </div>
+  );
+}
 
 export function AppShell({ siteId, children }: { siteId: string; children: ReactNode }) {
   const { mobileNavOpen, setMobileNavOpen } = useWorkspace();
@@ -43,7 +60,7 @@ export function AppShell({ siteId, children }: { siteId: string; children: React
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar siteId={siteId} />
+        <MobileBar siteId={siteId} />
         <main id="workspace" className="cg-scroll min-h-0 flex-1 overflow-y-auto">
           {children}
         </main>
@@ -76,7 +93,7 @@ export function PageContainer({
   return (
     <div
       style={{ maxWidth: wide ? "var(--content-max-wide)" : "var(--content-max)" }}
-      className={cx("mx-auto w-full px-5 py-7 sm:px-7 lg:px-9", className)}
+      className={cx("mx-auto w-full px-5 pb-28 pt-[72px] sm:px-8 lg:px-12", className)}
     >
       {children}
     </div>
@@ -99,16 +116,16 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <header className={cx("mb-7", className)}>
+    <header className={cx("mb-10", className)}>
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
-        <div className="min-w-0 max-w-[60ch]">
+        <div className="min-w-0 max-w-[64ch]">
           <p className="t-eyebrow text-text-muted">{eyebrow}</p>
-          <h1 className="t-page mt-2">{title}</h1>
-          {description && <p className="t-body mt-2.5 text-text-tertiary">{description}</p>}
+          <h1 className="t-page mt-3">{title}</h1>
+          {description && <p className="t-body mt-4 max-w-[62ch] text-text-tertiary">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {meta && <div className="mt-5">{meta}</div>}
+      {meta && <div className="mt-7">{meta}</div>}
     </header>
   );
 }

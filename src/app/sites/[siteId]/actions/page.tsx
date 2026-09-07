@@ -79,7 +79,7 @@ export default function ActionsPage({ params }: { params: Promise<{ siteId: stri
         description="Answering is the floor. These are the jobs Concierge can finish on its own — booking a time, taking a number, starting a quote."
         actions={<Button leading={<PlusIcon size={15} />}>Add an action</Button>}
         meta={
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 overflow-hidden rounded-none bg-transparent sm:grid-cols-4">
             {[
               { label: "Ready", value: ready, hint: "Offered to visitors now" },
               { label: "Needs work", value: ACTIONS.filter((a) => a.readiness !== "ready" && a.readiness !== "disabled").length, hint: "Setup or a connection" },
@@ -89,7 +89,7 @@ export default function ActionsPage({ params }: { params: Promise<{ siteId: stri
               <div key={s.label} className="bg-surface p-4">
                 <p className="t-eyebrow text-text-muted">{s.label}</p>
                 <p className="t-num mt-2 text-[22px] leading-none">{s.value}</p>
-                <p className="mt-1.5 text-[12px] text-text-tertiary">{s.hint}</p>
+                <p className="mt-1.5 text-[14px] text-text-tertiary">{s.hint}</p>
               </div>
             ))}
           </div>
@@ -127,7 +127,7 @@ export default function ActionsPage({ params }: { params: Promise<{ siteId: stri
           />
         </Panel>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {list.map((action) => (
             <ActionCard
               key={action.id}
@@ -177,7 +177,7 @@ function ActionCard({
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{action.name}</h3>
-          <p className="mt-1 text-[12.5px] leading-[1.5] text-text-tertiary">{action.description}</p>
+          <p className="mt-1 text-[13.5px] leading-[1.5] text-text-tertiary">{action.description}</p>
         </div>
       </div>
 
@@ -187,14 +187,14 @@ function ActionCard({
         </Badge>
         {action.provider && <Badge tone="neutral">{action.provider}</Badge>}
         {live && action.completions30d > 0 && (
-          <span className="text-[11.5px] tabular-nums text-text-tertiary">
+          <span className="text-[13.5px] tabular-nums text-text-tertiary">
             {action.completions30d} completed this month
           </span>
         )}
       </div>
 
       {open && (
-        <dl className="cg-enter mt-4 space-y-3.5 border-t border-line pt-4">
+        <dl className="cg-enter mt-4 space-y-3.5 border-t border-divider pt-4">
           <div>
             <dt className="t-eyebrow text-text-muted">Fires when a visitor wants</dt>
             <dd className="mt-1.5 flex flex-wrap gap-1.5">
@@ -210,11 +210,11 @@ function ActionCard({
             <dt className="t-eyebrow text-text-muted">It asks for</dt>
             <dd className="mt-1.5">
               {action.collects.length === 0 ? (
-                <p className="text-[12.5px] text-text-tertiary">Nothing — it runs on its own.</p>
+                <p className="text-[13.5px] text-text-tertiary">Nothing — it runs on its own.</p>
               ) : (
                 <ul className="space-y-1">
                   {action.collects.map((f) => (
-                    <li key={f.key} className="flex items-center gap-2 text-[12.5px]">
+                    <li key={f.key} className="flex items-center gap-2 text-[13.5px]">
                       <CheckIcon size={12} className="shrink-0 text-text-muted" />
                       {f.label}
                       {f.required && <span className="text-[11px] text-text-muted">required</span>}
@@ -227,7 +227,7 @@ function ActionCard({
 
           <div>
             <dt className="t-eyebrow text-text-muted">Then</dt>
-            <dd className="mt-1.5 text-[12.5px] leading-[1.5] text-text-secondary">{action.outcome}</dd>
+            <dd className="mt-1.5 text-[13.5px] leading-[1.5] text-text-secondary">{action.outcome}</dd>
           </div>
 
           {action.placements.length > 0 && (

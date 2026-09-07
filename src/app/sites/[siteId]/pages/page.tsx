@@ -95,7 +95,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
           </>
         }
         meta={
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-5">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-divider pt-5">
             <span className="flex items-center gap-2 text-[13px]">
               <GlobeIcon size={15} className="text-text-tertiary" />
               {site.url}
@@ -104,14 +104,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
               {PAGES.filter((p) => p.published).length} pages live
             </Badge>
             <Badge tone="review">{PAGES.filter((p) => !p.published).length} draft</Badge>
-            <span className="text-[12.5px] text-text-tertiary">
+            <span className="text-[13.5px] text-text-tertiary">
               Updated {relativeTime(site.updatedAt)}
             </span>
           </div>
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[240px_1fr_360px]">
+      <div className="grid gap-5 lg:grid-cols-[240px_1fr_360px]">
         {/* Pages ---------------------------------------------------------- */}
         <div>
           <p className="t-eyebrow mb-2.5 text-text-muted">Pages</p>
@@ -133,8 +133,8 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                   >
                     <PagesIcon size={15} className="shrink-0 text-text-tertiary" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-medium">{p.title}</span>
-                      <span className="block truncate text-[11.5px] text-text-tertiary">/{p.slug}</span>
+                      <span className="block truncate text-[15px] font-medium">{p.title}</span>
+                      <span className="block truncate text-[13.5px] text-text-tertiary">/{p.slug}</span>
                     </span>
                     {!p.published && <Badge tone="review">Draft</Badge>}
                   </button>
@@ -144,7 +144,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
           </ul>
           <button
             type="button"
-            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-line-strong px-2.5 py-2 text-[12.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-line-strong px-2.5 py-2 text-[13.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={14} />
             New page
@@ -153,13 +153,13 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
 
         {/* Sections ------------------------------------------------------- */}
         <div className="space-y-5">
-          <Panel className="p-5">
+          <Panel className="p-7">
             <SectionHead
               title="Sections"
               hint="Drag to reorder. Anything switched off stays out of the published page."
               className="mb-4"
             />
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {sections.map((s) => (
                 <li
                   key={s.id}
@@ -172,10 +172,10 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                     ⠿
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className={cx("block text-[13px] font-medium", !s.enabled && "text-text-tertiary")}>
+                    <span className={cx("block text-[15px] font-medium", !s.enabled && "text-text-tertiary")}>
                       {s.title}
                     </span>
-                    <span className="block truncate text-[12px] text-text-tertiary">
+                    <span className="block truncate text-[14px] text-text-tertiary">
                       {s.summary} · {SECTION_HINT[s.kind]}
                     </span>
                   </span>
@@ -193,14 +193,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             </ul>
             <button
               type="button"
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-strong py-3 text-[12.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-strong py-3 text-[13.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
             >
               <PlusIcon size={14} />
               Add a section
             </button>
           </Panel>
 
-          <Panel className="p-5">
+          <Panel className="p-7">
             <SectionHead title="Page details" className="mb-4" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Page title" htmlFor="page-title">
@@ -219,7 +219,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
         {/* Preview -------------------------------------------------------- */}
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <Card className="overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-line px-3 py-2">
+            <div className="flex items-center gap-2 border-b border-divider px-3 py-2">
               <EyeIcon size={14} className="text-text-muted" />
               <p className="t-eyebrow text-text-muted">Preview</p>
               <div className="ml-auto">
@@ -238,11 +238,11 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             <div className="bg-surface-subtle p-4">
               <div
                 className={cx(
-                  "mx-auto overflow-hidden rounded-lg border border-line bg-surface transition-[max-width] duration-[var(--dur-base)]",
+                  "mx-auto overflow-hidden rounded-xl bg-surface-subtle transition-[max-width] duration-[var(--dur-base)]",
                   device === "mobile" ? "max-w-[200px]" : "max-w-full",
                 )}
               >
-                <div className="border-b border-line px-3 py-2">
+                <div className="border-b border-divider px-3 py-2">
                   <div className="h-1.5 w-16 rounded-full bg-surface-sunken" />
                 </div>
                 <div className="space-y-3 p-3">
@@ -264,15 +264,15 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
               </div>
             </div>
 
-            <div className="border-t border-line p-4">
-              <p className="flex items-center gap-2 text-[12.5px] font-medium">
+            <div className="border-t border-divider p-4">
+              <p className="flex items-center gap-2 text-[15px] font-medium">
                 <AgentIcon size={14} className="text-text-tertiary" />
                 Concierge is on every page
               </p>
-              <p className="mt-1.5 text-[12px] leading-[1.5] text-text-tertiary">
+              <p className="mt-1.5 text-[14px] leading-[1.55] text-text-tertiary">
                 It answers from the same Site Brain as your Agent, and uses the same actions and routing.
               </p>
-              <p className="mt-3 flex items-center gap-1.5 text-[12px] text-success">
+              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-success">
                 <CheckIcon size={12} strokeWidth={2.4} />
                 Site Brain ready · 3 actions placed
               </p>

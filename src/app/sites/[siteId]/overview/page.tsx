@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { PageContainer, PageHeader } from "@/components/shell/AppShell";
-import { SiteStatusBadge } from "@/components/shell/SiteSwitcher";
+import { PageContainer } from "@/components/shell/AppShell";
 import { AttentionList, type AttentionItem } from "@/components/overview/AttentionList";
 import { AreaChart, BarList, RadialGauge, Sparkline } from "@/components/ui/charts";
-import { Badge, Card, LinkButton, Panel, SectionHead } from "@/components/ui";
-import { cx } from "@/lib/cx";
-import { ArrowRight, ExternalIcon, EyeIcon, InstallIcon } from "@/components/icons";
+import { Badge, Card, LinkButton } from "@/components/ui";
+import { ArrowRight, EyeIcon, InstallIcon } from "@/components/icons";
 import {
   ACTIVITY,
   BRAIN,
@@ -30,21 +28,28 @@ const KIND_LABEL: Record<string, string> = {
   system: "System",
 };
 
+function greeting(hour: number) {
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default async function OverviewPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = await params;
   const site = getSite(siteId);
+  const now = new Date();
 
   const failing = DESTINATIONS.filter((d) => d.status === "failing");
   const openGaps = UNANSWERED.filter((u) => u.status === "open");
 
-  /* What needs the owner, in the order it should be dealt with. */
   const attention: AttentionItem[] = [
     ...(failing.length
       ? [
           {
             id: "routing",
             title: `${failing[0].name} is not delivering`,
-            detail: `The endpoint returned an error on the last ${failing.length === 1 ? "attempt" : "attempts"}. Visitor requests are still captured, but your team is not being told.`,
+            detail:
+              "The endpoint returned an error on the last attempt. Visitor requests are still captured, but your team is not being told.",
             actionLabel: "Fix routing",
             href: `/sites/${siteId}/routing`,
             severity: "urgent" as const,
@@ -68,7 +73,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
           {
             id: "gaps",
             title: `${openGaps.length} questions your site could not answer`,
-            detail: `"${openGaps[0].question}" was asked ${openGaps[0].askCount} times this month.`,
+            detail: `“${openGaps[0].question}” came up ${openGaps[0].askCount} times this month.`,
             actionLabel: "See the gaps",
             href: `/sites/${siteId}/insights`,
             severity: "opportunity" as const,
@@ -77,274 +82,210 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
       : []),
   ];
 
-  const headline = METRICS.filter((m) =>
-    ["conversations", "leads", "actions", "conversion"].includes(m.key),
-  );
+  const headline = METRICS.filter((m) => ["conversations", "leads", "actions", "conversion"].includes(m.key));
   const conversations = METRICS.find((m) => m.key === "conversations")!;
 
   return (
     <PageContainer wide>
-      <PageHeader
-        eyebrow="Overview"
-        title={site.name}
-        description="What Concierge has been doing on your website, and what needs you next."
-        actions={
-          <>
-            <LinkButton
-              href={`/sites/${siteId}/agent?tab=preview`}
-              variant="secondary"
-              leading={<EyeIcon size={15} />}
-            >
-              Test the Agent
+      {/* Greeting ------------------------------------------------------- */}
+      <header className="flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
+        <div>
+          <h1 className="t-greeting">{greeting(now.getHours())}, Olaifa</h1>
+          <p className="t-body mt-4 max-w-[54ch] text-text-tertiary">
+            Here is what Concierge has been doing on {site.name}, and what needs you next.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <LinkButton href={`/sites/${siteId}/agent`} variant="secondary" size="lg" leading={<EyeIcon size={17} />}>
+            Test the Agent
+          </LinkButton>
+          {site.installState === "detected" ? (
+            <LinkButton href={`/sites/${siteId}/insights`} size="lg" trailing={<ArrowRight size={17} />}>
+              View insights
             </LinkButton>
-            {site.installState === "detected" ? (
-              <LinkButton
-                href={`https://${site.url}`}
-                external
-                variant="secondary"
-                leading={<ExternalIcon size={14} />}
-              >
-                Open site
-              </LinkButton>
-            ) : (
-              <LinkButton href={`/sites/${siteId}/settings/install`} leading={<InstallIcon size={15} />}>
-                Install Concierge
-              </LinkButton>
-            )}
-          </>
-        }
-        meta={<StatusStrip siteId={siteId} />}
-      />
-
-      {/* 1 — What needs my attention ------------------------------------ */}
-      <section className="mb-9">
-        <SectionHead
-          title="Needs your attention"
-          hint="Three things Concierge cannot resolve on its own."
-          className="mb-3.5"
-        />
-        <AttentionList items={attention} />
-      </section>
-
-      {/* 2 — What is happening ------------------------------------------ */}
-      <section className="mb-9">
-        <SectionHead
-          title="Last 14 days"
-          hint="Measured from real visitor sessions on this site."
-          action={
-            <LinkButton
-              href={`/sites/${siteId}/insights`}
-              variant="tertiary"
-              size="sm"
-              trailing={<ArrowRight size={14} />}
-            >
-              All insights
+          ) : (
+            <LinkButton href={`/sites/${siteId}/settings`} size="lg" leading={<InstallIcon size={17} />}>
+              Install Concierge
             </LinkButton>
-          }
-          className="mb-3.5"
-        />
+          )}
+        </div>
+      </header>
 
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-4">
-          {headline.map((m) => {
-            const up = m.delta > 0;
-            return (
-              <div key={m.key} className="bg-surface p-5">
-                <p className="t-eyebrow text-text-muted">{m.label}</p>
-                <div className="mt-2.5 flex items-end justify-between gap-3">
-                  <div>
-                    <p className="t-num text-[27px] leading-none">{formatMetric(m.value, m.format)}</p>
-                    <p
-                      className={cx(
-                        "mt-2 text-[12px] font-medium tabular-nums",
-                        up ? "text-success" : "text-danger",
-                      )}
-                    >
-                      {up ? "↑" : "↓"} {Math.abs(m.delta)}%
-                      <span className="ml-1 font-normal text-text-tertiary">vs. previous</span>
-                    </p>
-                  </div>
-                  <Sparkline points={m.series} tone="ink" width={64} height={26} className="opacity-60" />
-                </div>
-              </div>
-            );
-          })}
+      {/* Status ---------------------------------------------------------- */}
+      <section className="mt-12">
+        <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+          {[
+            {
+              label: "Status",
+              value: site.status === "live" ? "Live" : "Not live",
+              hint: site.status === "live" ? "Answering visitors now" : "Not yet answering",
+              live: site.status === "live",
+            },
+            { label: "Site Brain", value: BRAIN.ready ? "Ready" : "Learning", hint: `${BRAIN.approvedCount} of ${BRAIN.itemCount} approved` },
+            { label: "Install", value: site.installState === "detected" ? "Detected" : "Missing", hint: "Script found on the live site" },
+            {
+              label: "Routing",
+              value: failing.length ? `${failing.length} failing` : "All delivering",
+              hint: failing.length ? "Your team is not being notified" : "Every destination is healthy",
+              alert: failing.length > 0,
+            },
+          ].map((c) => (
+            <Card key={c.label} className="p-7">
+              <p className="t-eyebrow text-text-muted">{c.label}</p>
+              <p className={`mt-3.5 text-[20px] font-semibold tracking-[-0.02em] ${c.alert ? "text-danger" : ""}`}>
+                {c.live && <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-success cg-live-dot" />}
+                {c.value}
+              </p>
+              <p className="mt-2.5 text-[14px] text-text-tertiary">{c.hint}</p>
+            </Card>
+          ))}
         </div>
       </section>
 
-      {/* 3 — What Concierge is doing, and what visitors want ------------- */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
-        <Panel className="p-6">
-          <SectionHead
-            title="Conversation volume"
-            hint={`${conversations.value} conversations, up ${conversations.delta}% on the previous fortnight.`}
-            className="mb-5"
-          />
-          <AreaChart points={conversations.series} label="Conversations per day over the last 14 days" />
-        </Panel>
+      {/* Needs your attention -------------------------------------------- */}
+      <section className="mt-14">
+        <h2 className="t-feature">Needs your attention</h2>
+        <p className="t-body mt-3 text-text-tertiary">Three things Concierge cannot resolve on its own.</p>
+        <div className="mt-7">
+          <AttentionList items={attention} />
+        </div>
+      </section>
 
-        <Panel className="p-6">
-          <SectionHead
-            title="What visitors ask for"
-            hint="Ranked by volume, with the share that converts."
-            className="mb-4"
-          />
-          <BarList
-            items={INTENTS.slice(0, 6).map((i) => ({
-              label: INTENT_LABEL[i.intent],
-              value: i.count,
-              sub: `${i.conversionRate}% convert`,
-            }))}
-          />
-        </Panel>
-      </div>
+      {/* Last 14 days ----------------------------------------------------- */}
+      <section className="mt-14">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="t-feature">Last 14 days</h2>
+            <p className="t-body mt-3 text-text-tertiary">Measured from real visitor sessions on this site.</p>
+          </div>
+          <LinkButton href={`/sites/${siteId}/insights`} variant="tertiary" trailing={<ArrowRight size={16} />}>
+            All insights
+          </LinkButton>
+        </div>
 
-      {/* 4 — What happened ---------------------------------------------- */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
-        <Panel className="overflow-hidden">
-          <SectionHead
-            title="Recent activity"
-            hint="Everything Concierge did on your site, newest first."
-            className="p-6 pb-4"
-          />
-          <ul className="divide-y divide-line border-t border-line">
+        <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {headline.map((m) => (
+            <Card key={m.key} className="p-7">
+              <p className="t-eyebrow text-text-muted">{m.label}</p>
+              <p className="t-num mt-4 text-[34px] leading-none">{formatMetric(m.value, m.format)}</p>
+              <div className="mt-5 flex items-end justify-between gap-3">
+                <span className={`text-[14px] font-medium tabular-nums ${m.delta > 0 ? "text-success" : "text-danger"}`}>
+                  {m.delta > 0 ? "↑" : "↓"} {Math.abs(m.delta)}%
+                  <span className="ml-1.5 font-normal text-text-tertiary">vs. previous</span>
+                </span>
+                <Sparkline points={m.series} tone="ink" width={58} height={24} className="opacity-40" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Charts ----------------------------------------------------------- */}
+      <section className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_400px]">
+        <Card className="p-7">
+          <p className="text-[15px] font-bold">Conversation volume</p>
+          <h3 className="t-feature mt-4 max-w-[18ch]">
+            {conversations.value} conversations, up {conversations.delta}%
+          </h3>
+          <div className="mt-10">
+            <AreaChart points={conversations.series} label="Conversations per day over the last 14 days" />
+          </div>
+        </Card>
+
+        <Card className="p-7">
+          <p className="text-[15px] font-bold">What visitors ask for</p>
+          <p className="t-body mt-3 text-text-tertiary">Ranked by volume, with the share that converts.</p>
+          <div className="mt-6">
+            <BarList
+              items={INTENTS.slice(0, 6).map((i) => ({
+                label: INTENT_LABEL[i.intent],
+                value: i.count,
+                sub: `${i.conversionRate}% convert`,
+              }))}
+            />
+          </div>
+        </Card>
+      </section>
+
+      {/* Activity + next step --------------------------------------------- */}
+      <section className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_400px]">
+        <Card className="overflow-hidden">
+          <div className="p-7 pb-5">
+            <p className="text-[15px] font-bold">Recent activity</p>
+            <p className="t-body mt-3 text-text-tertiary">Everything Concierge did, newest first.</p>
+          </div>
+          <ul className="divide-y divide-divider">
             {ACTIVITY.map((event) => (
               <li key={event.id}>
                 <Link
                   href={event.href ?? "#"}
-                  className="flex items-start gap-3.5 px-6 py-3.5 transition-colors hover:bg-surface-subtle"
+                  className="flex items-start gap-4 px-7 py-5 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle"
                 >
-                  <span className="mt-0.5 shrink-0">
-                    <Badge tone={event.kind === "routing" ? "restricted" : "neutral"}>
-                      {KIND_LABEL[event.kind]}
-                    </Badge>
-                  </span>
+                  <Badge tone={event.kind === "routing" ? "restricted" : "neutral"} className="mt-0.5 shrink-0">
+                    {KIND_LABEL[event.kind]}
+                  </Badge>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[13px] font-medium">{event.title}</span>
+                    <span className="block text-[15px] font-medium">{event.title}</span>
                     {event.detail && (
-                      <span className="mt-0.5 block truncate text-[12.5px] text-text-tertiary">{event.detail}</span>
+                      <span className="mt-1.5 block text-[14px] leading-[1.5] text-text-tertiary">{event.detail}</span>
                     )}
                   </span>
-                  <span className="shrink-0 text-[12px] tabular-nums text-text-muted">{relativeTime(event.at)}</span>
+                  <span className="shrink-0 text-[13.5px] tabular-nums text-text-muted">{relativeTime(event.at)}</span>
                 </Link>
               </li>
             ))}
           </ul>
-        </Panel>
+        </Card>
 
-        <div className="space-y-6">
-          <BrainHealthCard siteId={siteId} />
-          <NextStepCard siteId={siteId} />
+        <div className="flex flex-col gap-5">
+          <Card className="p-7">
+            <div className="flex items-start gap-5">
+              <RadialGauge value={BRAIN.coverage} label="Site Brain coverage" tone="accent" size={62} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-bold">Site Brain coverage</p>
+                <p className="mt-2.5 text-[14px] leading-[1.5] text-text-tertiary">
+                  Concierge answers confidently across {BRAIN.coverage}% of what visitors ask.
+                </p>
+              </div>
+            </div>
+            <dl className="mt-7 space-y-4">
+              {[
+                { label: "Approved", value: BRAIN.approvedCount, tone: "text-success" },
+                { label: "Needs review", value: BRAIN.needsReviewCount, tone: "text-warning" },
+                { label: "Missing", value: BRAIN.missingCount, tone: "text-text-muted" },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between">
+                  <dt className="text-[14px] text-text-secondary">{row.label}</dt>
+                  <dd className={`text-[15px] font-semibold tabular-nums ${row.tone}`}>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <LinkButton href={`/sites/${siteId}/brain`} variant="secondary" size="lg" block className="mt-7">
+              Open Site Brain
+            </LinkButton>
+          </Card>
+
+          {/* The one place Concierge orange leads. */}
+          <Card className="bg-accent-subtle p-7">
+            <p className="text-[15px] font-bold text-accent-ink">Suggested next step</p>
+            <h3 className="t-feature mt-4">Answer the questions your site keeps missing</h3>
+            <p className="t-body mt-4 text-text-secondary">
+              Five questions came up repeatedly this month that Concierge could not answer. Closing them is the
+              fastest way to lift your conversion rate.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <LinkButton href={`/sites/${siteId}/insights`} size="lg">
+                Review the gaps
+              </LinkButton>
+              {CONVERSATIONS.filter((c) => c.status === "new").length > 0 && (
+                <LinkButton href={`/sites/${siteId}/conversations`} variant="tertiary" size="lg">
+                  {CONVERSATIONS.filter((c) => c.status === "new").length} new conversation
+                </LinkButton>
+              )}
+            </div>
+          </Card>
         </div>
-      </div>
+      </section>
     </PageContainer>
-  );
-}
-
-/* ---- The four facts that describe the system's state --------------------- */
-
-function StatusStrip({ siteId }: { siteId: string }) {
-  const site = getSite(siteId);
-  const failing = DESTINATIONS.filter((d) => d.status === "failing").length;
-  const live = DESTINATIONS.filter((d) => d.status === "connected").length;
-
-  const cells: { label: string; value: React.ReactNode; hint: string }[] = [
-    {
-      label: "Status",
-      value: <SiteStatusBadge site={site} />,
-      hint: site.status === "live" ? "Answering visitors now" : "Not yet answering visitors",
-    },
-    {
-      label: "Site Brain",
-      value: <span className="text-[15px] font-medium">{BRAIN.ready ? "Ready" : "Learning"}</span>,
-      hint: `${BRAIN.approvedCount} of ${BRAIN.itemCount} items approved`,
-    },
-    {
-      label: "Install",
-      value: (
-        <span className="text-[15px] font-medium">
-          {site.installState === "detected" ? "Detected" : "Not installed"}
-        </span>
-      ),
-      hint: site.installState === "detected" ? "Script found on the live site" : "Add the script to go live",
-    },
-    {
-      label: "Routing",
-      value: (
-        <span className={cx("text-[15px] font-medium", failing > 0 && "text-danger")}>
-          {failing ? `${failing} failing` : `${live} connected`}
-        </span>
-      ),
-      hint: failing ? "Your team is not being notified" : "Every destination is delivering",
-    },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-5 sm:grid-cols-4">
-      {cells.map((c) => (
-        <div key={c.label}>
-          <p className="t-eyebrow text-text-muted">{c.label}</p>
-          <div className="mt-2 flex h-[22px] items-center">{c.value}</div>
-          <p className="mt-1.5 text-[12px] text-text-tertiary">{c.hint}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function BrainHealthCard({ siteId }: { siteId: string }) {
-  return (
-    <Card className="p-5">
-      <div className="flex items-start gap-4">
-        <RadialGauge value={BRAIN.coverage} label="Site Brain coverage" tone="accent" />
-        <div className="min-w-0 flex-1">
-          <h3 className="t-card">Site Brain coverage</h3>
-          <p className="t-body-sm mt-1.5 text-text-tertiary">
-            Concierge can answer confidently across {BRAIN.coverage}% of what visitors ask about.
-          </p>
-        </div>
-      </div>
-
-      <dl className="mt-5 space-y-2.5 border-t border-line pt-4">
-        {[
-          { label: "Approved", value: BRAIN.approvedCount, tone: "text-success" },
-          { label: "Needs review", value: BRAIN.needsReviewCount, tone: "text-warning" },
-          { label: "Missing", value: BRAIN.missingCount, tone: "text-text-muted" },
-        ].map((row) => (
-          <div key={row.label} className="flex items-center justify-between">
-            <dt className="text-[12.5px] text-text-secondary">{row.label}</dt>
-            <dd className={cx("text-[13px] font-semibold tabular-nums", row.tone)}>{row.value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <LinkButton href={`/sites/${siteId}/brain`} variant="secondary" size="sm" block className="mt-4">
-        Open Site Brain
-      </LinkButton>
-    </Card>
-  );
-}
-
-/** The single clearest thing the owner should do next. */
-function NextStepCard({ siteId }: { siteId: string }) {
-  const newConversations = CONVERSATIONS.filter((c) => c.status === "new").length;
-  return (
-    <Card className="border-accent-line bg-accent-subtle p-5">
-      <p className="t-eyebrow text-accent-ink">Suggested next step</p>
-      <h3 className="t-card mt-2.5">Answer the questions your site keeps missing</h3>
-      <p className="t-body-sm mt-2 text-text-secondary">
-        Five questions came up repeatedly this month that Concierge could not answer. Adding them to Site
-        Brain is the fastest way to lift your conversion rate.
-      </p>
-      <div className="mt-4 flex items-center gap-2">
-        <LinkButton href={`/sites/${siteId}/insights`} size="sm">
-          Review the gaps
-        </LinkButton>
-        {newConversations > 0 && (
-          <LinkButton href={`/sites/${siteId}/conversations`} variant="tertiary" size="sm">
-            {newConversations} new conversation
-          </LinkButton>
-        )}
-      </div>
-    </Card>
   );
 }

@@ -15,7 +15,7 @@ const TOPICS = [
 export default function HelpPage() {
   return (
     <div className="min-h-dvh bg-canvas">
-      <header className="border-b border-line bg-surface px-5 py-4 lg:px-8">
+      <header className="border-b border-divider bg-surface px-7 py-5 lg:px-8">
         <div className="mx-auto flex w-full max-w-[900px] items-center">
           <Link href="/" className="rounded-lg" aria-label="Concierge home">
             <ConciergeWordmark />

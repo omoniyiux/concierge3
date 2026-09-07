@@ -37,9 +37,9 @@ const VARIANT: Record<Variant, string> = {
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-7 px-2.5 text-[12.5px] gap-1.5 rounded-md",
-  md: "h-9 px-3.5 text-[13px] gap-2 rounded-lg",
-  lg: "h-11 px-4.5 text-[14px] gap-2 rounded-lg",
+  sm: "h-8 px-3 text-[13px] gap-1.5 rounded-lg",
+  md: "h-10 px-4 text-[14px] gap-2 rounded-[10px]",
+  lg: "h-12 px-5 text-[15px] gap-2 rounded-xl",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -169,6 +169,10 @@ export const IconButton = forwardRef<
    SURFACES — a card must earn its border.
    ========================================================================== */
 
+/**
+ * Surfaces separate from the canvas by colour, not by a border. White on grey,
+ * generously rounded, no shadow. A card must earn its place on the page.
+ */
 export function Card({
   className,
   interactive,
@@ -178,8 +182,8 @@ export function Card({
   return (
     <div
       className={cx(
-        "rounded-xl border border-line bg-surface",
-        interactive && "transition-colors duration-[var(--dur-micro)] hover:border-line-strong",
+        "rounded-2xl bg-surface",
+        interactive && "transition-colors duration-[var(--dur-micro)] hover:bg-[#fafafa]",
         className,
       )}
       {...rest}
@@ -191,7 +195,7 @@ export function Card({
 
 export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cx("rounded-2xl border border-line bg-surface", className)} {...rest}>
+    <div className={cx("rounded-[20px] bg-surface", className)} {...rest}>
       {children}
     </div>
   );
@@ -225,20 +229,20 @@ export function SectionHead({
    ========================================================================== */
 
 const FIELD_BASE =
-  "w-full rounded-lg border border-line-strong bg-surface text-[13px] text-text-primary " +
+  "w-full rounded-[10px] border border-line-strong bg-surface text-[14px] text-text-primary " +
   "placeholder:text-text-muted transition-[border-color,box-shadow] duration-[var(--dur-micro)] " +
   "focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/8 " +
   "disabled:bg-surface-subtle disabled:text-text-disabled";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...rest }, ref) {
-    return <input ref={ref} className={cx(FIELD_BASE, "h-9 px-3", className)} {...rest} />;
+    return <input ref={ref} className={cx(FIELD_BASE, "h-11 px-3.5", className)} {...rest} />;
   },
 );
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
   function Textarea({ className, ...rest }, ref) {
-    return <textarea ref={ref} className={cx(FIELD_BASE, "min-h-[88px] resize-y px-3 py-2 leading-[1.55]", className)} {...rest} />;
+    return <textarea ref={ref} className={cx(FIELD_BASE, "min-h-[96px] resize-y px-3.5 py-2.5 leading-[1.55]", className)} {...rest} />;
   },
 );
 
@@ -246,7 +250,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   function Select({ className, children, ...rest }, ref) {
     return (
       <div className="relative">
-        <select ref={ref} className={cx(FIELD_BASE, "h-9 appearance-none pl-3 pr-9", className)} {...rest}>
+        <select ref={ref} className={cx(FIELD_BASE, "h-11 appearance-none pl-3.5 pr-9", className)} {...rest}>
           {children}
         </select>
         <ChevronDown
@@ -264,8 +268,8 @@ export function SearchInput({
 }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className={cx("relative", className)}>
-      <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-      <input className={cx(FIELD_BASE, "h-9 pl-9 pr-3")} {...rest} />
+      <SearchIcon size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+      <input className={cx(FIELD_BASE, "h-11 pl-10 pr-3.5")} {...rest} />
     </div>
   );
 }
@@ -287,14 +291,14 @@ export function Field({
 }) {
   return (
     <div className={className}>
-      <label htmlFor={htmlFor} className="mb-1.5 block text-[12.5px] font-medium text-text-primary">
+      <label htmlFor={htmlFor} className="mb-2 block text-[15px] font-medium text-text-primary">
         {label}
       </label>
       {children}
       {error ? (
-        <p className="mt-1.5 text-[12px] text-danger">{error}</p>
+        <p className="mt-1.5 text-[13px] text-danger">{error}</p>
       ) : hint ? (
-        <p className="mt-1.5 text-[12px] text-text-tertiary">{hint}</p>
+        <p className="mt-1.5 text-[14px] text-text-tertiary">{hint}</p>
       ) : null}
     </div>
   );
@@ -374,8 +378,8 @@ export function Checkbox({
         {checked && <CheckIcon size={12} strokeWidth={2.6} />}
       </span>
       <span className="min-w-0">
-        <span className="block text-[13px] font-medium">{label}</span>
-        {description && <span className="mt-0.5 block text-[12.5px] leading-[1.45] text-text-tertiary">{description}</span>}
+        <span className="block text-[15px] font-medium">{label}</span>
+        {description && <span className="mt-0.5 block text-[13.5px] leading-[1.45] text-text-tertiary">{description}</span>}
       </span>
     </button>
   );
@@ -411,9 +415,9 @@ export function RadioCard({
         <span className={cx("mt-px shrink-0", selected ? "text-accent" : "text-text-tertiary")}>{icon}</span>
       )}
       <span className="min-w-0 flex-1">
-        <span className="block text-[13.5px] font-medium">{label}</span>
+        <span className="block text-[15px] font-medium">{label}</span>
         {description && (
-          <span className="mt-1 block text-[12.5px] leading-[1.5] text-text-tertiary">{description}</span>
+          <span className="mt-1 block text-[13.5px] leading-[1.5] text-text-tertiary">{description}</span>
         )}
       </span>
     </button>
@@ -436,7 +440,7 @@ export function Tabs<T extends string>({
   label: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className="flex items-center gap-1 border-b border-line">
+    <div role="tablist" aria-label={label} className="flex items-center gap-1 border-b border-divider">
       {tabs.map((t) => {
         const active = t.value === value;
         return (
@@ -446,7 +450,7 @@ export function Tabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(t.value)}
             className={cx(
-              "relative -mb-px flex h-9 items-center gap-2 px-3 text-[13px] font-medium transition-colors duration-[var(--dur-micro)]",
+              "relative -mb-px flex h-11 items-center gap-2 px-3.5 text-[15px] font-medium transition-colors duration-[var(--dur-micro)]",
               active ? "text-text-primary" : "text-text-tertiary hover:text-text-secondary",
             )}
           >
@@ -484,7 +488,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       aria-label={label}
-      className="inline-flex items-center gap-0.5 rounded-lg border border-line bg-surface-subtle p-0.5"
+      className="inline-flex items-center gap-0.5 rounded-[10px] bg-surface-subtle p-1"
     >
       {options.map((o) => {
         const active = o.value === value;
@@ -495,7 +499,7 @@ export function SegmentedControl<T extends string>({
             aria-selected={active}
             onClick={() => onChange(o.value)}
             className={cx(
-              "h-7 rounded-[7px] px-3 text-[12.5px] font-medium transition-all duration-[var(--dur-micro)]",
+              "h-8 rounded-lg px-3.5 text-[15px] font-medium transition-all duration-[var(--dur-micro)]",
               active ? "bg-surface text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-primary",
             )}
           >
@@ -512,13 +516,13 @@ export function SegmentedControl<T extends string>({
    ========================================================================== */
 
 const TONES = {
-  neutral: "bg-surface-subtle text-text-secondary border-line",
-  approved: "bg-approved-soft text-approved border-success-line",
-  review: "bg-review-soft text-review border-warning-line",
-  restricted: "bg-restricted-soft text-restricted border-danger-line",
-  accent: "bg-accent-soft text-accent-ink border-accent-line",
-  info: "bg-info-soft text-info border-info-line",
-  live: "bg-approved-soft text-approved border-success-line",
+  neutral: "bg-surface-subtle text-text-secondary",
+  approved: "bg-approved-soft text-approved",
+  review: "bg-review-soft text-review",
+  restricted: "bg-restricted-soft text-restricted",
+  accent: "bg-accent-soft text-accent-ink",
+  info: "bg-info-soft text-info",
+  live: "bg-approved-soft text-approved",
 } as const;
 
 export type Tone = keyof typeof TONES;
@@ -539,7 +543,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        "inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11.5px] font-medium",
+        "inline-flex h-[24px] shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[15px] font-medium",
         TONES[tone],
         className,
       )}
@@ -573,13 +577,13 @@ export function Stat({
         <span className="t-num text-[26px] leading-none">{value}</span>
         {!flat && (
           <span
-            className={cx("text-[12px] font-medium tabular-nums", up ? "text-success" : "text-danger")}
+            className={cx("text-[15px] font-medium tabular-nums", up ? "text-success" : "text-danger")}
           >
             {up ? "↑" : "↓"} {Math.abs(delta!)}%
           </span>
         )}
       </div>
-      {hint && <p className="mt-1.5 text-[12px] text-text-tertiary">{hint}</p>}
+      {hint && <p className="mt-1.5 text-[14px] text-text-tertiary">{hint}</p>}
     </div>
   );
 }
@@ -640,7 +644,7 @@ export function EmptyState({
   return (
     <div className={cx("flex flex-col items-center px-6 py-14 text-center", className)}>
       {icon && (
-        <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface-subtle text-text-tertiary">
+        <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-subtle text-text-tertiary">
           {icon}
         </div>
       )}
@@ -662,11 +666,11 @@ export function WorkingState({ title, detail }: { title: string; detail?: string
     <div className="flex items-center gap-3" role="status">
       <Spinner className="text-accent" size={16} />
       <div>
-        <p className="text-[13px] font-medium">
+        <p className="text-[15px] font-medium">
           {title}
           <TypingDots />
         </p>
-        {detail && <p className="mt-0.5 text-[12.5px] text-text-tertiary">{detail}</p>}
+        {detail && <p className="mt-0.5 text-[13.5px] text-text-tertiary">{detail}</p>}
       </div>
     </div>
   );
@@ -706,7 +710,7 @@ export function ErrorState({
 }) {
   return (
     <div className={cx("rounded-xl border border-danger-line bg-danger-soft p-5", className)} role="alert">
-      <p className="text-[13.5px] font-semibold text-danger">{title}</p>
+      <p className="text-[15px] font-semibold text-danger">{title}</p>
       <p className="t-body-sm mt-1.5 text-text-secondary">{reason}</p>
       {remedy && <p className="t-body-sm mt-1 text-text-secondary">{remedy}</p>}
       {action && <div className="mt-3.5">{action}</div>}
@@ -739,7 +743,7 @@ export function Tooltip({
       <span
         role="tooltip"
         className={cx(
-          "pointer-events-none absolute z-50 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[11.5px] font-medium text-text-inverse",
+          "pointer-events-none absolute z-50 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[15px] font-medium text-text-inverse",
           "opacity-0 shadow-md transition-opacity duration-[var(--dur-micro)] group-hover/tip:opacity-100 group-focus-within/tip:opacity-100",
           pos,
         )}

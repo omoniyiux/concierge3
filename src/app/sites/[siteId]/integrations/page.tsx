@@ -114,7 +114,7 @@ export default function IntegrationsPage() {
               </Button>
             </Card>
           ) : (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-5">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-divider pt-5">
               <span className="text-[13px]">
                 <span className="font-medium">{connected.length}</span>{" "}
                 <span className="text-text-tertiary">connected</span>
@@ -159,7 +159,7 @@ export default function IntegrationsPage() {
           />
         </Panel>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((integration) => (
             <IntegrationCard key={integration.id} integration={integration} />
           ))}
@@ -176,11 +176,11 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
   const soon = i.status === "coming-soon";
 
   return (
-    <Card className={cx("flex flex-col p-5", soon && "bg-surface-subtle/60", i.status === "error" && "border-danger-line")}>
+    <Card className={cx("flex flex-col p-7", soon && "bg-surface-subtle/60", i.status === "error" && "border-danger-line")}>
       <div className="flex items-start gap-3">
         <span
           className={cx(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-surface",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-subtle",
             soon && "opacity-55",
           )}
         >
@@ -188,7 +188,7 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{i.name}</h3>
-          <p className="mt-1 text-[12.5px] leading-[1.5] text-text-tertiary">{i.description}</p>
+          <p className="mt-1 text-[13.5px] leading-[1.5] text-text-tertiary">{i.description}</p>
         </div>
       </div>
 
@@ -200,7 +200,7 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
       </div>
 
       {i.accountLabel && (
-        <p className="mt-3 truncate text-[12px] text-text-tertiary">
+        <p className="mt-3 truncate text-[14px] text-text-tertiary">
           {i.accountLabel}
           {i.lastSyncAt && ` · synced ${relativeTime(i.lastSyncAt)}`}
         </p>

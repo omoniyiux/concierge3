@@ -15,7 +15,7 @@ import {
 export type NavItem = {
   slug: string;
   label: string;
-  Icon: ComponentType<{ size?: number; className?: string }>;
+  Icon: ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   /** Rendered as a small dot when the surface needs the owner. */
   attention?: "count" | "dot";
 };

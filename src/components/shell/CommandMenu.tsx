@@ -96,9 +96,9 @@ function Palette({ siteId }: { siteId: string }) {
         role="dialog"
         aria-modal="true"
         aria-label="Search Concierge"
-        className="cg-enter relative w-full max-w-[560px] overflow-hidden rounded-2xl border border-line bg-surface shadow-xl"
+        className="cg-enter relative w-full max-w-[560px] overflow-hidden rounded-2xl bg-surface shadow-xl"
       >
-        <div className="flex h-12 items-center gap-2.5 border-b border-line px-3.5">
+        <div className="flex h-12 items-center gap-2.5 border-b border-divider px-3.5">
           <SearchIcon size={17} className="shrink-0 text-text-muted" />
           <input
             ref={inputRef}
@@ -127,7 +127,7 @@ function Palette({ siteId }: { siteId: string }) {
 
         <div className="cg-scroll max-h-[48vh] overflow-y-auto p-1.5">
           {results.length === 0 ? (
-            <p className="px-3 py-10 text-center text-[13px] text-text-tertiary">
+            <p className="px-3 py-10 text-center text-[14px] text-text-tertiary">
               Nothing matches &ldquo;{q}&rdquo;. Try a site, a visitor name or a settings page.
             </p>
           ) : (
@@ -149,8 +149,8 @@ function Palette({ siteId }: { siteId: string }) {
                       )}
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-medium">{e.label}</span>
-                        {e.sub && <span className="block truncate text-[12px] text-text-tertiary">{e.sub}</span>}
+                        <span className="block truncate text-[15px] font-medium">{e.label}</span>
+                        {e.sub && <span className="block truncate text-[14px] text-text-tertiary">{e.sub}</span>}
                       </span>
                       {active && <ArrowRight size={14} className="shrink-0 text-text-muted" />}
                     </button>

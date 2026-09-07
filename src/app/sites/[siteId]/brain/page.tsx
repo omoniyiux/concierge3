@@ -128,7 +128,7 @@ export default function SiteBrainPage() {
           ) : (
             <>
               <SafeApproveBanner items={items} onApprove={(ids) => ids.forEach((id) => setStatus(id, "approved"))} />
-              <div className="mt-4 space-y-2.5">
+              <div className="mt-5 space-y-4">
                 {needsAttention.map((item) => (
                   <KnowledgeCard
                     key={item.id}
@@ -188,9 +188,9 @@ export default function SiteBrainPage() {
                 <section key={category}>
                   <div className="mb-3 flex items-baseline gap-2.5">
                     <h2 className="t-section">{CATEGORY_LABEL[category]}</h2>
-                    <span className="text-[12.5px] tabular-nums text-text-muted">{list.length}</span>
+                    <span className="text-[13.5px] tabular-nums text-text-muted">{list.length}</span>
                   </div>
-                  <div className="space-y-2.5">
+                  <div className="space-y-4">
                     {list.map((item) => (
                       <KnowledgeCard key={item.id} item={item} onStatusChange={setStatus} onBodyChange={setBody} />
                     ))}
@@ -289,20 +289,20 @@ const SOURCES = [
 
 function SourcesTab() {
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
+    <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_320px]">
       <Panel className="overflow-hidden">
         <SectionHead
           title="Where the knowledge came from"
           hint="Every answer Concierge gives can be traced back to one of these."
-          className="p-6 pb-4"
+          className="p-7 pb-5"
         />
-        <ul className="divide-y divide-line border-t border-line">
+        <ul className="divide-y divide-divider border-t border-divider">
           {SOURCES.map((s) => (
-            <li key={s.label} className="flex items-center gap-3.5 px-6 py-3.5">
+            <li key={s.label} className="flex items-center gap-3.5 px-7 py-4.5">
               <SourceIcon size={16} className="shrink-0 text-text-muted" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[13px] font-medium">{s.label}</span>
-                <span className="block truncate text-[12px] text-text-tertiary">
+                <span className="block text-[15px] font-medium">{s.label}</span>
+                <span className="block truncate text-[14px] text-text-tertiary">
                   {s.url ? `northlanedental.com${s.url}` : "Added by you"}
                 </span>
               </span>
@@ -324,12 +324,12 @@ function SourcesTab() {
       </Panel>
 
       <div className="space-y-5">
-        <Card className="p-5">
+        <Card className="p-7">
           <h3 className="t-card">Teach Concierge something new</h3>
           <p className="t-body-sm mt-1.5 text-text-tertiary">
             Anything you add is treated as owner-approved and answers immediately.
           </p>
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-3">
             <Button variant="secondary" size="sm" block leading={<PlusIcon size={14} />}>
               Write it yourself
             </Button>
@@ -342,7 +342,7 @@ function SourcesTab() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-7">
           <h3 className="t-card">Re-learn the site</h3>
           <p className="t-body-sm mt-1.5 text-text-tertiary">
             Changed your pricing or opening hours? Concierge will re-read the site and flag only what changed —

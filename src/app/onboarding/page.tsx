@@ -72,7 +72,7 @@ export default function OnboardingPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       {/* Wizard chrome: quiet, and always shows where you are ------------ */}
-      <header className="sticky top-0 z-20 border-b border-line bg-canvas/85 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-divider bg-canvas/85 backdrop-blur">
         <div className="mx-auto flex h-[var(--topbar-h)] w-full max-w-[1120px] items-center gap-4 px-5 lg:px-8">
           <ConciergeWordmark />
           <ol className="ml-4 hidden items-center gap-1 md:flex">
@@ -82,7 +82,7 @@ export default function OnboardingPage() {
                 <li key={s.key} className="flex items-center gap-1">
                   <span
                     className={cx(
-                      "flex h-6 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium transition-colors",
+                      "flex h-6 items-center gap-1.5 rounded-md px-2 text-[15px] font-medium transition-colors",
                       state === "active"
                         ? "bg-ink text-text-inverse"
                         : state === "done"
@@ -98,13 +98,13 @@ export default function OnboardingPage() {
               );
             })}
           </ol>
-          <span className="ml-auto text-[12.5px] text-text-tertiary md:hidden">
+          <span className="ml-auto text-[13.5px] text-text-tertiary md:hidden">
             Step {index + 1} of {STEPS.length}
           </span>
           <button
             type="button"
             onClick={() => router.push(`/sites/${DEFAULT_SITE_ID}/overview`)}
-            className="ml-auto hidden text-[12.5px] text-text-tertiary transition-colors hover:text-text-primary md:block"
+            className="ml-auto hidden text-[13.5px] text-text-tertiary transition-colors hover:text-text-primary md:block"
           >
             Save and exit
           </button>
@@ -156,8 +156,8 @@ function StepShell({
       <p className="t-eyebrow text-accent-ink">{eyebrow}</p>
       <h1 className="t-page mt-2.5">{title}</h1>
       <p className="t-body mt-3 text-text-tertiary">{description}</p>
-      <div className="mt-8">{children}</div>
-      {footer && <div className="mt-8 flex items-center gap-3 border-t border-line pt-6">{footer}</div>}
+      <div className="mt-10">{children}</div>
+      {footer && <div className="mt-8 flex items-center gap-3 border-t border-divider pt-6">{footer}</div>}
     </div>
   );
 }
@@ -217,11 +217,11 @@ function WebsiteStep({
       </div>
 
       <Card className="mt-6 border-line bg-surface-subtle p-4">
-        <p className="flex items-center gap-2 text-[12.5px] font-medium">
+        <p className="flex items-center gap-2 text-[15px] font-medium">
           <ShieldIcon size={14} className="text-success" />
           What Concierge will not do
         </p>
-        <ul className="mt-2.5 space-y-1.5 text-[12.5px] leading-[1.5] text-text-secondary">
+        <ul className="mt-2.5 space-y-1.5 text-[13.5px] leading-[1.5] text-text-secondary">
           <li>· It will not read anything behind a login.</li>
           <li>· It will not answer visitors until you approve what it learned.</li>
           <li>· It will not invent facts about your business.</li>
@@ -232,10 +232,10 @@ function WebsiteStep({
         <Button size="lg" disabled={!valid || !authorized} onClick={onNext} trailing={<ArrowRight size={16} />}>
           Start learning
         </Button>
-        <p className="text-[12.5px] text-text-tertiary">Takes about a minute.</p>
+        <p className="text-[13.5px] text-text-tertiary">Takes about a minute.</p>
       </div>
 
-      <p className="mt-8 border-t border-line pt-6 text-[13px] text-text-tertiary">
+      <p className="mt-8 border-t border-divider pt-6 text-[14px] text-text-tertiary">
         No website yet?{" "}
         <button type="button" className="font-medium text-text-primary underline underline-offset-2">
           Start with Concierge Pages
@@ -291,7 +291,7 @@ function ReviewStep({
       }
     >
       {/* The three numbers that matter --------------------------------- */}
-      <div className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-line bg-line">
+      <div className="grid grid-cols-3 gap-3 overflow-hidden rounded-none bg-transparent">
         {[
           { label: "Approved", value: approved, tone: "text-success" },
           { label: "Need review", value: needsReview, tone: "text-warning" },
@@ -317,24 +317,24 @@ function ReviewStep({
         </Card>
       )}
 
-      <section className="mt-8">
+      <section className="mt-10">
         <h2 className="t-section">Required</h2>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Concierge will not go live until these seven are approved.
         </p>
-        <div className="mt-4 space-y-2.5">
+        <div className="mt-5 space-y-4">
           {required.map((item) => (
             <KnowledgeCard key={item.id} item={item} onStatusChange={onStatus} onBodyChange={onBody} />
           ))}
         </div>
       </section>
 
-      <section className="mt-9">
+      <section className="mt-12">
         <h2 className="t-section">Everything else</h2>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Optional, but each one is a question Concierge can answer without a handoff.
         </p>
-        <div className="mt-4 space-y-2.5">
+        <div className="mt-5 space-y-4">
           {optional.map((item) => (
             <KnowledgeCard key={item.id} item={item} onStatusChange={onStatus} onBodyChange={onBody} />
           ))}
@@ -401,7 +401,7 @@ function AgentStep({ onNext, onBack }: { onNext: () => void; onBack: () => void 
 
       <Card className="mt-6 p-4">
         <p className="t-eyebrow text-text-muted">Carried over from your Site Brain</p>
-        <ul className="mt-3 space-y-2 text-[12.5px] leading-[1.5] text-text-secondary">
+        <ul className="mt-3 space-y-2 text-[13.5px] leading-[1.5] text-text-secondary">
           <li className="flex gap-2">
             <ShieldIcon size={13} className="mt-0.5 shrink-0 text-success" />
             Never diagnose a condition, quote a final price, or confirm insurance coverage.
@@ -411,7 +411,7 @@ function AgentStep({ onNext, onBack }: { onNext: () => void; onBack: () => void 
             Hand off immediately when a visitor reports pain, swelling or bleeding.
           </li>
         </ul>
-        <p className="mt-3 text-[12px] text-text-tertiary">
+        <p className="mt-3 text-[14px] text-text-tertiary">
           These came from the rules you approved. They cannot be overridden by the Agent&rsquo;s tone.
         </p>
       </Card>
@@ -453,14 +453,14 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
         </>
       }
     >
-      <Card className="p-5">
+      <Card className="p-7">
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-surface-subtle text-text-secondary">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-subtle-subtle text-text-secondary">
             <MailIcon size={17} />
           </span>
           <div className="min-w-0 flex-1">
             <p className="t-card">Email</p>
-            <p className="text-[12.5px] text-text-tertiary">The inbox your team already checks.</p>
+            <p className="text-[13.5px] text-text-tertiary">The inbox your team already checks.</p>
           </div>
           {connected && (
             <Badge tone="approved" dot>
@@ -483,11 +483,11 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
 
         <fieldset className="mt-5">
           <legend className="t-eyebrow mb-2.5 text-text-muted">Tell this inbox when</legend>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {Object.entries(MOMENT_LABELS).map(([key, label]) => (
               <label
                 key={key}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-line px-3 py-2.5"
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-surface-subtle px-3.5 py-3"
               >
                 <span className="text-[13px]">{label}</span>
                 <Toggle
@@ -510,7 +510,7 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
                 {tested ? "Test delivered" : "Send a test"}
               </Button>
               {tested && (
-                <p className="flex items-center gap-1.5 text-[12.5px] text-success">
+                <p className="flex items-center gap-1.5 text-[13.5px] text-success">
                   <CheckIcon size={13} strokeWidth={2.4} /> Arrived in 2 seconds
                 </p>
               )}
@@ -524,13 +524,13 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
           <button
             key={name}
             type="button"
-            className="rounded-lg border border-line bg-surface px-3 py-2.5 text-[12.5px] text-text-secondary transition-colors hover:border-line-strong hover:text-text-primary"
+            className="rounded-xl bg-surface-subtle px-3 py-2.5 text-[13.5px] text-text-secondary transition-colors hover:border-line-strong hover:text-text-primary"
           >
             + {name}
           </button>
         ))}
       </div>
-      <p className="mt-3 text-[12.5px] text-text-tertiary">
+      <p className="mt-3 text-[13.5px] text-text-tertiary">
         You can add more destinations and build routing rules once you are live.
       </p>
     </StepShell>
@@ -567,7 +567,7 @@ function PreviewStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
       <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
         <div>
           <p className="t-eyebrow mb-3 text-text-muted">Try these first</p>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {SAMPLE_TESTS.map((t) => {
               const done = run.includes(t.q);
               return (
@@ -582,15 +582,15 @@ function PreviewStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
                   >
                     <span className="flex items-center gap-2">
                       {done && <CheckIcon size={13} className="shrink-0 text-success" strokeWidth={2.4} />}
-                      <span className="text-[13px] font-medium">{t.q}</span>
+                      <span className="text-[15px] font-medium">{t.q}</span>
                     </span>
-                    <span className="mt-1 block text-[11.5px] text-text-tertiary">Checks: {t.kind}</span>
+                    <span className="mt-1 block text-[13.5px] text-text-tertiary">Checks: {t.kind}</span>
                   </button>
                 </li>
               );
             })}
           </ul>
-          <p className="mt-3 text-[12px] text-text-tertiary">
+          <p className="mt-3 text-[14px] text-text-tertiary">
             {run.length} of {SAMPLE_TESTS.length} launch checks run
           </p>
         </div>
@@ -626,26 +626,26 @@ function PreviewPane({ run }: { run: string[] }) {
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-line bg-surface">
-      <div className="flex items-center gap-2.5 border-b border-line px-4 py-2.5">
+    <div className="overflow-hidden rounded-2xl bg-surface">
+      <div className="flex items-center gap-2.5 border-b border-divider px-4 py-2.5">
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[10px] font-semibold text-text-inverse">
           C+
         </span>
-        <p className="text-[12.5px] font-medium">Northlane Concierge</p>
+        <p className="text-[15px] font-medium">Northlane Concierge</p>
         <Badge tone="neutral" className="ml-auto">
           Simulation
         </Badge>
       </div>
 
       <div className="min-h-[320px] space-y-4 p-4">
-        <div className="max-w-[85%] rounded-xl rounded-tl-sm border border-line bg-surface-subtle px-3.5 py-2.5">
-          <p className="text-[13px] leading-[1.55]">
+        <div className="max-w-[85%] rounded-xl rounded-tl-sm bg-surface-subtle px-3.5 py-2.5">
+          <p className="text-[15px] leading-[1.6]">
             Hi — I can help with appointments, treatments and pricing at Northlane Dental. What brings you in?
           </p>
         </div>
 
         {run.length === 0 && (
-          <p className="pt-8 text-center text-[13px] text-text-tertiary">
+          <p className="pt-8 text-center text-[14px] text-text-tertiary">
             Pick a test on the left to see the exact reply a visitor would get.
           </p>
         )}
@@ -655,15 +655,15 @@ function PreviewPane({ run }: { run: string[] }) {
           return (
             <div key={q} className="space-y-3">
               <div className="ml-auto max-w-[85%] rounded-xl rounded-tr-sm bg-ink px-3.5 py-2.5">
-                <p className="text-[13px] leading-[1.55] text-text-inverse">{q}</p>
+                <p className="text-[15px] leading-[1.6] text-text-inverse">{q}</p>
               </div>
               <div className="max-w-[88%]">
-                <div className="rounded-xl rounded-tl-sm border border-line bg-surface-subtle px-3.5 py-2.5">
-                  <p className="text-[13px] leading-[1.55]">{r.body}</p>
+                <div className="rounded-xl rounded-tl-sm bg-surface-subtle px-3.5 py-2.5">
+                  <p className="text-[15px] leading-[1.6]">{r.body}</p>
                 </div>
                 <p
                   className={cx(
-                    "mt-1.5 text-[11.5px]",
+                    "mt-1.5 text-[13.5px]",
                     r.tone === "review" ? "text-warning" : r.tone === "accent" ? "text-accent-ink" : "text-success",
                   )}
                 >
@@ -702,8 +702,8 @@ function InstallStep({ onDone, onBack }: { onDone: () => void; onBack: () => voi
         </>
       }
     >
-      <div className="overflow-hidden rounded-xl border border-line bg-surface">
-        <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
+      <div className="overflow-hidden rounded-2xl bg-surface">
+        <div className="flex items-center gap-2 border-b border-divider px-4 py-2.5">
           <CodeIcon size={14} className="text-text-muted" />
           <p className="t-eyebrow text-text-muted">Your install snippet</p>
           <Button
@@ -728,10 +728,10 @@ function InstallStep({ onDone, onBack }: { onDone: () => void; onBack: () => voi
           <button
             key={p}
             type="button"
-            className="rounded-lg border border-line bg-surface px-3 py-2.5 text-left text-[12.5px] transition-colors hover:border-line-strong"
+            className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[13.5px] transition-colors hover:border-line-strong"
           >
             <span className="block font-medium">{p}</span>
-            <span className="mt-0.5 block text-[11.5px] text-text-tertiary">Step-by-step guide</span>
+            <span className="mt-0.5 block text-[13.5px] text-text-tertiary">Step-by-step guide</span>
           </button>
         ))}
       </div>

@@ -1,21 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight, JetBrains_Mono, Newsreader } from "next/font/google";
+import { Archivo, JetBrains_Mono, Source_Serif_4, Wix_Madefor_Text } from "next/font/google";
 import "./globals.css";
 import { WorkspaceProvider } from "@/lib/workspace";
 
-/* Concierge's own brand faces, matching poweredbyconcierge.com. */
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
+/* Archivo carries the headings — tight, geometric, modern. */
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+const madeforText = Wix_Madefor_Text({
+  variable: "--font-madefor-text",
   subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+/* The editorial counterpoint used in failure and pulse cards. */
+const serifAccent = Source_Serif_4({
+  variable: "--font-serif-accent",
+  subsets: ["latin"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -34,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAFAF8",
+  themeColor: "#F3F3F3",
   width: "device-width",
   initialScale: 1,
 };
@@ -43,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${interTight.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
+      className={`${archivo.variable} ${madeforText.variable} ${serifAccent.variable} ${jetbrainsMono.variable}`}
     >
       <body>
         <a

@@ -42,7 +42,7 @@ export default function CreateAccountPage() {
         </Button>
       </form>
 
-      <p className="mt-4 text-[12px] leading-[1.5] text-text-tertiary">
+      <p className="mt-4 text-[14px] leading-[1.55] text-text-tertiary">
         By creating an account you agree to our{" "}
         <Link href="/legal/terms" className="underline underline-offset-2">
           Terms
@@ -54,7 +54,7 @@ export default function CreateAccountPage() {
         .
       </p>
 
-      <p className="mt-7 border-t border-line pt-6 text-[13px] text-text-tertiary">
+      <p className="mt-7 border-t border-divider pt-6 text-[14px] text-text-tertiary">
         Already have an account?{" "}
         <Link href="/sign-in" className="font-medium text-text-primary underline underline-offset-2">
           Sign in

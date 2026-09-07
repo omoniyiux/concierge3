@@ -106,14 +106,14 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
       </ol>
 
       {/* Pages, named as they land -------------------------------------- */}
-      <div className="mt-2 overflow-hidden rounded-xl border border-line bg-surface">
-        <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+      <div className="mt-2 overflow-hidden rounded-2xl bg-surface">
+        <div className="flex items-center justify-between border-b border-divider px-4 py-2.5">
           <p className="t-eyebrow text-text-muted">Pages read</p>
-          <p className="text-[12px] tabular-nums text-text-tertiary">
+          <p className="text-[13px] tabular-nums text-text-tertiary">
             {done} of {PAGES.length}
           </p>
         </div>
-        <ul className="divide-y divide-line">
+        <ul className="divide-y divide-divider">
           {PAGES.map((page, i) => {
             const state = i < done ? "done" : i === done && !finished ? "reading" : "pending";
             return (
@@ -145,7 +145,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
                   )}
                 >
                   {page.label}
-                  <span className="ml-2 text-[12px] text-text-muted">{page.path}</span>
+                  <span className="ml-2 text-[13px] text-text-muted">{page.path}</span>
                 </span>
                 {state === "done" && (
                   <Badge tone="neutral">
@@ -164,7 +164,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
           label="Crawl progress"
           tone="accent"
         />
-        <p className="mt-2.5 text-[12.5px] tabular-nums text-text-tertiary">
+        <p className="mt-2.5 text-[13.5px] tabular-nums text-text-tertiary">
           {itemsFound} knowledge items found
           {!finished && " so far"}
         </p>

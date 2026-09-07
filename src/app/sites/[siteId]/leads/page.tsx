@@ -68,7 +68,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
           </Button>
         }
         meta={
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 overflow-hidden rounded-none bg-transparent sm:grid-cols-4">
             {[
               { label: "Total leads", value: LEADS.length, hint: "Last 30 days" },
               { label: "High intent", value: hot, hint: "Score 80 or above" },
@@ -78,7 +78,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
               <div key={s.label} className="bg-surface p-4">
                 <p className="t-eyebrow text-text-muted">{s.label}</p>
                 <p className="t-num mt-2 text-[22px] leading-none">{s.value}</p>
-                <p className="mt-1.5 text-[12px] text-text-tertiary">{s.hint}</p>
+                <p className="mt-1.5 text-[14px] text-text-tertiary">{s.hint}</p>
               </div>
             ))}
           </div>
@@ -122,7 +122,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
       ) : (
         <Panel className="overflow-hidden">
           {/* Header row: 12–13px, semibold, as the table spec calls for. */}
-          <div className="hidden grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto] gap-4 border-b border-line px-5 py-2.5 lg:grid">
+          <div className="hidden grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto] gap-4 border-b border-divider px-5 py-2.5 lg:grid">
             {["Lead", "Interested in", "Urgency", "Routed to", "Score"].map((h) => (
               <span key={h} className="t-eyebrow text-text-muted">
                 {h}
@@ -130,21 +130,21 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
             ))}
           </div>
 
-          <ul className="divide-y divide-line">
+          <ul className="divide-y divide-divider">
             {rows.map((lead) => (
               <li key={lead.id}>
                 <button
                   type="button"
                   onClick={() => setOpenId(openId === lead.id ? null : lead.id)}
                   aria-expanded={openId === lead.id}
-                  className="grid w-full grid-cols-1 items-center gap-x-4 gap-y-2 px-5 py-3.5 text-left transition-colors hover:bg-surface-subtle lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto]"
+                  className="grid w-full grid-cols-1 items-center gap-x-4 gap-y-2 px-7 py-4.5 text-left transition-colors hover:bg-surface-subtle lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto]"
                 >
                   <span className="min-w-0">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-[13.5px] font-medium">{lead.name}</span>
+                      <span className="truncate text-[15px] font-medium">{lead.name}</span>
                       <Badge tone={QUAL_TONE[lead.qualification]}>{lead.qualification}</Badge>
                     </span>
-                    <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px] text-text-tertiary">
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[14px] text-text-tertiary">
                       {lead.email && <span className="truncate">{lead.email}</span>}
                       {lead.phone && <span className="truncate">{lead.phone}</span>}
                       <span aria-hidden>·</span>
@@ -152,15 +152,15 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
                     </span>
                   </span>
 
-                  <span className="min-w-0 truncate text-[12.5px] text-text-secondary">
+                  <span className="min-w-0 truncate text-[13.5px] text-text-secondary">
                     {lead.service ?? INTENT_LABEL[lead.intent]}
                   </span>
 
-                  <span className="text-[12.5px] capitalize text-text-secondary">
+                  <span className="text-[13.5px] capitalize text-text-secondary">
                     {lead.urgency?.replace("-", " ") ?? "—"}
                   </span>
 
-                  <span className="min-w-0 truncate text-[12.5px] text-text-secondary">{lead.routedTo ?? "Not routed"}</span>
+                  <span className="min-w-0 truncate text-[13.5px] text-text-secondary">{lead.routedTo ?? "Not routed"}</span>
 
                   <span className="flex items-center gap-2.5 lg:justify-end">
                     <span className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-sunken">
@@ -188,8 +188,8 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
 
 function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
   return (
-    <div className="cg-enter border-t border-line bg-surface-subtle px-5 py-5">
-      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+    <div className="cg-enter border-t border-divider bg-surface-subtle px-5 py-5">
+      <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
         <div>
           <h3 className="t-eyebrow text-text-muted">What Concierge worked out</h3>
           <dl className="mt-3 grid gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -201,9 +201,9 @@ function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
               ["Urgency", lead.urgency?.replace("-", " ") ?? "—"],
               ["Captured", relativeTime(lead.capturedAt)],
             ].map(([k, v]) => (
-              <div key={k} className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
-                <dt className="text-[12px] text-text-tertiary">{k}</dt>
-                <dd className="text-[12.5px] font-medium capitalize">{v}</dd>
+              <div key={k} className="flex items-baseline justify-between gap-3 border-b border-divider pb-2">
+                <dt className="text-[14px] text-text-tertiary">{k}</dt>
+                <dd className="text-[15px] font-medium capitalize">{v}</dd>
               </div>
             ))}
           </dl>
@@ -211,14 +211,14 @@ function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
           {lead.notes && (
             <>
               <h3 className="t-eyebrow mt-6 text-text-muted">Notes</h3>
-              <p className="mt-2 text-[13px] leading-[1.55] text-text-secondary">{lead.notes}</p>
+              <p className="mt-2 text-[15px] leading-[1.6] text-text-secondary">{lead.notes}</p>
             </>
           )}
         </div>
 
-        <Card className="p-4">
+        <Card className="p-7">
           <h3 className="t-card">Follow up</h3>
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-3">
             {lead.email && (
               <Button variant="secondary" size="sm" block leading={<MailIcon size={13} />}>
                 Email {lead.name.split(" ")[0]}
@@ -240,7 +240,7 @@ function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
             </LinkButton>
           </div>
           {lead.routedTo && (
-            <p className="mt-4 flex items-center gap-2 border-t border-line pt-3 text-[12px] text-text-tertiary">
+            <p className="mt-4 flex items-center gap-2 border-t border-divider pt-3 text-[14px] text-text-tertiary">
               <RoutingIcon size={13} />
               Sent to {lead.routedTo}
             </p>

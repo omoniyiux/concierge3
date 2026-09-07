@@ -1,14 +1,15 @@
 import type { SVGProps } from "react";
 
 /* ============================================================================
-   CONCIERGE ICON SET
-   One family, one grid (24px), one stroke weight (1.6px), round caps.
-   Icons support labels; they are not decoration.
+   ICON SET
+   One family, one grid (24px), one stroke weight (1.7px), round caps and
+   joins — the geometric, generously-sized line style the design direction
+   calls for. Icons support labels; they are never decoration.
    ========================================================================== */
 
 export type IconProps = SVGProps<SVGSVGElement> & { size?: number };
 
-function I({ size = 18, children, ...rest }: IconProps) {
+function I({ size = 20, children, ...rest }: IconProps) {
   return (
     <svg
       width={size}
@@ -16,7 +17,7 @@ function I({ size = 18, children, ...rest }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.6}
+      strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -33,35 +34,32 @@ function I({ size = 18, children, ...rest }: IconProps) {
 /** Overview — a dial reading the state of the site. */
 export const OverviewIcon = (p: IconProps) => (
   <I {...p}>
-    <path d="M4 15.5a8 8 0 1 1 16 0" />
-    <path d="m12 15.5 3.6-4.8" />
-    <circle cx="12" cy="15.5" r="1.3" fill="currentColor" stroke="none" />
-    <path d="M4 15.5h1.6M18.4 15.5H20M6.2 9.2l1.1 1.1M17.8 9.2l-1.1 1.1M12 6.4V8" />
+    <path d="M4 10.2 12 4l8 6.2V19a1.4 1.4 0 0 1-1.4 1.4H5.4A1.4 1.4 0 0 1 4 19v-8.8Z" />
+    <path d="M9.6 20.4v-5.2h4.8v5.2" />
   </I>
 );
 
 /** Site Brain — layered knowledge, not a cartoon brain. */
 export const BrainIcon = (p: IconProps) => (
   <I {...p}>
-    <path d="m12 3.4 8 3.9-8 3.9-8-3.9 8-3.9Z" />
-    <path d="m4 12 8 3.9 8-3.9" />
-    <path d="m4 16.7 8 3.9 8-3.9" />
+    <circle cx="12" cy="12" r="8.2" />
+    <circle cx="12" cy="12" r="3.1" />
   </I>
 );
 
 /** Agent — a considered presence, marked by the Concierge plus. */
 export const AgentIcon = (p: IconProps) => (
   <I {...p}>
-    <rect x="4" y="7.4" width="16" height="12.2" rx="4" />
-    <path d="M12 3.2v4.2" />
-    <path d="M9 12.6h.01M15 12.6h.01" strokeWidth={2.2} />
-    <path d="M9.6 16.4h4.8" />
+    <rect x="3.6" y="7" width="16.8" height="13" rx="4.4" />
+    <path d="M12 2.8v4.2" />
+    <circle cx="9" cy="13" r="1.15" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="13" r="1.15" fill="currentColor" stroke="none" />
   </I>
 );
 
 export const ConversationsIcon = (p: IconProps) => (
   <I {...p}>
-    <path d="M20 12.2c0 3.9-3.3 7-7.4 7a8.3 8.3 0 0 1-2.9-.5L5 20.2l1.3-3.6A6.8 6.8 0 0 1 5.2 12.2c0-3.9 3.3-7 7.4-7s7.4 3.1 7.4 7Z" />
+    <path d="M20 11.6c0 4.2-3.6 7.6-8 7.6a8.7 8.7 0 0 1-2.9-.5L4 20.2l1.3-3.8A7.3 7.3 0 0 1 4 11.6C4 7.4 7.6 4 12 4s8 3.4 8 7.6Z" />
   </I>
 );
 

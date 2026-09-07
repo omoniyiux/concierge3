@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-[380px]">{children}</div>
         </div>
-        <p className="text-[12px] text-text-tertiary">
+        <p className="text-[14px] text-text-tertiary">
           <Link href="/legal/terms" className="hover:text-text-primary">
             Terms
           </Link>
@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </p>
       </div>
 
-      <aside className="hidden w-[46%] max-w-[620px] flex-col justify-center border-l border-line bg-surface px-14 lg:flex">
+      <aside className="hidden w-[46%] max-w-[620px] flex-col justify-center border-l border-divider bg-surface px-14 lg:flex">
         <p className="t-eyebrow text-accent-ink">What Concierge does</p>
         <h2 className="t-page mt-3 max-w-[20ch]">Your website stops being a brochure.</h2>
         <ol className="mt-8 space-y-5">
@@ -47,12 +47,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             ["Learns again", "Tells you every question your site could not answer."],
           ].map(([title, body], i) => (
             <li key={title} className="flex gap-4">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line bg-surface-subtle text-[11.5px] font-semibold tabular-nums text-text-tertiary">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-[15px] font-semibold tabular-nums text-text-tertiary">
                 {i + 1}
               </span>
               <span>
                 <span className="block text-[14px] font-medium">{title}</span>
-                <span className="mt-0.5 block text-[13px] leading-[1.55] text-text-tertiary">{body}</span>
+                <span className="mt-0.5 block text-[15px] leading-[1.6] text-text-tertiary">{body}</span>
               </span>
             </li>
           ))}

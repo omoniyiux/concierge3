@@ -110,11 +110,11 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
           <AgentPreview greeting={greeting} />
         </div>
       ) : (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
-          <div className="space-y-6">
+        <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_380px]">
+          <div className="space-y-5">
             {tab === "identity" && (
               <>
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead title="Identity" hint="What visitors see before they type anything." className="mb-5" />
                   <div className="space-y-5">
                     <Field label="Agent name" htmlFor="agent-name" hint="Shown at the top of the conversation.">
@@ -135,7 +135,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                   </div>
                 </Panel>
 
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead title="Role" hint="Sets what Concierge leads with when intent is unclear." className="mb-4" />
                   <div className="grid gap-2.5 sm:grid-cols-2">
                     {MODES.map((m) => (
@@ -155,7 +155,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
 
             {tab === "behaviour" && (
               <>
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead title="Tone" hint="How it sounds. It never changes what it is allowed to say." className="mb-4" />
                   <SegmentedControl
                     label="Tone"
@@ -163,7 +163,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                     onChange={touch(setTone)}
                     options={TONES.map((t) => ({ value: t.key, label: t.label }))}
                   />
-                  <p className="mt-4 rounded-lg border border-line bg-surface-subtle p-3.5 text-[13px] leading-[1.55] text-text-secondary">
+                  <p className="mt-4 rounded-xl bg-surface-subtle-subtle p-3.5 text-[15px] leading-[1.6] text-text-secondary">
                     <span className="t-eyebrow mb-1.5 block text-text-muted">Sounds like</span>
                     {tone === "warm" && "Happy to help with that — the New Patient Exam is $89 and includes a cleaning."}
                     {tone === "professional" && "The New Patient Exam is $89 and includes X-rays and a cleaning."}
@@ -173,7 +173,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                   </p>
                 </Panel>
 
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead
                     title="Quick actions"
                     hint="Offered as buttons when the moment fits. Only actions that are ready appear."
@@ -184,16 +184,16 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                     }
                     className="mb-4"
                   />
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {readyActions.map((a) => (
                       <li
                         key={a.id}
-                        className="flex items-center gap-3 rounded-lg border border-line px-3.5 py-2.5"
+                        className="flex items-center gap-3 rounded-xl bg-surface-subtle px-4 py-3"
                       >
                         <ActionsIcon size={15} className="shrink-0 text-text-tertiary" />
                         <span className="min-w-0 flex-1">
-                          <span className="block text-[13px] font-medium">{a.name}</span>
-                          <span className="block truncate text-[12px] text-text-tertiary">{a.outcome}</span>
+                          <span className="block text-[15px] font-medium">{a.name}</span>
+                          <span className="block truncate text-[14px] text-text-tertiary">{a.outcome}</span>
                         </span>
                         <Toggle
                           size="sm"
@@ -206,16 +206,16 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                   </ul>
                 </Panel>
 
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead
                     title="Voice"
                     hint="Lets a visitor talk instead of type. Answers stay grounded in Site Brain."
                     className="mb-4"
                   />
-                  <div className="flex items-center gap-3 rounded-lg border border-line bg-surface-subtle px-4 py-3">
+                  <div className="flex items-center gap-3 rounded-xl bg-surface-subtle-subtle px-4 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-medium">Talk to Concierge</p>
-                      <p className="mt-0.5 text-[12.5px] text-text-tertiary">
+                      <p className="text-[15px] font-medium">Talk to Concierge</p>
+                      <p className="mt-0.5 text-[13.5px] text-text-tertiary">
                         Premium feature. Voice always confirms before moving a visitor into a route.
                       </p>
                     </div>
@@ -227,7 +227,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
 
             {tab === "rules" && (
               <>
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead
                     title="How it should behave"
                     hint="Instructions layered on top of your approved knowledge."
@@ -238,11 +238,11 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                     }
                     className="mb-4"
                   />
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {rules.map((r, i) => (
-                      <li key={r} className="flex items-start gap-3 rounded-lg border border-line px-3.5 py-3">
+                      <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-4 py-3.5">
                         <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                        <span className="min-w-0 flex-1 text-[13px] leading-[1.5]">{r}</span>
+                        <span className="min-w-0 flex-1 text-[14px] leading-[1.55]">{r}</span>
                         <button
                           type="button"
                           aria-label={`Remove rule ${i + 1}`}
@@ -265,26 +265,26 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                     hint="Hard limits. Concierge refuses and offers a handoff rather than risk being wrong."
                     className="mb-4"
                   />
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {AGENT.neverPromise.map((r) => (
                       <li key={r} className="flex items-start gap-3 rounded-lg border border-danger-line bg-danger-soft px-3.5 py-3">
                         <LockIcon size={14} className="mt-0.5 shrink-0 text-danger" />
-                        <span className="min-w-0 flex-1 text-[13px] leading-[1.5]">{r}</span>
+                        <span className="min-w-0 flex-1 text-[14px] leading-[1.55]">{r}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-3.5 text-[12px] text-text-tertiary">
+                  <p className="mt-3.5 text-[14px] text-text-tertiary">
                     These came from your approved Site Brain. Edit them there so the change applies everywhere.
                   </p>
                 </Panel>
 
-                <Panel className="p-6">
+                <Panel className="p-7">
                   <SectionHead title="Hand off to a person when" className="mb-4" />
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {AGENT.escalationTriggers.map((r) => (
-                      <li key={r} className="flex items-start gap-3 rounded-lg border border-line px-3.5 py-3">
+                      <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-4 py-3.5">
                         <RoutingIcon size={14} className="mt-0.5 shrink-0 text-text-tertiary" />
-                        <span className="min-w-0 flex-1 text-[13px] leading-[1.5]">{r}</span>
+                        <span className="min-w-0 flex-1 text-[14px] leading-[1.55]">{r}</span>
                       </li>
                     ))}
                   </ul>
@@ -296,28 +296,28 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
           {/* Live preview rail ------------------------------------------ */}
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <Card className="overflow-hidden">
-              <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
+              <div className="flex items-center gap-2 border-b border-divider px-4 py-2.5">
                 <p className="t-eyebrow text-text-muted">Live preview</p>
                 <Badge tone="neutral" className="ml-auto">
                   Simulation
                 </Badge>
               </div>
               <div className="space-y-3 bg-surface-subtle p-4">
-                <div className="w-fit max-w-[92%] rounded-xl rounded-tl-sm border border-line bg-surface px-3.5 py-2.5">
-                  <p className="text-[12.5px] leading-[1.55]">{greeting}</p>
+                <div className="w-fit max-w-[92%] rounded-xl rounded-tl-sm bg-surface px-3.5 py-2.5">
+                  <p className="text-[13.5px] leading-[1.55]">{greeting}</p>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {readyActions.slice(0, 3).map((a) => (
                     <span
                       key={a.id}
-                      className="rounded-full border border-line bg-surface px-2.5 py-1 text-[11.5px] text-text-secondary"
+                      className="rounded-full bg-surface px-2.5 py-1 text-[13.5px] text-text-secondary"
                     >
                       {a.name}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="border-t border-line p-4">
+              <div className="border-t border-divider p-4">
                 <Button variant="secondary" size="sm" block onClick={() => setTab("preview")}>
                   Run a full test
                 </Button>
@@ -387,7 +387,7 @@ function AgentReadiness({
       </dl>
 
       {gaps.length > 0 && (
-        <div className="w-full border-t border-line pt-4">
+        <div className="w-full border-t border-divider pt-4">
           <p className="t-eyebrow mb-2 text-text-muted">Finish these to raise confidence</p>
           <ul className="flex flex-wrap gap-2">
             {gaps.map((g) => (

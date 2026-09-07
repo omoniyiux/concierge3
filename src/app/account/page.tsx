@@ -10,7 +10,7 @@ export default function AccountPage() {
   const me = TEAM[0];
   return (
     <div className="min-h-dvh bg-canvas">
-      <header className="border-b border-line bg-surface px-5 py-4 lg:px-8">
+      <header className="border-b border-divider bg-surface px-7 py-5 lg:px-8">
         <div className="mx-auto flex w-full max-w-[760px] items-center gap-4">
           <Link href="/" className="rounded-lg" aria-label="Concierge home">
             <ConciergeWordmark />
@@ -35,7 +35,7 @@ export default function AccountPage() {
         </p>
 
         <div className="mt-9 space-y-6">
-          <Panel className="p-6">
+          <Panel className="p-7">
             <SectionHead title="Profile" className="mb-5" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Name" htmlFor="a-name">
@@ -47,15 +47,15 @@ export default function AccountPage() {
             </div>
           </Panel>
 
-          <Panel className="p-6">
+          <Panel className="p-7">
             <SectionHead title="Organisation" hint="You can belong to more than one." className="mb-4" />
             <Card className="flex items-center gap-3.5 p-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-subtle text-[12px] font-semibold text-text-secondary">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-subtle text-[13px] font-semibold text-text-secondary">
                 {ORG.name.split(" ").map((w) => w[0]).join("")}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[13.5px] font-medium">{ORG.name}</span>
-                <span className="block text-[12px] text-text-tertiary">
+                <span className="block text-[15px] font-medium">{ORG.name}</span>
+                <span className="block text-[14px] text-text-tertiary">
                   {ORG.seatsUsed} of {ORG.seatsIncluded} seats · {ORG.plan} plan
                 </span>
               </span>

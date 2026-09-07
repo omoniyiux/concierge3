@@ -103,7 +103,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
                   type="button"
                   onClick={() => ask(s)}
                   className={cx(
-                    "flex w-full items-start gap-2 rounded-lg border p-2.5 text-left text-[12.5px] transition-colors",
+                    "flex w-full items-start gap-2 rounded-lg border p-2.5 text-left text-[13.5px] transition-colors",
                     used
                       ? "border-success-line bg-approved-soft text-text-secondary"
                       : "border-line bg-surface hover:border-line-strong",
@@ -116,17 +116,17 @@ export function AgentPreview({ greeting }: { greeting: string }) {
             );
           })}
         </ul>
-        <p className="mt-3 text-[12px] text-text-tertiary">
+        <p className="mt-3 text-[14px] text-text-tertiary">
           {turns.length} of {SUGGESTIONS.length} launch checks run
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-surface">
-        <div className="flex items-center gap-2.5 border-b border-line px-4 py-2.5">
+      <div className="overflow-hidden rounded-2xl bg-surface">
+        <div className="flex items-center gap-2.5 border-b border-divider px-4 py-2.5">
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[10px] font-semibold text-text-inverse">
             C+
           </span>
-          <p className="text-[12.5px] font-medium">Northlane Concierge</p>
+          <p className="text-[15px] font-medium">Northlane Concierge</p>
           <Badge tone="neutral" className="ml-auto">
             Simulation · nothing is sent
           </Badge>
@@ -136,7 +136,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
           <Bubble side="agent">{greeting}</Bubble>
 
           {turns.length === 0 && !thinking && (
-            <p className="pt-10 text-center text-[13px] text-text-tertiary">
+            <p className="pt-10 text-center text-[14px] text-text-tertiary">
               Ask something a real visitor would ask. You will see the answer, where it came from and where it
               would route.
             </p>
@@ -153,10 +153,10 @@ export function AgentPreview({ greeting }: { greeting: string }) {
                     <Badge tone={v.tone} dot>
                       {v.label}
                     </Badge>
-                    <span className="text-[11.5px] text-text-tertiary">{t.verdict.note}</span>
+                    <span className="text-[13.5px] text-text-tertiary">{t.verdict.note}</span>
                     <span
                       className={cx(
-                        "text-[11.5px] tabular-nums",
+                        "text-[13.5px] tabular-nums",
                         t.confidence < 0.6 ? "text-warning" : "text-text-muted",
                       )}
                     >
@@ -164,7 +164,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
                     </span>
                   </div>
                   {t.cites && (
-                    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11.5px] text-text-tertiary">
+                    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[13.5px] text-text-tertiary">
                       <ShieldIcon size={11} className="text-success" />
                       From {t.cites.join(" · ")}
                     </p>
@@ -175,7 +175,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
           })}
 
           {thinking && (
-            <div className="flex items-center gap-2.5 text-[12.5px] text-text-tertiary">
+            <div className="flex items-center gap-2.5 text-[13.5px] text-text-tertiary">
               <Spinner size={13} className="text-accent" />
               Checking approved knowledge…
             </div>
@@ -183,7 +183,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
         </div>
 
         <form
-          className="flex items-center gap-2 border-t border-line p-3"
+          className="flex items-center gap-2 border-t border-divider p-3"
           onSubmit={(e) => {
             e.preventDefault();
             if (draft.trim()) ask(draft);
@@ -209,9 +209,9 @@ function Bubble({ side, children }: { side: "visitor" | "agent"; children: React
   return (
     <div
       className={cx(
-        "w-fit max-w-[88%] rounded-xl px-3.5 py-2.5 text-[13px] leading-[1.55]",
+        "w-fit max-w-[88%] rounded-xl px-3.5 py-2.5 text-[15px] leading-[1.6]",
         side === "agent"
-          ? "rounded-tl-sm border border-line bg-surface-subtle"
+          ? "rounded-tl-sm bg-surface-subtle"
           : "ml-auto rounded-tr-sm bg-ink text-text-inverse",
       )}
     >

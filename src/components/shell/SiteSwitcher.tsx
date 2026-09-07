@@ -63,26 +63,26 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cx(
-          "flex h-9 max-w-[280px] items-center gap-2.5 rounded-lg pl-1.5 pr-2 transition-colors duration-[var(--dur-micro)]",
-          open ? "bg-surface-hover" : "hover:bg-surface-subtle",
+          "flex h-[46px] w-full items-center gap-2.5 rounded-xl bg-surface-subtle px-2.5 transition-colors duration-[var(--dur-micro)]",
+          open ? "bg-surface-hover" : "hover:bg-surface-hover",
         )}
       >
-        <SiteMark name={current.name} size={24} />
+        <SiteMark name={current.name} size={28} />
         <span className="min-w-0 text-left">
-          <span className="block truncate text-[13.5px] font-medium leading-tight">{current.name}</span>
-          <span className="block truncate text-[11.5px] leading-tight text-text-tertiary">{ORG.name}</span>
+          <span className="block truncate text-[14.5px] font-semibold leading-tight">{current.name}</span>
+          <span className="block truncate text-[13.5px] leading-tight text-text-tertiary">{ORG.name}</span>
         </span>
-        <ChevronUpDown size={14} className="ml-1 shrink-0 text-text-muted" />
+        <ChevronUpDown size={16} className="ml-auto shrink-0 text-text-muted" />
       </button>
 
       {open && (
         <div
           role="listbox"
-          className="cg-enter absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] overflow-hidden rounded-xl border border-line bg-surface shadow-lg"
+          className="cg-enter absolute left-0 top-[calc(100%+6px)] z-50 w-[300px] overflow-hidden rounded-2xl bg-surface shadow-lg"
         >
-          <div className="flex items-center justify-between border-b border-line px-3 py-2">
+          <div className="flex items-center justify-between border-b border-divider px-3 py-2">
             <p className="t-eyebrow text-text-muted">{ORG.name}</p>
-            <span className="text-[11.5px] text-text-tertiary">
+            <span className="text-[13.5px] text-text-tertiary">
               {SITES.length} of {ORG.siteLimit} sites
             </span>
           </div>
@@ -107,8 +107,8 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
                   >
                     <SiteMark name={s.name} size={28} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-medium">{s.name}</span>
-                      <span className="block truncate text-[11.5px] text-text-tertiary">{s.url}</span>
+                      <span className="block truncate text-[15px] font-medium">{s.name}</span>
+                      <span className="block truncate text-[13.5px] text-text-tertiary">{s.url}</span>
                     </span>
                     <SiteStatusBadge site={s} />
                     {active && <CheckIcon size={15} className="shrink-0 text-text-primary" />}
@@ -118,11 +118,11 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
             })}
           </ul>
 
-          <div className="border-t border-line p-1.5">
+          <div className="border-t border-divider p-1.5">
             <Link
               href="/onboarding"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-[13px] font-medium text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
+              className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-[15px] font-medium text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-dashed border-line-strong">
                 <PlusIcon size={14} />

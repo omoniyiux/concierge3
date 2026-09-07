@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
         </form>
       )}
 
-      <p className="mt-7 border-t border-line pt-6 text-[13px] text-text-tertiary">
+      <p className="mt-7 border-t border-divider pt-6 text-[14px] text-text-tertiary">
         <Link href="/sign-in" className="font-medium text-text-primary underline underline-offset-2">
           Back to sign in
         </Link>

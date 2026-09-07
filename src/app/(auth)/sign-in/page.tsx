@@ -27,7 +27,7 @@ export default function SignInPage() {
 
       <div className="my-6 flex items-center gap-3">
         <span className="h-px flex-1 bg-line" />
-        <span className="text-[12px] text-text-muted">or</span>
+        <span className="text-[13px] text-text-muted">or</span>
         <span className="h-px flex-1 bg-line" />
       </div>
 
@@ -50,12 +50,12 @@ export default function SignInPage() {
         </Button>
       </form>
 
-      <p className="mt-5 text-[13px] text-text-tertiary">
+      <p className="mt-5 text-[14px] text-text-tertiary">
         <Link href="/forgot-password" className="text-text-primary underline underline-offset-2">
           Forgot your password?
         </Link>
       </p>
-      <p className="mt-7 border-t border-line pt-6 text-[13px] text-text-tertiary">
+      <p className="mt-7 border-t border-divider pt-6 text-[14px] text-text-tertiary">
         New to Concierge?{" "}
         <Link href="/create-account" className="font-medium text-text-primary underline underline-offset-2">
           Create an account

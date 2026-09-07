@@ -75,7 +75,7 @@ function Section({
     <section
       id={id}
       className={cx(
-        "border-b border-line px-5 py-20 lg:px-8 lg:py-28",
+        "px-5 py-24 lg:px-8 lg:py-32",
         tone === "surface" && "bg-surface",
         className,
       )}
@@ -111,7 +111,7 @@ function SectionIntro({
 
 function Hero() {
   return (
-    <section className="border-b border-line px-5 pb-16 pt-16 lg:px-8 lg:pb-24 lg:pt-24">
+    <section className="px-5 pb-20 pt-20 lg:px-8 lg:pb-28 lg:pt-28">
       <div className="mx-auto w-full max-w-[1180px]">
         <div className="mx-auto max-w-[780px] text-center">
           <Badge tone="accent" className="mb-6">
@@ -132,7 +132,7 @@ function Hero() {
               See it learn a website
             </LinkButton>
           </div>
-          <p className="mt-4 text-[12.5px] text-text-tertiary">
+          <p className="mt-4 text-[13.5px] text-text-tertiary">
             No card needed · Live in under 10 minutes · Works on any website
           </p>
         </div>
@@ -150,9 +150,9 @@ function Hero() {
 
 function LogoStrip() {
   return (
-    <section className="border-b border-line bg-surface px-5 py-10 lg:px-8">
+    <section className="bg-surface px-5 py-14 lg:px-8">
       <div className="mx-auto w-full max-w-[1180px]">
-        <p className="text-center text-[12.5px] text-text-tertiary">
+        <p className="text-center text-[13.5px] text-text-tertiary">
           Works with the tools your business already runs on
         </p>
         <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
@@ -210,13 +210,13 @@ function Narrative() {
         {STEPS.map(({ Icon, title, body }, i) => (
           <li key={title}>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-surface text-accent">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-surface-subtle text-accent">
                 <Icon size={16} />
               </span>
               <span className="t-eyebrow text-text-muted">Step {i + 1}</span>
             </div>
             <h3 className="mt-4 text-[15px] font-semibold tracking-[-0.015em]">{title}</h3>
-            <p className="mt-2 text-[13.5px] leading-[1.6] text-text-tertiary">{body}</p>
+            <p className="mt-2 text-[15px] leading-[1.6] text-text-tertiary">{body}</p>
           </li>
         ))}
       </ol>
@@ -246,7 +246,7 @@ function Split({
             {points.map((p) => (
               <li key={p} className="flex gap-3">
                 <CheckIcon size={15} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                <span className="text-[13.5px] leading-[1.6] text-text-secondary">{p}</span>
+                <span className="text-[15px] leading-[1.6] text-text-secondary">{p}</span>
               </li>
             ))}
           </ul>
@@ -334,7 +334,7 @@ function ActionsSection() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent-ink">
               <ActionsIcon size={15} />
             </span>
-            <h3 className="mt-3.5 text-[14.5px] font-semibold tracking-[-0.015em]">{title}</h3>
+            <h3 className="mt-3.5 text-[16px] font-semibold tracking-[-0.015em]">{title}</h3>
             <p className="mt-1.5 text-[13px] leading-[1.6] text-text-tertiary">{body}</p>
           </Card>
         ))}
@@ -431,7 +431,7 @@ function PagesSection() {
           ["One place to change things", "Edit a section, publish, done. The Agent updates with it."],
         ].map(([t, b]) => (
           <Card key={t} className="p-5">
-            <h3 className="text-[14.5px] font-semibold tracking-[-0.015em]">{t}</h3>
+            <h3 className="text-[16px] font-semibold tracking-[-0.015em]">{t}</h3>
             <p className="mt-1.5 text-[13px] leading-[1.6] text-text-tertiary">{b}</p>
           </Card>
         ))}
@@ -458,7 +458,7 @@ function TrustSection() {
         ].map(([t, b]) => (
           <div key={t}>
             <ShieldIcon size={17} className="text-success" />
-            <h3 className="mt-3.5 text-[14.5px] font-semibold tracking-[-0.015em]">{t}</h3>
+            <h3 className="mt-3.5 text-[16px] font-semibold tracking-[-0.015em]">{t}</h3>
             <p className="mt-1.5 text-[13px] leading-[1.6] text-text-tertiary">{b}</p>
           </div>
         ))}
@@ -527,14 +527,14 @@ function Pricing() {
             </div>
             <p className="mt-4 flex items-baseline gap-1.5">
               <span className="t-num text-[32px] leading-none">{p.price}</span>
-              {p.cadence && <span className="text-[13px] text-text-tertiary">{p.cadence}</span>}
+              {p.cadence && <span className="text-[14px] text-text-tertiary">{p.cadence}</span>}
             </p>
             <p className="mt-3 text-[13px] leading-[1.6] text-text-tertiary">{p.body}</p>
-            <ul className="mt-6 space-y-2.5">
+            <ul className="mt-7 space-y-4">
               {p.features.map((f) => (
                 <li key={f} className="flex gap-2.5">
                   <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                  <span className="text-[13px] leading-[1.55] text-text-secondary">{f}</span>
+                  <span className="text-[15px] leading-[1.6] text-text-secondary">{f}</span>
                 </li>
               ))}
             </ul>
@@ -572,7 +572,7 @@ function FinalCta() {
             Sign in
           </LinkButton>
         </div>
-        <p className="mt-4 text-[12.5px] text-text-tertiary">
+        <p className="mt-4 text-[13.5px] text-text-tertiary">
           Add a URL, approve what it learned, paste one line of script.
         </p>
       </div>

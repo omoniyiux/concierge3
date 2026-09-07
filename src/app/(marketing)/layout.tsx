@@ -13,8 +13,8 @@ const NAV = [
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-canvas">
-      <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur">
-        <div className="mx-auto flex h-[62px] w-full max-w-[1180px] items-center gap-8 px-5 lg:px-8">
+      <header className="sticky top-0 z-40 bg-canvas/85 backdrop-blur">
+        <div className="mx-auto flex h-[84px] w-full max-w-[1180px] items-center gap-8 px-5 lg:px-8">
           <Link href="/" className="rounded-lg" aria-label="Concierge home">
             <ConciergeWordmark />
           </Link>
@@ -24,7 +24,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
                 <li key={n.href}>
                   <Link
                     href={n.href}
-                    className="rounded-md px-2.5 py-1.5 text-[13px] text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
+                    className="rounded-md px-2.5 py-1.5 text-[14px] text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
                   >
                     {n.label}
                   </Link>
@@ -45,7 +45,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
 
       {children}
 
-      <footer className="border-t border-line bg-surface">
+      <footer className="bg-surface">
         <div className="mx-auto w-full max-w-[1180px] px-5 py-14 lg:px-8">
           <div className="flex flex-wrap gap-x-16 gap-y-10">
             <div className="min-w-[240px] flex-1">
@@ -65,7 +65,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
                 <ul className="mt-3.5 space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l}>
-                      <span className="text-[13px] text-text-secondary transition-colors hover:text-text-primary">
+                      <span className="text-[14px] text-text-secondary transition-colors hover:text-text-primary">
                         {l}
                       </span>
                     </li>
@@ -74,7 +74,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               </div>
             ))}
           </div>
-          <p className="mt-12 border-t border-line pt-6 text-[12px] text-text-tertiary">
+          <p className="mt-12 border-t border-divider pt-6 text-[14px] text-text-tertiary">
             © {new Date().getFullYear()} Concierge. All rights reserved.
           </p>
         </div>
