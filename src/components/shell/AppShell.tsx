@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { CommandMenu } from "@/components/shell/CommandMenu";
 import { CloseIcon, PanelIcon, SearchIcon } from "@/components/icons";
@@ -28,6 +28,16 @@ function MobileBar({ siteId }: { siteId: string }) {
 
 export function AppShell({ siteId, children }: { siteId: string; children: ReactNode }) {
   const { mobileNavOpen, setMobileNavOpen } = useWorkspace();
+
+  // The workspace owns its own scrolling; the document must not also scroll,
+  // or the shell ends up shorter than the page behind it.
+  useEffect(() => {
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, []);
 
   return (
     <div className="flex h-dvh max-h-dvh w-full overflow-hidden bg-canvas">

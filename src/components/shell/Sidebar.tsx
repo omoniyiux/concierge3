@@ -34,7 +34,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
     <nav
       aria-label="Workspace"
       style={{ width: collapsed ? "var(--sidebar-rail-w)" : "var(--sidebar-w)" }}
-      className="sticky top-0 flex h-dvh shrink-0 flex-col self-start bg-surface transition-[width] duration-[var(--dur-base)] ease-[var(--ease-out-cg)]"
+      className="flex h-full min-h-dvh shrink-0 flex-col self-stretch bg-surface transition-[width] duration-[var(--dur-base)] ease-[var(--ease-out-cg)]"
     >
       {/* Brand ---------------------------------------------------------- */}
       <div

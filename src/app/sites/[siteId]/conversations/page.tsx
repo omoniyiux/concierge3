@@ -76,8 +76,8 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
             selectedId && "hidden lg:flex",
           )}
         >
-          <div className="border-b border-divider px-4 pb-3 pt-4">
-            <div className="flex items-baseline justify-between">
+          <div className="border-b border-divider px-4 pb-4">
+            <div className="flex h-14 items-center justify-between">
               <h1 className="t-section">Conversations</h1>
               <span className="text-[11.5px] tabular-nums text-text-tertiary">{list.length} shown</span>
             </div>
@@ -85,10 +85,9 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search visitors and messages"
-              className="mt-3"
               aria-label="Search conversations"
             />
-            <div className="mt-3">
+            <div className="mt-2">
               <Select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as Filter)}
@@ -119,7 +118,7 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
                       onClick={() => setSelectedId(c.id)}
                       aria-current={active ? "true" : undefined}
                       className={cx(
-                        "relative w-full border-b border-divider px-3.5 py-2.5 text-left transition-colors",
+                        "relative w-full border-b border-divider px-4 py-3 text-left transition-colors",
                         active ? "bg-surface-hover" : "hover:bg-surface-subtle",
                       )}
                     >
@@ -185,7 +184,7 @@ function ConversationDetail({
   return (
     <div className="flex min-w-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-divider bg-surface px-3.5 py-2.5">
+        <header className="flex h-14 items-center gap-3 border-b border-divider bg-surface px-5">
           <IconButton label="Back to list" size={30} className="lg:hidden" onClick={onBack}>
             <ChevronLeft size={17} />
           </IconButton>
@@ -211,7 +210,7 @@ function ConversationDetail({
           </Badge>
         </header>
 
-        <div className="cg-scroll min-h-0 flex-1 space-y-5 overflow-y-auto bg-canvas p-5">
+        <div className="cg-scroll min-h-0 flex-1 space-y-4 overflow-y-auto bg-canvas p-5">
           {c.messages.map((m) => {
             if (m.author === "system") {
               return (
@@ -239,7 +238,7 @@ function ConversationDetail({
 
                 <div
                   className={cx(
-                    "mt-1.5 flex max-w-[76%] flex-wrap items-center gap-x-2.5 gap-y-1",
+                    "mt-1 flex max-w-[76%] flex-wrap items-center gap-x-2.5 gap-y-1",
                     isVisitor ? "" : "justify-end",
                   )}
                 >
@@ -290,7 +289,7 @@ function ConversationDetail({
           )}
         </div>
 
-        <footer className="flex items-center gap-2 border-t border-divider bg-surface p-3">
+        <footer className="flex items-center gap-2 border-t border-divider bg-surface px-5 py-3">
           <Button variant="secondary" size="sm" leading={<MailIcon size={13} />}>
             Reply by email
           </Button>
@@ -318,7 +317,7 @@ function ConversationDetail({
           {lead && (
             <>
               <h3 className="t-eyebrow mt-7 text-text-muted">Qualification</h3>
-              <div className="mt-3 p-4">
+              <div className="mt-3">
                 <div className="flex items-baseline justify-between">
                   <span className="text-[13px] font-medium capitalize">{lead.qualification} lead</span>
                   <span className="t-num text-[15px]">{lead.score}</span>
@@ -335,7 +334,7 @@ function ConversationDetail({
                 <dl className="mt-4 space-y-3">
                   {lead.service && <Row label="Service" value={lead.service} />}
                   {lead.budget && <Row label="Budget" value={lead.budget} />}
-                  {lead.urgency && <Row label="Urgency" value={lead.urgency.replace("-", "")} caps />}
+                  {lead.urgency && <Row label="Urgency" value={lead.urgency.replace("-", " ")} caps />}
                   {lead.email && <Row label="Email" value={lead.email} />}
                   {lead.phone && <Row label="Phone" value={lead.phone} />}
                 </dl>
@@ -351,7 +350,7 @@ function ConversationDetail({
                   const a = ACTIONS.find((x) => x.id === id);
                   if (!a) return null;
                   return (
-                    <li key={id} className="flex items-center gap-2.5 bg-surface-subtle px-3.5 py-3">
+                    <li key={id} className="flex items-center gap-2.5 bg-surface-subtle px-3 py-2.5">
                       <ActionsIcon size={14} className="shrink-0 text-text-tertiary" />
                       <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">{a.name}</span>
                     </li>
@@ -364,7 +363,7 @@ function ConversationDetail({
           {c.routedTo && (
             <>
               <h3 className="t-eyebrow mt-7 text-text-muted">Routed to</h3>
-              <p className="mt-2.5 flex items-center gap-2 bg-surface-subtle px-3.5 py-3 text-[12px]">
+              <p className="mt-2.5 flex items-center gap-2 bg-surface-subtle px-3 py-2.5 text-[12px]">
                 <RoutingIcon size={14} className="shrink-0 text-text-tertiary" />
                 {c.routedTo}
               </p>
