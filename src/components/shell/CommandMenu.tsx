@@ -96,7 +96,7 @@ function Palette({ siteId }: { siteId: string }) {
         role="dialog"
         aria-modal="true"
         aria-label="Search Concierge"
-        className="cg-enter relative w-full max-w-[560px] overflow-hidden rounded-[18px] bg-surface shadow-xl"
+        className="cg-enter relative w-full max-w-[560px] overflow-hidden bg-surface shadow-xl"
       >
         <div className="flex h-12 items-center gap-2.5 border-b border-divider px-3.5">
           <SearchIcon size={17} className="shrink-0 text-text-muted" />
@@ -120,14 +120,14 @@ function Palette({ siteId }: { siteId: string }) {
             }}
             placeholder="Search sites, conversations, leads and settings"
             aria-label="Search Concierge"
-            className="h-full flex-1 bg-transparent text-[14px] outline-none placeholder:text-text-muted"
+            className="h-full flex-1 bg-transparent text-[12.5px] outline-none placeholder:text-text-muted"
           />
-          <kbd className="rounded border border-line px-1.5 py-px text-[11px] text-text-muted">ESC</kbd>
+          <kbd className="border border-line px-1.5 py-px text-[10px] text-text-muted">ESC</kbd>
         </div>
 
         <div className="cg-scroll max-h-[48vh] overflow-y-auto p-1.5">
           {results.length === 0 ? (
-            <p className="px-3 py-10 text-center text-[14px] text-text-tertiary">
+            <p className="px-3 py-10 text-center text-[12.5px] text-text-tertiary">
               Nothing matches &ldquo;{q}&rdquo;. Try a site, a visitor name or a settings page.
             </p>
           ) : (
@@ -144,13 +144,15 @@ function Palette({ siteId }: { siteId: string }) {
                       onMouseEnter={() => setCursor(idx)}
                       onClick={e.run}
                       className={cx(
-                        "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left",
+                        "flex w-full items-center gap-3 px-2.5 py-2 text-left",
                         active ? "bg-surface-hover" : "",
                       )}
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[14px] font-medium">{e.label}</span>
-                        {e.sub && <span className="block truncate text-[14px] text-text-tertiary">{e.sub}</span>}
+                        <span className="block truncate text-[12.5px] font-medium">{e.label}</span>
+                        {e.sub && (
+                          <span className="block truncate text-[12.5px] text-text-tertiary">{e.sub}</span>
+                        )}
                       </span>
                       {active && <ArrowRight size={14} className="shrink-0 text-text-muted" />}
                     </button>

@@ -5,14 +5,14 @@ import { LinkButton } from "@/components/ui";
 export default function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col bg-canvas px-5 py-8 lg:px-8">
-      <Link href="/" className="w-fit rounded-lg" aria-label="Concierge home">
+      <Link href="/" className="w-fit" aria-label="Concierge home">
         <ConciergeWordmark />
       </Link>
       <div className="flex flex-1 items-center justify-center">
         <div className="max-w-[44ch] text-center">
           <p className="t-eyebrow text-text-muted">404</p>
           <h1 className="t-page mt-2.5">This page does not exist</h1>
-          <p className="t-body mt-3 text-text-tertiary">
+          <p className="t-body mt-3 text-text-primary">
             The link may be out of date, or the site it pointed at may have been removed.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-2.5">

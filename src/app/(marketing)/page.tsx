@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 /* ============================================================================
    Built last, on purpose. Every screen below is the real product UI rendered
-   from the same components as the workspace — not a mockup of it.
+ from the same components as the workspace — not a mockup of it.
    ========================================================================== */
 
 export default function LandingPage() {
@@ -74,11 +74,7 @@ function Section({
   return (
     <section
       id={id}
-      className={cx(
-        "px-5 py-24 lg:px-8 lg:py-32",
-        tone === "surface" && "bg-surface",
-        className,
-      )}
+      className={cx("px-5 py-24 lg:px-8 lg:py-32", tone === "surface" && "bg-surface", className)}
     >
       <div className="mx-auto w-full max-w-[1180px]">{children}</div>
     </section>
@@ -101,8 +97,8 @@ function SectionIntro({
   return (
     <div className={cx(align === "center" ? "mx-auto max-w-[62ch] text-center" : "max-w-[54ch]", className)}>
       <p className="t-eyebrow text-accent-ink">{eyebrow}</p>
-      <h2 className="t-display mt-3.5 text-[32px] sm:text-[40px]">{title}</h2>
-      <p className="t-body mt-4 text-[14px] leading-[1.55] text-text-tertiary">{body}</p>
+      <h2 className="t-display mt-3.5 text-[23px] sm:text-[30px]">{title}</h2>
+      <p className="t-body mt-4 text-[12.5px] leading-[1.55] text-text-tertiary">{body}</p>
     </div>
   );
 }
@@ -117,12 +113,13 @@ function Hero() {
           <Badge tone="accent" className="mb-6">
             Answer · Guide · Act · Connect · Learn
           </Badge>
-          <h1 className="t-display mx-auto max-w-[16ch] text-[38px] sm:text-[54px] lg:text-[62px]">
+          <h1 className="t-display mx-auto max-w-[16ch] text-[28px] sm:text-[40px] lg:text-[46px]">
             Your website should respond in real time.
           </h1>
-          <p className="mx-auto mt-6 max-w-[52ch] text-[16px] leading-[1.6] text-text-tertiary">
-            Concierge learns your business from your own pages, answers visitors from knowledge you approve, finishes
-            real jobs like bookings and quotes, and brings in the right person with the context intact.
+          <p className="mx-auto mt-6 max-w-[52ch] text-[13.5px] leading-[1.6] text-text-tertiary">
+            Concierge learns your business from your own pages, answers visitors from knowledge you approve,
+            finishes real jobs like bookings and quotes, and brings in the right person with the context
+            intact.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <LinkButton href="/create-account" size="lg" trailing={<ArrowRight size={16} />}>
@@ -132,7 +129,7 @@ function Hero() {
               See it learn a website
             </LinkButton>
           </div>
-          <p className="mt-4 text-[13px] text-text-tertiary">
+          <p className="mt-4 text-[11.5px] text-text-tertiary">
             No card needed · Live in under 10 minutes · Works on any website
           </p>
         </div>
@@ -152,12 +149,12 @@ function LogoStrip() {
   return (
     <section className="bg-surface px-5 py-14 lg:px-8">
       <div className="mx-auto w-full max-w-[1180px]">
-        <p className="text-center text-[13px] text-text-tertiary">
+        <p className="text-center text-[11.5px] text-text-tertiary">
           Works with the tools your business already runs on
         </p>
         <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           {["Gmail", "Slack", "Calendly", "Stripe", "HubSpot", "WhatsApp", "Zapier", "Webhooks"].map((n) => (
-            <li key={n} className="text-[14px] font-medium tracking-[-0.01em] text-text-muted">
+            <li key={n} className="text-[12.5px] font-medium tracking-[-0.01em] text-text-muted">
               {n}
             </li>
           ))}
@@ -210,13 +207,13 @@ function Narrative() {
         {STEPS.map(({ Icon, title, body }, i) => (
           <li key={title}>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-surface-subtle text-accent">
+              <span className="flex h-8 w-8 items-center justify-center bg-surface-subtle text-accent">
                 <Icon size={16} />
               </span>
               <span className="t-eyebrow text-text-muted">Step {i + 1}</span>
             </div>
-            <h3 className="mt-4 text-[15px] font-semibold tracking-[-0.015em]">{title}</h3>
-            <p className="mt-2 text-[14px] leading-[1.55] text-text-tertiary">{body}</p>
+            <h3 className="mt-4 text-[13px] font-semibold tracking-[-0.015em]">{title}</h3>
+            <p className="mt-2 text-[12.5px] leading-[1.55] text-text-tertiary">{body}</p>
           </li>
         ))}
       </ol>
@@ -238,7 +235,12 @@ function Split({
   points?: string[];
 }) {
   return (
-    <div className={cx("grid items-center gap-12 lg:grid-cols-2 lg:gap-16", reverse && "lg:[&>*:first-child]:order-2")}>
+    <div
+      className={cx(
+        "grid items-center gap-12 lg:grid-cols-2 lg:gap-16",
+        reverse && "lg:[&>*:first-child]:order-2",
+      )}
+    >
       <div>
         {intro}
         {points && (
@@ -246,7 +248,7 @@ function Split({
             {points.map((p) => (
               <li key={p} className="flex gap-3">
                 <CheckIcon size={15} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                <span className="text-[14px] leading-[1.6] text-text-secondary">{p}</span>
+                <span className="text-[12.5px] leading-[1.6] text-text-secondary">{p}</span>
               </li>
             ))}
           </ul>
@@ -323,7 +325,10 @@ function ActionsSection() {
       />
       <div className="mt-11 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[
-          ["Book an appointment", "Offers real availability, collects what your team needs, creates the request."],
+          [
+            "Book an appointment",
+            "Offers real availability, collects what your team needs, creates the request.",
+          ],
           ["Request a quote", "Captures scope and budget for work that needs a human price."],
           ["Request a call", "The fastest handoff. Number plus page context, in seconds."],
           ["Capture contact details", "A light touch when someone is interested but not ready."],
@@ -331,11 +336,11 @@ function ActionsSection() {
           ["Book a consultation", "For anything you will not quote sight unseen."],
         ].map(([title, body]) => (
           <Card key={title} className="p-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent-ink">
+            <span className="flex h-8 w-8 items-center justify-center bg-accent-soft text-accent-ink">
               <ActionsIcon size={15} />
             </span>
-            <h3 className="mt-3.5 text-[16px] font-semibold tracking-[-0.015em]">{title}</h3>
-            <p className="mt-1.5 text-[13px] leading-[1.6] text-text-tertiary">{body}</p>
+            <h3 className="mt-3.5 text-[13.5px] font-semibold tracking-[-0.015em]">{title}</h3>
+            <p className="mt-1.5 text-[11.5px] leading-[1.6] text-text-tertiary">{body}</p>
           </Card>
         ))}
       </div>
@@ -346,9 +351,9 @@ function ActionsSection() {
         </ProductFrame>
         <div>
           <h3 className="t-section">Qualification happens while they talk.</h3>
-          <p className="t-body mt-3 text-[14px] leading-[1.55] text-text-tertiary">
-            Concierge works out what someone wants, roughly what it is worth and how soon they need it — then scores
-            them, so your team knows who to call first.
+          <p className="t-body mt-3 text-[12.5px] leading-[1.55] text-text-primary">
+            Concierge works out what someone wants, roughly what it is worth and how soon they need it — then
+            scores them, so your team knows who to call first.
           </p>
         </div>
       </div>
@@ -426,13 +431,16 @@ function PagesSection() {
       </div>
       <div className="mt-9 grid gap-4 sm:grid-cols-3">
         {[
-          ["A real website", "Hero, services, pricing, FAQs and contact — published on your own subdomain or domain."],
+          [
+            "A real website",
+            "Hero, services, pricing, FAQs and contact — published on your own subdomain or domain.",
+          ],
           ["The Agent included", "Answering from the same approved knowledge as any other Concierge site."],
           ["One place to change things", "Edit a section, publish, done. The Agent updates with it."],
         ].map(([t, b]) => (
           <Card key={t} className="p-5">
-            <h3 className="text-[16px] font-semibold tracking-[-0.015em]">{t}</h3>
-            <p className="mt-1.5 text-[13px] leading-[1.6] text-text-tertiary">{b}</p>
+            <h3 className="text-[13.5px] font-semibold tracking-[-0.015em]">{t}</h3>
+            <p className="mt-1.5 text-[11.5px] leading-[1.6] text-text-tertiary">{b}</p>
           </Card>
         ))}
       </div>
@@ -458,8 +466,8 @@ function TrustSection() {
         ].map(([t, b]) => (
           <div key={t}>
             <ShieldIcon size={17} className="text-success" />
-            <h3 className="mt-3.5 text-[16px] font-semibold tracking-[-0.015em]">{t}</h3>
-            <p className="mt-1.5 text-[13px] leading-[1.6] text-text-tertiary">{b}</p>
+            <h3 className="mt-3.5 text-[13.5px] font-semibold tracking-[-0.015em]">{t}</h3>
+            <p className="mt-1.5 text-[11.5px] leading-[1.6] text-text-tertiary">{b}</p>
           </div>
         ))}
       </div>
@@ -500,7 +508,13 @@ const PLANS = [
     price: "Talk to us",
     cadence: "",
     body: "For agencies and multi-location businesses.",
-    features: ["Unlimited websites", "Agency workspace", "Client roll-up reporting", "SSO and audit logs", "Priority support"],
+    features: [
+      "Unlimited websites",
+      "Agency workspace",
+      "Client roll-up reporting",
+      "SSO and audit logs",
+      "Priority support",
+    ],
     cta: "Book a call",
     featured: false,
   },
@@ -522,19 +536,19 @@ function Pricing() {
             className={cx("flex flex-col p-6", p.featured && "border-ink shadow-md ring-1 ring-ink")}
           >
             <div className="flex items-center gap-2">
-              <h3 className="text-[14px] font-semibold">{p.name}</h3>
+              <h3 className="text-[12.5px] font-semibold">{p.name}</h3>
               {p.featured && <Badge tone="accent">Most popular</Badge>}
             </div>
             <p className="mt-4 flex items-baseline gap-1.5">
-              <span className="t-num text-[28px] leading-none">{p.price}</span>
-              {p.cadence && <span className="text-[14px] text-text-tertiary">{p.cadence}</span>}
+              <span className="t-num text-[21px] leading-none">{p.price}</span>
+              {p.cadence && <span className="text-[12.5px] text-text-tertiary">{p.cadence}</span>}
             </p>
-            <p className="mt-3 text-[13px] leading-[1.6] text-text-tertiary">{p.body}</p>
+            <p className="mt-3 text-[11.5px] leading-[1.6] text-text-tertiary">{p.body}</p>
             <ul className="mt-5 space-y-3">
               {p.features.map((f) => (
                 <li key={f} className="flex gap-2.5">
                   <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                  <span className="text-[14px] leading-[1.6] text-text-secondary">{f}</span>
+                  <span className="text-[12.5px] leading-[1.6] text-text-secondary">{f}</span>
                 </li>
               ))}
             </ul>
@@ -558,10 +572,8 @@ function FinalCta() {
   return (
     <section className="px-5 py-24 lg:px-8 lg:py-32">
       <div className="mx-auto w-full max-w-[46ch] text-center">
-        <h2 className="t-display text-[34px] sm:text-[46px]">
-          Your website already has the visitors.
-        </h2>
-        <p className="mx-auto mt-5 max-w-[46ch] text-[16px] leading-[1.6] text-text-tertiary">
+        <h2 className="t-display text-[25px] sm:text-[34px]">Your website already has the visitors.</h2>
+        <p className="mx-auto mt-5 max-w-[46ch] text-[13.5px] leading-[1.6] text-text-tertiary">
           Give it the ability to answer them, help them, and hand the good ones to you.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -572,7 +584,7 @@ function FinalCta() {
             Sign in
           </LinkButton>
         </div>
-        <p className="mt-4 text-[13px] text-text-tertiary">
+        <p className="mt-4 text-[11.5px] text-text-tertiary">
           Add a URL, approve what it learned, paste one line of script.
         </p>
       </div>

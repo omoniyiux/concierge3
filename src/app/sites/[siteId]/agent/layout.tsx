@@ -56,25 +56,25 @@ export default function AgentLayout({
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cx(
-                  "relative flex h-12 shrink-0 items-center gap-2 px-3 text-[15px] transition-colors duration-[var(--dur-micro)]",
+                  "relative flex h-12 shrink-0 items-center gap-2 px-3 text-[13px] transition-colors duration-[var(--dur-micro)]",
                   active
                     ? "font-semibold text-text-primary"
                     : "font-medium text-text-tertiary hover:text-text-primary",
                 )}
               >
                 {label}
-                {badge === "dot" && <span className="h-1.5 w-1.5 rounded-full bg-danger" />}
+                {badge === "dot" && <span className="h-1.5 w-1.5 bg-danger" />}
                 {typeof badge === "number" && (
                   <span
                     className={cx(
-                      "rounded-full px-1.5 py-px text-[12px] font-semibold tabular-nums",
+                      "px-1.5 py-px text-[11px] font-semibold tabular-nums",
                       active ? "bg-ink text-text-inverse" : "bg-surface-sunken text-text-tertiary",
                     )}
                   >
                     {badge}
                   </span>
                 )}
-                {active && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-ink" />}
+                {active && <span className="absolute inset-x-2 -bottom-px h-0.5 bg-ink" />}
               </Link>
             );
           })}

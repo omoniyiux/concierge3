@@ -91,12 +91,17 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
       <header className="flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
         <div>
           <h1 className="t-greeting">{greeting(now.getHours())}, Olaifa</h1>
-          <p className="t-body mt-3 max-w-[54ch] text-text-tertiary">
+          <p className="t-body mt-3 max-w-[54ch] text-text-primary">
             Here is what Concierge has been doing on {site.name}, and what needs you next.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <LinkButton href={`/sites/${siteId}/agent`} variant="secondary" size="lg" leading={<EyeIcon size={17} />}>
+          <LinkButton
+            href={`/sites/${siteId}/agent`}
+            variant="secondary"
+            size="lg"
+            leading={<EyeIcon size={17} />}
+          >
             Test the Agent
           </LinkButton>
           {site.installState === "detected" ? (
@@ -121,8 +126,16 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
               hint: site.status === "live" ? "Answering visitors now" : "Not yet answering",
               live: site.status === "live",
             },
-            { label: "Site Brain", value: BRAIN.ready ? "Ready" : "Learning", hint: `${BRAIN.approvedCount} of ${BRAIN.itemCount} approved` },
-            { label: "Install", value: site.installState === "detected" ? "Detected" : "Missing", hint: "Script found on the live site" },
+            {
+              label: "Site Brain",
+              value: BRAIN.ready ? "Ready" : "Learning",
+              hint: `${BRAIN.approvedCount} of ${BRAIN.itemCount} approved`,
+            },
+            {
+              label: "Install",
+              value: site.installState === "detected" ? "Detected" : "Missing",
+              hint: "Script found on the live site",
+            },
             {
               label: "Routing",
               value: failing.length ? `${failing.length} failing` : "All delivering",
@@ -132,11 +145,15 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
           ].map((c) => (
             <Card key={c.label} className="p-6">
               <p className="t-eyebrow text-text-muted">{c.label}</p>
-              <p className={`mt-3.5 text-[17px] font-semibold tracking-[-0.02em] ${c.alert ? "text-danger" : ""}`}>
-                {c.live && <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-success cg-live-dot" />}
+              <p
+                className={`mt-3.5 text-[14px] font-semibold tracking-[-0.02em] ${c.alert ? "text-danger" : ""}`}
+              >
+                {c.live && (
+                  <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 bg-success cg-live-dot" />
+                )}
                 {c.value}
               </p>
-              <p className="mt-2 text-[13px] text-text-tertiary">{c.hint}</p>
+              <p className="mt-2 text-[11.5px] text-text-tertiary">{c.hint}</p>
             </Card>
           ))}
         </div>
@@ -145,7 +162,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
       {/* Needs your attention -------------------------------------------- */}
       <section className="mt-11">
         <h2 className="t-feature">Needs your attention</h2>
-        <p className="t-body mt-3 text-text-tertiary">Three things Concierge cannot resolve on its own.</p>
+        <p className="t-body mt-3 text-text-primary">Three things Concierge cannot resolve on its own.</p>
         <div className="mt-5">
           <AttentionList items={attention} />
         </div>
@@ -156,9 +173,13 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="t-feature">Last 14 days</h2>
-            <p className="t-body mt-3 text-text-tertiary">Measured from real visitor sessions on this site.</p>
+            <p className="t-body mt-3 text-text-primary">Measured from real visitor sessions on this site.</p>
           </div>
-          <LinkButton href={`/sites/${siteId}/insights`} variant="tertiary" trailing={<ArrowRight size={16} />}>
+          <LinkButton
+            href={`/sites/${siteId}/insights`}
+            variant="tertiary"
+            trailing={<ArrowRight size={16} />}
+          >
             All insights
           </LinkButton>
         </div>
@@ -167,9 +188,11 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
           {headline.map((m) => (
             <Card key={m.key} className="p-6">
               <p className="t-eyebrow text-text-muted">{m.label}</p>
-              <p className="t-num mt-3 text-[26px] leading-none">{formatMetric(m.value, m.format)}</p>
+              <p className="t-num mt-3 text-[19px] leading-none">{formatMetric(m.value, m.format)}</p>
               <div className="mt-5 flex items-end justify-between gap-3">
-                <span className={`text-[13px] font-medium tabular-nums ${m.delta > 0 ? "text-success" : "text-danger"}`}>
+                <span
+                  className={`text-[11.5px] font-medium tabular-nums ${m.delta > 0 ? "text-success" : "text-danger"}`}
+                >
                   {m.delta > 0 ? "↑" : "↓"} {Math.abs(m.delta)}%
                   <span className="ml-1.5 font-normal text-text-tertiary">vs. previous</span>
                 </span>
@@ -183,7 +206,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
       {/* Charts ----------------------------------------------------------- */}
       <section className="mt-11 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_400px]">
         <Card className="p-6">
-          <p className="text-[14px] font-bold">Conversation volume</p>
+          <p className="text-[12.5px] font-bold">Conversation volume</p>
           <h3 className="t-feature mt-4 max-w-[18ch]">
             {conversations.value} conversations, up {conversations.delta}%
           </h3>
@@ -193,8 +216,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
         </Card>
 
         <Card className="p-6">
-          <p className="text-[14px] font-bold">What visitors ask for</p>
-          <p className="t-body mt-3 text-text-tertiary">Ranked by volume, with the share that converts.</p>
+          <p className="text-[12.5px] font-bold">What visitors ask for</p>
+          <p className="t-body mt-3 text-text-primary">Ranked by volume, with the share that converts.</p>
           <div className="mt-6">
             <BarList
               items={INTENTS.slice(0, 6).map((i) => ({
@@ -211,8 +234,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
       <section className="mt-11 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_400px]">
         <Card className="overflow-hidden">
           <div className="p-6 pb-4">
-            <p className="text-[14px] font-bold">Recent activity</p>
-            <p className="t-body mt-3 text-text-tertiary">Everything Concierge did, newest first.</p>
+            <p className="text-[12.5px] font-bold">Recent activity</p>
+            <p className="t-body mt-3 text-text-primary">Everything Concierge did, newest first.</p>
           </div>
           <ul className="divide-y divide-divider">
             {ACTIVITY.map((event) => (
@@ -221,16 +244,23 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                   href={event.href ?? "#"}
                   className="flex items-start gap-4 px-6 py-4 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle"
                 >
-                  <Badge tone={event.kind === "routing" ? "restricted" : "neutral"} className="mt-0.5 shrink-0">
+                  <Badge
+                    tone={event.kind === "routing" ? "restricted" : "neutral"}
+                    className="mt-0.5 shrink-0"
+                  >
                     {KIND_LABEL[event.kind]}
                   </Badge>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-medium">{event.title}</span>
+                    <span className="block text-[12.5px] font-medium">{event.title}</span>
                     {event.detail && (
-                      <span className="mt-1.5 block text-[13px] leading-[1.5] text-text-tertiary">{event.detail}</span>
+                      <span className="mt-1.5 block text-[11.5px] leading-[1.5] text-text-tertiary">
+                        {event.detail}
+                      </span>
                     )}
                   </span>
-                  <span className="shrink-0 text-[13px] tabular-nums text-text-muted">{relativeTime(event.at)}</span>
+                  <span className="shrink-0 text-[11.5px] tabular-nums text-text-muted">
+                    {relativeTime(event.at)}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -242,8 +272,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
             <div className="flex items-start gap-5">
               <RadialGauge value={BRAIN.coverage} label="Site Brain coverage" tone="accent" size={62} />
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-bold">Site Brain coverage</p>
-                <p className="mt-2.5 text-[14px] leading-[1.5] text-text-tertiary">
+                <p className="text-[12.5px] font-bold">Site Brain coverage</p>
+                <p className="mt-2.5 text-[12.5px] leading-[1.5] text-text-tertiary">
                   Concierge answers confidently across {BRAIN.coverage}% of what visitors ask.
                 </p>
               </div>
@@ -255,23 +285,29 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                 { label: "Missing", value: BRAIN.missingCount, tone: "text-text-muted" },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between">
-                  <dt className="text-[13.5px] text-text-secondary">{row.label}</dt>
-                  <dd className={`text-[14px] font-semibold tabular-nums ${row.tone}`}>{row.value}</dd>
+                  <dt className="text-[12px] text-text-secondary">{row.label}</dt>
+                  <dd className={`text-[12.5px] font-semibold tabular-nums ${row.tone}`}>{row.value}</dd>
                 </div>
               ))}
             </dl>
-            <LinkButton href={`/sites/${siteId}/agent/brain`} variant="secondary" size="lg" block className="mt-5">
+            <LinkButton
+              href={`/sites/${siteId}/agent/brain`}
+              variant="secondary"
+              size="lg"
+              block
+              className="mt-5"
+            >
               Open Site Brain
             </LinkButton>
           </Card>
 
           {/* The one place Concierge orange leads. */}
           <Card className="bg-accent-subtle p-6">
-            <p className="text-[15px] font-bold text-accent-ink">Suggested next step</p>
+            <p className="text-[13px] font-bold text-accent-ink">Suggested next step</p>
             <h3 className="t-feature mt-4">Answer the questions your site keeps missing</h3>
             <p className="t-body mt-4 text-text-secondary">
-              Five questions came up repeatedly this month that Concierge could not answer. Closing them is the
-              fastest way to lift your conversion rate.
+              Five questions came up repeatedly this month that Concierge could not answer. Closing them is
+              the fastest way to lift your conversion rate.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <LinkButton href={`/sites/${siteId}/insights`} size="lg">

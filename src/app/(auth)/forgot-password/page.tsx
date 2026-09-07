@@ -25,7 +25,14 @@ export default function ForgotPasswordPage() {
           }}
         >
           <Field label="Email" htmlFor="email">
-            <Input id="email" type="email" autoComplete="email" placeholder="you@company.com" className="h-11" required />
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@company.com"
+              className="h-11"
+              required
+            />
           </Field>
           <Button type="submit" block size="lg">
             Send reset link
@@ -33,7 +40,7 @@ export default function ForgotPasswordPage() {
         </form>
       )}
 
-      <p className="mt-7 border-t border-divider pt-6 text-[14px] text-text-tertiary">
+      <p className="mt-7 border-t border-divider pt-6 text-[12.5px] text-text-tertiary">
         <Link href="/sign-in" className="font-medium text-text-primary underline underline-offset-2">
           Back to sign in
         </Link>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SiteMark } from "@/components/shell/ConciergeMark";
 import { CheckIcon, ChevronUpDown, PlusIcon } from "@/components/icons";
-import { Badge} from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { ORG, SITES } from "@/lib/demo-data";
 import type { Site } from "@/lib/types";
@@ -65,19 +65,21 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
         className={cx(
           // Same row geometry as a nav destination, and no fill of its own — a
           // filled block here reads louder than the active page.
-          "flex h-[34px] w-full items-center gap-[14px] rounded-[6px] pl-[11px] pr-[11px] text-text-primary transition-colors duration-[var(--dur-micro)]",
+          "flex h-[34px] w-full items-center gap-[14px] pl-[11px] pr-[11px] text-text-primary transition-colors duration-[var(--dur-micro)]",
           open ? "bg-surface-hover" : "hover:bg-[#f4f4f4]",
         )}
       >
         <SiteMark name={current.name} size={18} />
-        <span className="min-w-0 truncate text-left text-[15px] font-semibold leading-none">{current.name}</span>
+        <span className="min-w-0 truncate text-left text-[15px] font-semibold leading-none">
+          {current.name}
+        </span>
         <ChevronUpDown size={15} className="ml-auto shrink-0 text-text-muted" />
       </button>
 
       {open && (
         <div
           role="listbox"
-          className="cg-enter absolute left-0 top-[calc(100%+6px)] z-50 w-[300px] overflow-hidden rounded-[18px] bg-surface shadow-lg"
+          className="cg-enter absolute left-0 top-[calc(100%+6px)] z-50 w-[300px] overflow-hidden bg-surface shadow-lg"
         >
           <div className="flex items-center justify-between border-b border-divider px-3 py-2">
             <p className="t-eyebrow text-text-muted">{ORG.name}</p>
@@ -100,7 +102,7 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
                       router.push(`/sites/${s.id}/overview`);
                     }}
                     className={cx(
-                      "flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors",
+                      "flex w-full items-center gap-2.5 px-2 py-2 text-left transition-colors",
                       active ? "bg-surface-hover" : "hover:bg-surface-subtle",
                     )}
                   >
@@ -121,9 +123,9 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
             <Link
               href="/onboarding"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-[15px] font-medium text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
+              className="flex items-center gap-2.5 px-2 py-2 text-[15px] font-medium text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-dashed border-line-strong">
+              <span className="flex h-7 w-7 items-center justify-center border border-dashed border-line-strong">
                 <PlusIcon size={14} />
               </span>
               Add a website

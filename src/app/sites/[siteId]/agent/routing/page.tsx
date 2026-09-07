@@ -99,8 +99,9 @@ export default function RoutingPage() {
           failing.length > 0 ? (
             <Card className="flex flex-wrap items-center gap-3 border-danger-line bg-danger-soft p-4">
               <AlertIcon size={17} className="shrink-0 text-danger" />
-              <p className="min-w-0 flex-1 text-[13px]">
-                <span className="font-medium">{failing[0].name} is not delivering.</span>{" "}
+              <p className="min-w-0 flex-1 text-[11.5px]">
+                <span className="font-medium">{failing[0].name} is not delivering.</span>
+                {""}
                 <span className="text-text-secondary">
                   Visitor requests are still captured — your team just is not hearing about them.
                 </span>
@@ -139,13 +140,13 @@ export default function RoutingPage() {
 
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong py-5 text-[15px] font-medium text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+            className="flex w-full items-center justify-center gap-2 border border-dashed border-line-strong py-5 text-[13px] font-medium text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={15} />
             Add a rule
           </button>
 
-          <p className="pt-2 text-[13px] text-text-tertiary">
+          <p className="pt-2 text-[11.5px] text-text-tertiary">
             Rules run top to bottom. The first one that matches wins, so keep the most specific at the top.
           </p>
         </div>
@@ -158,7 +159,7 @@ export default function RoutingPage() {
           ))}
           <button
             type="button"
-            className="flex min-h-[168px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong p-5 text-[15px] font-medium text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+            className="flex min-h-[168px] flex-col items-center justify-center gap-2 border border-dashed border-line-strong p-5 text-[13px] font-medium text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={17} />
             Add a destination
@@ -180,7 +181,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
   return (
     <Card className={cx("p-5", !rule.enabled && "bg-surface-subtle/60")}>
       <div className="flex items-start gap-4">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-[14px] font-semibold tabular-nums text-text-tertiary">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center bg-surface-subtle text-[12.5px] font-semibold tabular-nums text-text-tertiary">
           {order}
         </span>
 
@@ -196,7 +197,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
             {rule.conditions.map((c, i) => (
               <span key={`${c.field}-${i}`} className="flex flex-wrap items-center gap-2">
                 {i > 0 && <span className="t-eyebrow text-text-muted">and</span>}
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-surface-subtle-subtle px-2.5 py-1.5 text-[13.5px]">
+                <span className="inline-flex items-center gap-1.5 bg-surface-subtle-subtle px-2.5 py-1.5 text-[12px]">
                   <span className="text-text-tertiary">{FIELD_LABEL[c.field]}</span>
                   <span className="text-text-muted">{OP_LABEL[c.operator]}</span>
                   <span className="font-medium">
@@ -209,13 +210,13 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
             <ArrowRight size={15} className="shrink-0 text-text-muted" />
 
             <span className="t-eyebrow shrink-0 text-text-muted">Then</span>
-            <span className="inline-flex items-center gap-2 rounded-xl bg-surface-subtle px-2.5 py-1.5 text-[14px] font-medium">
+            <span className="inline-flex items-center gap-2 bg-surface-subtle px-2.5 py-1.5 text-[12.5px] font-medium">
               <Icon size={13} className="text-text-tertiary" />
               {destination?.name ?? "No destination"}
             </span>
           </div>
 
-          <p className="mt-3 text-[14px] text-text-tertiary">
+          <p className="mt-3 text-[12.5px] text-text-tertiary">
             Matched {rule.matches30d} times in the last 30 days
             {destination?.status === "failing" && (
               <span className="ml-1.5 font-medium text-danger">· destination is failing</span>
@@ -246,7 +247,7 @@ function DestinationCard({ destination: d }: { destination: Destination }) {
       <div className="flex items-start gap-3">
         <span
           className={cx(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+            "flex h-8 w-8 shrink-0 items-center justify-center",
             failing ? "bg-danger-soft text-danger" : "bg-surface-subtle text-text-secondary",
           )}
         >
@@ -254,7 +255,7 @@ function DestinationCard({ destination: d }: { destination: Destination }) {
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{d.name}</h3>
-          <p className="mt-0.5 truncate text-[14px] text-text-tertiary">{d.target}</p>
+          <p className="mt-0.5 truncate text-[12.5px] text-text-tertiary">{d.target}</p>
         </div>
         <Badge tone={s.tone} dot={d.status === "connected"} pulse={d.status === "connected"}>
           {s.label}
@@ -265,7 +266,7 @@ function DestinationCard({ destination: d }: { destination: Destination }) {
         <p className="t-eyebrow text-text-muted">Tells this destination when</p>
         <ul className="mt-2 space-y-1">
           {d.moments.map((m) => (
-            <li key={m} className="flex items-center gap-1.5 text-[13.5px] text-text-secondary">
+            <li key={m} className="flex items-center gap-1.5 text-[12px] text-text-secondary">
               <CheckIcon size={12} className="shrink-0 text-text-muted" />
               {m === "specialist-requested" && "A visitor asks for a person"}
               {m === "call-requested" && "A visitor asks for a call"}
@@ -279,14 +280,14 @@ function DestinationCard({ destination: d }: { destination: Destination }) {
       </div>
 
       {failing ? (
-        <div className="mt-4 rounded-lg border border-danger-line bg-danger-soft p-3">
-          <p className="text-[15px] font-medium text-danger">Last delivery failed</p>
-          <p className="mt-1 text-[14px] leading-[1.55] text-text-secondary">
+        <div className="mt-4 border border-danger-line bg-danger-soft p-3">
+          <p className="text-[13px] font-medium text-danger">Last delivery failed</p>
+          <p className="mt-1 text-[12.5px] leading-[1.55] text-text-secondary">
             The endpoint returned 503. Concierge will keep retrying for an hour, then stop.
           </p>
         </div>
       ) : (
-        <p className="mt-4 text-[14px] text-text-tertiary">
+        <p className="mt-4 text-[12.5px] text-text-tertiary">
           Last delivered {d.lastDeliveryAt ? relativeTime(d.lastDeliveryAt) : "never"}
         </p>
       )}
@@ -342,15 +343,17 @@ function DeliveryHistory() {
               key={rec.id}
               className="grid grid-cols-1 gap-x-4 gap-y-1.5 px-6 py-3.5 lg:grid-cols-[1fr_1.2fr_0.8fr_auto] lg:items-center"
             >
-              <span className="truncate text-[14px] font-medium">{dest?.name ?? "Removed destination"}</span>
-              <span className="truncate text-[13.5px] text-text-secondary">
-                {rec.moment.replace(/-/g, " ")}
+              <span className="truncate text-[12.5px] font-medium">
+                {dest?.name ?? "Removed destination"}
               </span>
+              <span className="truncate text-[12px] text-text-secondary">{rec.moment.replace(/-/g, "")}</span>
               <span>
                 <Badge tone={tone}>{rec.state}</Badge>
-                {rec.error && <span className="ml-2 text-[13px] text-text-tertiary">{rec.error}</span>}
+                {rec.error && <span className="ml-2 text-[11.5px] text-text-tertiary">{rec.error}</span>}
               </span>
-              <span className="text-[13px] tabular-nums text-text-muted lg:text-right">{relativeTime(rec.at)}</span>
+              <span className="text-[11.5px] tabular-nums text-text-muted lg:text-right">
+                {relativeTime(rec.at)}
+              </span>
             </li>
           );
         })}

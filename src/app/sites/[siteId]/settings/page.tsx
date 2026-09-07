@@ -79,14 +79,17 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
   /** Keeps the section deep-linkable, so the command palette can jump into one. */
   const openSection = (key: SectionKey) => {
     setSection(key);
-    router.replace(key === "general" ? `/sites/${siteId}/settings` : `/sites/${siteId}/settings?section=${key}`, {
-      scroll: false,
-    });
+    router.replace(
+      key === "general" ? `/sites/${siteId}/settings` : `/sites/${siteId}/settings?section=${key}`,
+      {
+        scroll: false,
+      },
+    );
   };
   const [accent, setAccent] = useState("#FF7A00");
   const [copied, setCopied] = useState(false);
 
-  const snippet = `<script src="https://cdn.poweredbyconcierge.com/agent.js"\n  data-site="${site.id}" defer></script>`;
+  const snippet = `<script src="https://cdn.poweredbyconcierge.com/agent.js"\n data-site="${site.id}"defer></script>`;
 
   return (
     <PageContainer wide>
@@ -108,7 +111,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                     onClick={() => openSection(key)}
                     aria-current={active ? "true" : undefined}
                     className={cx(
-                      "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
+                      "flex w-full items-center gap-2.5 px-2.5 py-2 text-left text-[11.5px] transition-colors",
                       active
                         ? "bg-surface-hover font-medium text-text-primary"
                         : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
@@ -159,10 +162,22 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   <SettingRow
                     title="Answer from suggested knowledge"
                     description="Off by default. When off, Concierge uses approved items only."
-                    control={<Toggle checked={false} onChange={() => undefined} label="Answer from suggested knowledge" />}
+                    control={
+                      <Toggle
+                        checked={false}
+                        onChange={() => undefined}
+                        label="Answer from suggested knowledge"
+                      />
+                    }
                   />
                 </div>
-                <LinkButton href={`/sites/${siteId}/agent/brain`} variant="secondary" size="sm" className="mt-4" leading={<BrainIcon size={13} />}>
+                <LinkButton
+                  href={`/sites/${siteId}/agent/brain`}
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4"
+                  leading={<BrainIcon size={13} />}
+                >
                   Open Site Brain
                 </LinkButton>
               </Panel>
@@ -183,7 +198,11 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
           {section === "appearance" && (
             <>
               <Panel className="p-6">
-                <SectionHead title="Accent" hint="Colours the launcher, the active states and the Concierge mark." className="mb-5" />
+                <SectionHead
+                  title="Accent"
+                  hint="Colours the launcher, the active states and the Concierge mark."
+                  className="mb-5"
+                />
                 <div className="flex flex-wrap gap-2">
                   {ACCENTS.map((a) => (
                     <button
@@ -191,11 +210,13 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                       type="button"
                       onClick={() => setAccent(a.hex)}
                       className={cx(
-                        "flex items-center gap-2 rounded-lg border px-3 py-2 text-[13.5px] transition-colors",
-                        accent === a.hex ? "border-ink ring-1 ring-ink" : "border-line hover:border-line-strong",
+                        "flex items-center gap-2 border px-3 py-2 text-[12px] transition-colors",
+                        accent === a.hex
+                          ? "border-ink ring-1 ring-ink"
+                          : "border-line hover:border-line-strong",
                       )}
                     >
-                      <span className="h-4 w-4 rounded-full" style={{ background: a.hex }} />
+                      <span className="h-4 w-4" style={{ background: a.hex }} />
                       {a.name}
                       {accent === a.hex && <CheckIcon size={13} />}
                     </button>
@@ -204,7 +225,11 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
               </Panel>
 
               <Panel className="p-6">
-                <SectionHead title="Launcher" hint="What a visitor sees before they open the conversation." className="mb-5" />
+                <SectionHead
+                  title="Launcher"
+                  hint="What a visitor sees before they open the conversation."
+                  className="mb-5"
+                />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Launcher label" htmlFor="s-launcher">
                     <Input id="s-launcher" defaultValue="Ask Concierge" />
@@ -265,11 +290,17 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
               <Card className="flex flex-wrap items-center gap-4 p-5">
                 <span
                   className={cx(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                    site.installState === "detected" ? "bg-approved-soft text-success" : "bg-surface-subtle text-text-tertiary",
+                    "flex h-9 w-9 shrink-0 items-center justify-center",
+                    site.installState === "detected"
+                      ? "bg-approved-soft text-success"
+                      : "bg-surface-subtle text-text-tertiary",
                   )}
                 >
-                  {site.installState === "detected" ? <CheckIcon size={17} strokeWidth={2.4} /> : <InstallIcon size={17} />}
+                  {site.installState === "detected" ? (
+                    <CheckIcon size={17} strokeWidth={2.4} />
+                  ) : (
+                    <InstallIcon size={17} />
+                  )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="t-card">
@@ -285,16 +316,20 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
               </Card>
 
               <Panel className="p-6">
-                <SectionHead title="Platform guides" hint="Step-by-step for the usual suspects." className="mb-4" />
+                <SectionHead
+                  title="Platform guides"
+                  hint="Step-by-step for the usual suspects."
+                  className="mb-4"
+                />
                 <div className="grid gap-2.5 sm:grid-cols-3">
                   {["WordPress", "Shopify", "Webflow", "Squarespace", "Wix", "Custom HTML"].map((p) => (
                     <button
                       key={p}
                       type="button"
-                      className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[13.5px] transition-colors hover:border-line-strong"
+                      className="bg-surface-subtle px-3 py-2.5 text-left text-[12px] transition-colors hover:border-line-strong"
                     >
                       <span className="block font-medium">{p}</span>
-                      <span className="mt-0.5 block text-[13px] text-text-tertiary">2 minute guide</span>
+                      <span className="mt-0.5 block text-[11.5px] text-text-tertiary">2 minute guide</span>
                     </button>
                   ))}
                 </div>
@@ -313,7 +348,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
               <ul className="divide-y divide-divider border-t border-divider">
                 {TEAM.map((m) => (
                   <li key={m.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-[11px] font-semibold text-text-secondary">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-surface-subtle text-[10px] font-semibold text-text-secondary">
                       {(m.name || m.email)
                         .split(/[\s@]/)
                         .slice(0, 2)
@@ -321,13 +356,13 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                         .join("")}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-medium">{m.name || m.email}</span>
-                      <span className="block truncate text-[14px] text-text-tertiary">
+                      <span className="block truncate text-[12.5px] font-medium">{m.name || m.email}</span>
+                      <span className="block truncate text-[12.5px] text-text-tertiary">
                         {m.name ? m.email : `Invited ${m.invitedAt ? relativeTime(m.invitedAt) : ""}`}
                       </span>
                     </span>
                     <Badge tone={m.role === "owner" ? "accent" : "neutral"}>{m.role}</Badge>
-                    <span className="text-[14px] text-text-tertiary">
+                    <span className="text-[12.5px] text-text-tertiary">
                       {m.siteIds === null ? "All sites" : `${m.siteIds.length} site`}
                     </span>
                     {m.status === "invited" && <Badge tone="review">Pending</Badge>}
@@ -355,7 +390,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   <SettingRow
                     key={label as string}
                     title={label as string}
-                    control={<Toggle checked={on as boolean} onChange={() => undefined} label={label as string} />}
+                    control={
+                      <Toggle checked={on as boolean} onChange={() => undefined} label={label as string} />
+                    }
                   />
                 ))}
               </div>
@@ -381,7 +418,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   <SettingRow
                     title="Mask contact details in transcripts"
                     description="Phone numbers and emails are hidden from anyone without lead access."
-                    control={<Toggle checked={false} onChange={() => undefined} label="Mask contact details" />}
+                    control={
+                      <Toggle checked={false} onChange={() => undefined} label="Mask contact details" />
+                    }
                   />
                 </div>
               </Panel>
@@ -395,7 +434,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                     control={<Toggle checked onChange={() => undefined} label="Restrict to domain" />}
                   />
                 </div>
-                <p className="mt-4 flex items-center gap-2 rounded-xl bg-surface-subtle-subtle p-3.5 text-[13.5px] text-text-secondary">
+                <p className="mt-4 flex items-center gap-2 bg-surface-subtle-subtle p-3.5 text-[12px] text-text-secondary">
                   <LockIcon size={14} className="shrink-0 text-text-tertiary" />
                   Concierge never reads pages behind a login, and never stores payment details.
                 </p>
@@ -430,9 +469,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   ].map(([label, value, limit]) => (
                     <div key={label}>
                       <dt className="t-eyebrow text-text-muted">{label}</dt>
-                      <dd className="t-num mt-2 text-[20px] leading-none">
+                      <dd className="t-num mt-2 text-[15.5px] leading-none">
                         {value}
-                        <span className="ml-1.5 text-[13px] font-normal text-text-tertiary">{limit}</span>
+                        <span className="ml-1.5 text-[11.5px] font-normal text-text-tertiary">{limit}</span>
                       </dd>
                     </div>
                   ))}
@@ -444,8 +483,8 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                 <ul className="divide-y divide-divider">
                   {["1 September 2026", "1 August 2026", "1 July 2026"].map((d) => (
                     <li key={d} className="flex items-center gap-4 py-3">
-                      <span className="min-w-0 flex-1 text-[13px]">{d}</span>
-                      <span className="text-[13px] tabular-nums">$99.00</span>
+                      <span className="min-w-0 flex-1 text-[11.5px]">{d}</span>
+                      <span className="text-[11.5px] tabular-nums">$99.00</span>
                       <Badge tone="approved">Paid</Badge>
                       <Button size="sm" variant="tertiary">
                         Download
@@ -472,10 +511,10 @@ function SettingRow({
   control: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-surface-subtle px-3.5 py-2.5">
+    <div className="flex items-center gap-4 bg-surface-subtle px-3.5 py-2.5">
       <div className="min-w-0 flex-1">
-        <p className="text-[14px] font-medium">{title}</p>
-        {description && <p className="mt-0.5 text-[13.5px] leading-[1.45] text-text-tertiary">{description}</p>}
+        <p className="text-[12.5px] font-medium">{title}</p>
+        {description && <p className="mt-0.5 text-[12px] leading-[1.45] text-text-tertiary">{description}</p>}
       </div>
       <div className="shrink-0">{control}</div>
     </div>

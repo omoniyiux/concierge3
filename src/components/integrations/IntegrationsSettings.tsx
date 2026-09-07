@@ -113,9 +113,12 @@ export function IntegrationsSettings() {
         {broken.length > 0 ? (
           <Card className="mb-5 flex flex-wrap items-center gap-3 border-danger-line bg-danger-soft p-4">
             <AlertIcon size={17} className="shrink-0 text-danger" />
-            <p className="min-w-0 flex-1 text-[13px]">
-              <span className="font-medium">{broken[0].name} stopped responding.</span>{" "}
-              <span className="text-text-secondary">Anything that depends on it is queued rather than lost.</span>
+            <p className="min-w-0 flex-1 text-[11.5px]">
+              <span className="font-medium">{broken[0].name} stopped responding.</span>
+              {""}
+              <span className="text-text-secondary">
+                Anything that depends on it is queued rather than lost.
+              </span>
             </p>
             <Button size="sm" variant="secondary">
               Reconnect
@@ -123,12 +126,14 @@ export function IntegrationsSettings() {
           </Card>
         ) : (
           <div className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <span className="text-[13px]">
-              <span className="font-medium">{connected.length}</span>{" "}
+            <span className="text-[11.5px]">
+              <span className="font-medium">{connected.length}</span>
+              {""}
               <span className="text-text-tertiary">connected</span>
             </span>
-            <span className="text-[13px]">
-              <span className="font-medium">{INTEGRATIONS.length - connected.length}</span>{" "}
+            <span className="text-[11.5px]">
+              <span className="font-medium">{INTEGRATIONS.length - connected.length}</span>
+              {""}
               <span className="text-text-tertiary">available</span>
             </span>
           </div>
@@ -183,11 +188,17 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
   const soon = i.status === "coming-soon";
 
   return (
-    <Card className={cx("flex flex-col p-5", soon && "bg-surface-subtle/60", i.status === "error" && "border-danger-line")}>
+    <Card
+      className={cx(
+        "flex flex-col p-5",
+        soon && "bg-surface-subtle/60",
+        i.status === "error" && "border-danger-line",
+      )}
+    >
       <div className="flex items-start gap-3">
         <span
           className={cx(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-subtle",
+            "flex h-9 w-9 shrink-0 items-center justify-center bg-surface-subtle",
             soon && "opacity-55",
           )}
         >
@@ -195,7 +206,7 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{i.name}</h3>
-          <p className="mt-1 text-[13px] leading-[1.5] text-text-tertiary">{i.description}</p>
+          <p className="mt-1 text-[11.5px] leading-[1.5] text-text-tertiary">{i.description}</p>
         </div>
       </div>
 
@@ -207,7 +218,7 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
       </div>
 
       {i.accountLabel && (
-        <p className="mt-3 truncate text-[14px] text-text-tertiary">
+        <p className="mt-3 truncate text-[12.5px] text-text-tertiary">
           {i.accountLabel}
           {i.lastSyncAt && ` · synced ${relativeTime(i.lastSyncAt)}`}
         </p>

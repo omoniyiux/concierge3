@@ -3,8 +3,8 @@ import type { SVGProps } from "react";
 /* ============================================================================
    ICON SET
    One family, one grid (24px), one stroke weight (1.7px), round caps and
-   joins — the geometric, generously-sized line style the design direction
-   calls for. Icons support labels; they are never decoration.
+ joins — the geometric, generously-sized line style the design direction
+ calls for. Icons support labels; they are never decoration.
    ========================================================================== */
 
 export type IconProps = SVGProps<SVGSVGElement> & { size?: number };

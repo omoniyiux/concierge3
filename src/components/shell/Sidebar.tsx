@@ -24,8 +24,8 @@ export function Sidebar({ siteId }: { siteId: string }) {
   const { sidebarCollapsed: collapsed, toggleSidebar, setMobileNavOpen, setCommandOpen } = useWorkspace();
 
   const rowBase = collapsed
-    ? "flex h-9 w-9 items-center justify-center rounded-[10px] transition-colors duration-[var(--dur-micro)]"
-    : "flex h-[34px] items-center gap-3 rounded-[10px] pl-2.5 pr-2 transition-colors duration-[var(--dur-micro)]";
+    ? "flex h-9 w-9 items-center justify-center transition-colors duration-[var(--dur-micro)]"
+    : "flex h-[34px] items-center gap-3 pl-2.5 pr-2 transition-colors duration-[var(--dur-micro)]";
 
   const rowState = (active: boolean) =>
     active ? "bg-surface-hover font-semibold" : "font-medium hover:bg-[#f7f7f7]";
@@ -37,8 +37,19 @@ export function Sidebar({ siteId }: { siteId: string }) {
       className="sticky top-0 flex h-dvh shrink-0 flex-col self-start bg-surface transition-[width] duration-[var(--dur-base)] ease-[var(--ease-out-cg)]"
     >
       {/* Brand ---------------------------------------------------------- */}
-      <div className={cx("flex h-[72px] shrink-0 items-center", collapsed ? "justify-center px-2" : "pl-4 pr-2.5")}>
-        <Link href={`/sites/${siteId}/overview`} className="mr-auto rounded-lg" aria-label="Concierge">
+      <div
+        className={cx(
+          "flex h-[72px] shrink-0 items-center",
+          collapsed ? "justify-center px-2" : "pl-4 pr-2.5",
+        )}
+      >
+        {/* mr-auto only when expanded — in the rail it fights justify-center
+            and pushes the mark off the icon column. */}
+        <Link
+          href={`/sites/${siteId}/overview`}
+          className={cx(!collapsed && "mr-auto")}
+          aria-label="Concierge"
+        >
           {collapsed ? <ConciergeMark size={26} /> : <ConciergeWordmark />}
         </Link>
         {!collapsed && (
@@ -46,7 +57,12 @@ export function Sidebar({ siteId }: { siteId: string }) {
             <IconButton label="Search Concierge" size={32} onClick={() => setCommandOpen(true)}>
               <SearchIcon size={18} />
             </IconButton>
-            <IconButton label="Collapse sidebar" size={32} onClick={toggleSidebar} className="hidden lg:inline-flex">
+            <IconButton
+              label="Collapse sidebar"
+              size={32}
+              onClick={toggleSidebar}
+              className="hidden lg:inline-flex"
+            >
               <PanelIcon size={18} />
             </IconButton>
           </>
@@ -75,7 +91,9 @@ export function Sidebar({ siteId }: { siteId: string }) {
         {NAV.map((group, gi) => (
           <div key={group.label ?? "root"} className={gi > 0 ? "mt-4" : ""}>
             {group.label && !collapsed && (
-              <p className="flex h-[30px] items-center px-2.5 text-[13.5px] text-text-tertiary">{group.label}</p>
+              <p className="flex h-[30px] items-center px-2.5 text-[13.5px] text-text-tertiary">
+                {group.label}
+              </p>
             )}
             {group.label && collapsed && <div className="mx-auto my-2 h-px w-6 bg-line" />}
 
@@ -98,16 +116,16 @@ export function Sidebar({ siteId }: { siteId: string }) {
                     {!collapsed && attention !== null && (
                       <span className="ml-auto shrink-0">
                         {attention === "dot" ? (
-                          <span className="block h-1.5 w-1.5 rounded-full bg-danger" aria-label="Needs attention" />
+                          <span className="block h-1.5 w-1.5 bg-danger" aria-label="Needs attention" />
                         ) : (
-                          <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums text-accent-ink">
+                          <span className="bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums text-accent-ink">
                             {attention}
                           </span>
                         )}
                       </span>
                     )}
                     {collapsed && attention !== null && (
-                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />
+                      <span className="absolute right-1 top-1 h-1.5 w-1.5 bg-accent" />
                     )}
                   </Link>
                 );
@@ -145,15 +163,15 @@ export function Sidebar({ siteId }: { siteId: string }) {
         {!collapsed && (
           <Link
             href="/account"
-            className="mt-2 flex items-center gap-2.5 rounded-[10px] py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
+            className="mt-2 flex items-center gap-2.5 py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-[11.5px] font-semibold text-text-inverse">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-ink text-[11.5px] font-semibold text-text-inverse">
               OP
             </span>
             <span className="mr-auto truncate text-[14px] font-semibold">Olaifa Promise</span>
             <span className="relative mr-1">
               <BellIcon size={19} className="text-text-primary" />
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-surface bg-accent" />
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 border-2 border-surface bg-accent" />
             </span>
           </Link>
         )}

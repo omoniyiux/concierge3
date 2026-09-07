@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/shell/Sidebar";
 import { CommandMenu } from "@/components/shell/CommandMenu";
 import { CloseIcon, PanelIcon, SearchIcon } from "@/components/icons";
 import { getSite } from "@/lib/demo-data";
-import { IconButton} from "@/components/ui";
+import { IconButton } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { useWorkspace } from "@/lib/workspace";
 
@@ -18,7 +18,7 @@ function MobileBar({ siteId }: { siteId: string }) {
       <IconButton label="Open navigation" size={38} onClick={() => setMobileNavOpen(true)}>
         <PanelIcon size={20} />
       </IconButton>
-      <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{site.name}</span>
+      <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">{site.name}</span>
       <IconButton label="Search Concierge" size={38} onClick={() => setCommandOpen(true)}>
         <SearchIcon size={20} />
       </IconButton>
@@ -74,7 +74,7 @@ export function AppShell({ siteId, children }: { siteId: string; children: React
 /* ============================================================================
    PAGE FURNITURE
    Every workspace page opens the same way: eyebrow, title, one sentence that
-   says why the surface exists, and at most one primary action.
+ says why the surface exists, and at most one primary action.
    ========================================================================== */
 
 export function PageContainer({
@@ -93,7 +93,7 @@ export function PageContainer({
   return (
     <div
       style={{ maxWidth: wide ? "1090px" : "var(--content-max)" }}
-      className={cx("mx-auto w-full px-5 pb-24 pt-12 sm:px-7 lg:px-9", className)}
+      className={cx("mx-auto w-full px-5 pb-24 pt-16 sm:px-7 lg:px-9", className)}
     >
       {children}
     </div>
@@ -121,7 +121,7 @@ export function PageHeader({
         <div className="min-w-0 max-w-[64ch]">
           <p className="t-eyebrow text-text-muted">{eyebrow}</p>
           <h1 className="t-page mt-2.5">{title}</h1>
-          {description && <p className="t-body mt-3 max-w-[62ch] text-text-tertiary">{description}</p>}
+          {description && <p className="t-body mt-3 max-w-[62ch] text-text-primary">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>

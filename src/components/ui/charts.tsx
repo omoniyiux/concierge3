@@ -7,8 +7,8 @@ import type { MetricPoint } from "@/lib/types";
 /* ============================================================================
    CHARTS
    Hand-rolled SVG — no charting dependency. Every chart answers a business
-   question; none of them exist to fill space. One accent colour, one ink
-   colour, nothing rainbow.
+ question; none of them exist to fill space. One accent colour, one ink
+ colour, nothing rainbow.
    ========================================================================== */
 
 function path(points: MetricPoint[], w: number, h: number, pad = 2) {
@@ -40,7 +40,7 @@ export function Sparkline({
 }) {
   if (points.length < 2) return null;
   const pts = path(points, width, height);
-  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join("");
   const stroke =
     tone === "accent"
       ? "var(--color-accent)"
@@ -51,7 +51,14 @@ export function Sparkline({
           : "var(--color-text-secondary)";
   return (
     <svg width={width} height={height} className={cx("overflow-visible", className)} aria-hidden>
-      <path d={d} fill="none" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={d}
+        fill="none"
+        stroke={stroke}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="2" fill={stroke} />
     </svg>
   );
@@ -88,7 +95,7 @@ export function AreaChart({
     y: padT + innerH * (1 - (p.value - min) / span),
     p,
   }));
-  const line = pts.map((q, i) => `${i === 0 ? "M" : "L"}${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(" ");
+  const line = pts.map((q, i) => `${i === 0 ? "M" : "L"}${q.x.toFixed(1)},${q.y.toFixed(1)}`).join("");
   const area = `${line} L${pts[pts.length - 1].x.toFixed(1)},${padT + innerH} L${padL},${padT + innerH} Z`;
 
   const ticks = [0, 0.5, 1].map((t) => ({
@@ -110,7 +117,12 @@ export function AreaChart({
         {ticks.map((t) => (
           <g key={t.v}>
             <line x1={padL} x2={w - 12} y1={t.y} y2={t.y} stroke="var(--color-divider)" strokeWidth="1" />
-            <text x={padL - 8} y={t.y + 3.5} textAnchor="end" className="fill-[var(--color-text-muted)] text-[10px]">
+            <text
+              x={padL - 8}
+              y={t.y + 3.5}
+              textAnchor="end"
+              className="fill-[var(--color-text-muted)] text-[9.5px]"
+            >
               {t.v}
               {valueSuffix}
             </text>
@@ -118,7 +130,14 @@ export function AreaChart({
         ))}
 
         <path d={area} fill={`url(#${gid}-fill)`} />
-        <path d={line} fill="none" stroke="var(--color-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d={line}
+          fill="none"
+          stroke="var(--color-accent)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
 
         {pts.map((q, i) =>
           i % 3 === 0 || i === pts.length - 1 ? (
@@ -127,7 +146,7 @@ export function AreaChart({
               x={q.x}
               y={h - 6}
               textAnchor="middle"
-              className="fill-[var(--color-text-muted)] text-[10px]"
+              className="fill-[var(--color-text-muted)] text-[9.5px]"
             >
               {new Date(q.p.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             </text>
@@ -140,7 +159,7 @@ export function AreaChart({
 }
 
 /**
- * Ranked bars. Better than a pie for "what are visitors actually asking?" —
+ * Ranked bars. Better than a pie for"what are visitors actually asking?"—
  * it stays readable, sorts meaningfully and needs no legend.
  */
 export function BarList({
@@ -157,19 +176,23 @@ export function BarList({
     <ul className={cx("space-y-1", className)}>
       {items.map((item) => (
         <li key={item.label} className="group relative">
-          <div className="relative flex items-center gap-3 rounded-lg px-2.5 py-2">
+          <div className="relative flex items-center gap-3 px-2.5 py-2">
             <span
               aria-hidden
-              className="absolute inset-y-0 left-0 rounded-lg bg-accent-soft transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]"
+              className="absolute inset-y-0 left-0 bg-accent-soft transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]"
               style={{ width: `${(item.value / max) * 100}%` }}
             />
             <span className="relative min-w-0 flex-1">
-              <span className="block truncate text-[14px] font-medium">{item.label}</span>
-              {item.sub && <span className="block truncate text-[13px] text-text-tertiary">{item.sub}</span>}
+              <span className="block truncate text-[12.5px] font-medium">{item.label}</span>
+              {item.sub && (
+                <span className="block truncate text-[11.5px] text-text-tertiary">{item.sub}</span>
+              )}
             </span>
-            <span className="relative shrink-0 text-[13px] font-semibold tabular-nums">
+            <span className="relative shrink-0 text-[11.5px] font-semibold tabular-nums">
               {item.value}
-              {valueLabel && <span className="ml-1 text-[13.5px] font-normal text-text-tertiary">{valueLabel}</span>}
+              {valueLabel && (
+                <span className="ml-1 text-[12px] font-normal text-text-tertiary">{valueLabel}</span>
+              )}
             </span>
           </div>
         </li>
@@ -195,9 +218,21 @@ export function RadialGauge({
   const stroke =
     tone === "success" ? "var(--color-success)" : tone === "ink" ? "var(--color-ink)" : "var(--color-accent)";
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={`${label}: ${value}%`}>
+    <div
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${label}: ${value}%`}
+    >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-surface-sunken)" strokeWidth="4" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--color-surface-sunken)"
+          strokeWidth="4"
+        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -211,7 +246,7 @@ export function RadialGauge({
           className="transition-[stroke-dashoffset] duration-[600ms] ease-[var(--ease-out-cg)]"
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[13px] font-semibold tabular-nums">
+      <span className="absolute inset-0 flex items-center justify-center text-[11.5px] font-semibold tabular-nums">
         {value}%
       </span>
     </div>

@@ -34,8 +34,8 @@ type Tab = "review" | "library" | "sources";
 type Filter = "all" | "needs-review" | "approved" | "restricted" | "missing";
 
 /**
- * Site Brain — the answer to "what does Concierge know about my business, and
- * what is it allowed to say?" This is the product's trust surface, so status
+ * Site Brain — the answer to"what does Concierge know about my business, and
+ * what is it allowed to say?"This is the product's trust surface, so status
  * and evidence are visible on every row rather than hidden behind a click.
  */
 export default function SiteBrainPage() {
@@ -70,7 +70,7 @@ export default function SiteBrainPage() {
       if (filter === "approved" && i.status !== "approved") return false;
       if (filter === "restricted" && i.status !== "restricted") return false;
       if (filter === "missing" && i.status !== "missing") return false;
-      if (q && !(`${i.title} ${i.body}`.toLowerCase().includes(q))) return false;
+      if (q && !`${i.title} ${i.body}`.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [items, filter, query]);
@@ -127,7 +127,10 @@ export default function SiteBrainPage() {
             </Panel>
           ) : (
             <>
-              <SafeApproveBanner items={items} onApprove={(ids) => ids.forEach((id) => setStatus(id, "approved"))} />
+              <SafeApproveBanner
+                items={items}
+                onApprove={(ids) => ids.forEach((id) => setStatus(id, "approved"))}
+              />
               <div className="mt-5 space-y-4">
                 {needsAttention.map((item) => (
                   <KnowledgeCard
@@ -176,7 +179,13 @@ export default function SiteBrainPage() {
                 body="Try a different word, or add this as a new knowledge item so Concierge can answer it next time."
                 action={<Button leading={<PlusIcon size={15} />}>Add knowledge</Button>}
                 secondaryAction={
-                  <Button variant="tertiary" onClick={() => { setQuery(""); setFilter("all"); }}>
+                  <Button
+                    variant="tertiary"
+                    onClick={() => {
+                      setQuery("");
+                      setFilter("all");
+                    }}
+                  >
                     Clear filters
                   </Button>
                 }
@@ -188,11 +197,16 @@ export default function SiteBrainPage() {
                 <section key={category}>
                   <div className="mb-3 flex items-baseline gap-2.5">
                     <h2 className="t-section">{CATEGORY_LABEL[category]}</h2>
-                    <span className="text-[13px] tabular-nums text-text-muted">{list.length}</span>
+                    <span className="text-[11.5px] tabular-nums text-text-muted">{list.length}</span>
                   </div>
                   <div className="space-y-2.5">
                     {list.map((item) => (
-                      <KnowledgeCard key={item.id} item={item} onStatusChange={setStatus} onBodyChange={setBody} />
+                      <KnowledgeCard
+                        key={item.id}
+                        item={item}
+                        onStatusChange={setStatus}
+                        onBodyChange={setBody}
+                      />
                     ))}
                   </div>
                 </section>
@@ -223,7 +237,12 @@ function BrainSummary({
   return (
     <Card className="flex flex-wrap items-center gap-x-8 gap-y-5 p-5">
       <div className="flex items-center gap-4">
-        <RadialGauge value={coverage} label="Approved knowledge" tone={coverage >= 80 ? "success" : "accent"} size={54} />
+        <RadialGauge
+          value={coverage}
+          label="Approved knowledge"
+          tone={coverage >= 80 ? "success" : "accent"}
+          size={54}
+        />
         <div>
           <p className="t-card">
             {requiredPending === 0 ? "Ready to answer" : `${requiredPending} required items outstanding`}
@@ -244,7 +263,7 @@ function BrainSummary({
         ].map((s) => (
           <div key={s.label}>
             <dt className="t-eyebrow text-text-muted">{s.label}</dt>
-            <dd className={cx("t-num mt-1.5 text-[17px] leading-none", s.cls)}>{s.value}</dd>
+            <dd className={cx("t-num mt-1.5 text-[14px] leading-none", s.cls)}>{s.value}</dd>
           </div>
         ))}
       </dl>
@@ -264,8 +283,9 @@ function SafeApproveBanner({
   return (
     <Card className="flex flex-wrap items-center gap-3 border-accent-line bg-accent-subtle p-4">
       <SparkIcon size={16} className="shrink-0 text-accent" />
-      <p className="min-w-0 flex-1 text-[13px]">
-        <span className="font-medium">{safe.length} items came back with high confidence.</span>{" "}
+      <p className="min-w-0 flex-1 text-[11.5px]">
+        <span className="font-medium">{safe.length} items came back with high confidence.</span>
+        {""}
         <span className="text-text-secondary">Approve them together, then read the rest properly.</span>
       </p>
       <Button size="sm" variant="secondary" onClick={() => onApprove(safe.map((i) => i.id))}>
@@ -301,8 +321,8 @@ function SourcesTab() {
             <li key={s.label} className="flex items-center gap-3.5 px-6 py-3.5">
               <SourceIcon size={16} className="shrink-0 text-text-muted" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-medium">{s.label}</span>
-                <span className="block truncate text-[14px] text-text-tertiary">
+                <span className="block text-[12.5px] font-medium">{s.label}</span>
+                <span className="block truncate text-[12.5px] text-text-tertiary">
                   {s.url ? `northlanedental.com${s.url}` : "Added by you"}
                 </span>
               </span>
@@ -345,8 +365,8 @@ function SourcesTab() {
         <Card className="p-6">
           <h3 className="t-card">Re-learn the site</h3>
           <p className="t-body-sm mt-1.5 text-text-tertiary">
-            Changed your pricing or opening hours? Concierge will re-read the site and flag only what changed —
-            your approvals stay intact.
+            Changed your pricing or opening hours? Concierge will re-read the site and flag only what changed
+            — your approvals stay intact.
           </p>
           <Button variant="secondary" size="sm" className="mt-4" leading={<RefreshIcon size={14} />}>
             Re-learn now

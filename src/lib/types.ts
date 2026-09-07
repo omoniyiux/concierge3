@@ -31,14 +31,7 @@ export type TeamRole = "owner" | "admin" | "operator" | "viewer";
 
 /** Capability grants are per-surface so an operator can see Messages only. */
 export type TeamScope =
-  | "messages"
-  | "routing"
-  | "preview"
-  | "insights"
-  | "settings"
-  | "pages"
-  | "billing"
-  | "team";
+  "messages" | "routing" | "preview" | "insights" | "settings" | "pages" | "billing" | "team";
 
 export interface TeamMember {
   id: ID;
@@ -81,23 +74,10 @@ export interface Site {
  * vetted it. Concierge must never answer from unapproved material.
  */
 export type KnowledgeStatus =
-  | "approved"
-  | "needs-review"
-  | "suggested"
-  | "imported"
-  | "restricted"
-  | "missing";
+  "approved" | "needs-review" | "suggested" | "imported" | "restricted" | "missing";
 
 export type KnowledgeCategory =
-  | "business"
-  | "products"
-  | "services"
-  | "pricing"
-  | "faqs"
-  | "policies"
-  | "voice"
-  | "rules"
-  | "restrictions";
+  "business" | "products" | "services" | "pricing" | "faqs" | "policies" | "voice" | "rules" | "restrictions";
 
 export interface KnowledgeSource {
   id: ID;
@@ -137,13 +117,7 @@ export interface SiteBrain {
 /* ---- Crawl -------------------------------------------------------------- */
 
 export type CrawlPhase =
-  | "queued"
-  | "validating"
-  | "scanning"
-  | "extracting"
-  | "building"
-  | "complete"
-  | "failed";
+  "queued" | "validating" | "scanning" | "extracting" | "building" | "complete" | "failed";
 
 export interface CrawlPage {
   url: string;
@@ -167,11 +141,7 @@ export interface CrawlRun {
 /* ---- Agent -------------------------------------------------------------- */
 
 export type AgentMode =
-  | "customer-service"
-  | "knowledge-assistant"
-  | "sales-assistant"
-  | "receptionist"
-  | "custom";
+  "customer-service" | "knowledge-assistant" | "sales-assistant" | "receptionist" | "custom";
 
 export type AgentTone = "warm" | "professional" | "concise" | "friendly" | "expert";
 
@@ -194,23 +164,10 @@ export interface AgentConfig {
 
 /* ---- Conversations ------------------------------------------------------ */
 
-export type ConversationStatus =
-  | "new"
-  | "active"
-  | "qualified"
-  | "converted"
-  | "handed-off"
-  | "closed";
+export type ConversationStatus = "new" | "active" | "qualified" | "converted" | "handed-off" | "closed";
 
 export type VisitorIntent =
-  | "pricing"
-  | "booking"
-  | "support"
-  | "product"
-  | "human"
-  | "quote"
-  | "hours"
-  | "unknown";
+  "pricing" | "booking" | "support" | "product" | "human" | "quote" | "hours" | "unknown";
 
 export type MessageAuthor = "visitor" | "agent" | "human" | "system";
 
@@ -273,15 +230,7 @@ export interface Lead {
 /* ---- Actions ------------------------------------------------------------ */
 
 export type ActionKind =
-  | "booking"
-  | "quote"
-  | "lead-capture"
-  | "payment"
-  | "call"
-  | "message"
-  | "video"
-  | "offer"
-  | "consultation";
+  "booking" | "quote" | "lead-capture" | "payment" | "call" | "message" | "video" | "offer" | "consultation";
 
 export type ActionReadiness = "ready" | "needs-setup" | "needs-connection" | "disabled";
 
@@ -314,14 +263,7 @@ export interface ActionDef {
 
 /* ---- Routing ------------------------------------------------------------ */
 
-export type DestinationKind =
-  | "email"
-  | "slack"
-  | "sms"
-  | "webhook"
-  | "taskologic"
-  | "telegram"
-  | "inbox";
+export type DestinationKind = "email" | "slack" | "sms" | "webhook" | "taskologic" | "telegram" | "inbox";
 
 export type DestinationStatus = "connected" | "untested" | "failing" | "paused";
 
@@ -381,13 +323,7 @@ export interface DeliveryRecord {
 export type IntegrationStatus = "connected" | "available" | "coming-soon" | "error";
 
 export type IntegrationCategory =
-  | "routing"
-  | "messaging"
-  | "scheduling"
-  | "payments"
-  | "crm"
-  | "automation"
-  | "developer";
+  "routing" | "messaging" | "scheduling" | "payments" | "crm" | "automation" | "developer";
 
 export interface Integration {
   id: ID;
@@ -403,14 +339,7 @@ export interface Integration {
 /* ---- Concierge Pages ---------------------------------------------------- */
 
 export type PageSectionKind =
-  | "hero"
-  | "services"
-  | "about"
-  | "testimonials"
-  | "pricing"
-  | "faq"
-  | "contact"
-  | "gallery";
+  "hero" | "services" | "about" | "testimonials" | "pricing" | "faq" | "contact" | "gallery";
 
 export interface PageSection {
   id: ID;
@@ -468,13 +397,7 @@ export interface IntentBreakdown {
 /* ---- Activity ----------------------------------------------------------- */
 
 export type ActivityKind =
-  | "conversation"
-  | "lead"
-  | "action"
-  | "routing"
-  | "knowledge"
-  | "install"
-  | "system";
+  "conversation" | "lead" | "action" | "routing" | "knowledge" | "install" | "system";
 
 export interface ActivityEvent {
   id: ID;

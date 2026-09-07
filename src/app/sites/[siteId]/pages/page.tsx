@@ -96,7 +96,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
         }
         meta={
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-divider pt-5">
-            <span className="flex items-center gap-2 text-[13px]">
+            <span className="flex items-center gap-2 text-[11.5px]">
               <GlobeIcon size={15} className="text-text-tertiary" />
               {site.url}
             </span>
@@ -104,9 +104,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
               {PAGES.filter((p) => p.published).length} pages live
             </Badge>
             <Badge tone="review">{PAGES.filter((p) => !p.published).length} draft</Badge>
-            <span className="text-[13px] text-text-tertiary">
-              Updated {relativeTime(site.updatedAt)}
-            </span>
+            <span className="text-[11.5px] text-text-tertiary">Updated {relativeTime(site.updatedAt)}</span>
           </div>
         }
       />
@@ -127,14 +125,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                       setSections(p.sections);
                     }}
                     className={cx(
-                      "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
+                      "flex w-full items-center gap-2.5 px-2.5 py-2 text-left transition-colors",
                       active ? "bg-surface-hover" : "hover:bg-surface-subtle",
                     )}
                   >
                     <PagesIcon size={15} className="shrink-0 text-text-tertiary" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-medium">{p.title}</span>
-                      <span className="block truncate text-[13px] text-text-tertiary">/{p.slug}</span>
+                      <span className="block truncate text-[12.5px] font-medium">{p.title}</span>
+                      <span className="block truncate text-[11.5px] text-text-tertiary">/{p.slug}</span>
                     </span>
                     {!p.published && <Badge tone="review">Draft</Badge>}
                   </button>
@@ -144,7 +142,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
           </ul>
           <button
             type="button"
-            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-line-strong px-2.5 py-2 text-[13px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+            className="mt-2 flex w-full items-center gap-2 border border-dashed border-line-strong px-2.5 py-2 text-[11.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={14} />
             New page
@@ -164,7 +162,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                 <li
                   key={s.id}
                   className={cx(
-                    "flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-colors",
+                    "flex items-center gap-3 border px-3.5 py-3 transition-colors",
                     s.enabled ? "border-line bg-surface" : "border-line bg-surface-subtle",
                   )}
                 >
@@ -172,17 +170,19 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                     ⠿
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className={cx("block text-[15px] font-medium", !s.enabled && "text-text-tertiary")}>
+                    <span className={cx("block text-[13px] font-medium", !s.enabled && "text-text-tertiary")}>
                       {s.title}
                     </span>
-                    <span className="block truncate text-[14px] text-text-tertiary">
+                    <span className="block truncate text-[12.5px] text-text-tertiary">
                       {s.summary} · {SECTION_HINT[s.kind]}
                     </span>
                   </span>
                   <Toggle
                     size="sm"
                     checked={s.enabled}
-                    onChange={(v) => setSections((prev) => prev.map((x) => (x.id === s.id ? { ...x, enabled: v } : x)))}
+                    onChange={(v) =>
+                      setSections((prev) => prev.map((x) => (x.id === s.id ? { ...x, enabled: v } : x)))
+                    }
                     label={`Show ${s.title}`}
                   />
                   <IconButton label={`Edit ${s.title}`} size={28}>
@@ -193,7 +193,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             </ul>
             <button
               type="button"
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-strong py-3 text-[13px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+              className="mt-3 flex w-full items-center justify-center gap-2 border border-dashed border-line-strong py-3 text-[11.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
             >
               <PlusIcon size={14} />
               Add a section
@@ -209,7 +209,12 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
               <Field label="Navigation label" htmlFor="page-nav">
                 <Input id="page-nav" defaultValue={selected.navLabel} />
               </Field>
-              <Field label="URL" htmlFor="page-slug" hint={`${site.url}/${selected.slug}`} className="sm:col-span-2">
+              <Field
+                label="URL"
+                htmlFor="page-slug"
+                hint={`${site.url}/${selected.slug}`}
+                className="sm:col-span-2"
+              >
                 <Input id="page-slug" defaultValue={selected.slug} />
               </Field>
             </div>
@@ -238,26 +243,26 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             <div className="bg-surface-subtle p-4">
               <div
                 className={cx(
-                  "mx-auto overflow-hidden rounded-xl bg-surface-subtle transition-[max-width] duration-[var(--dur-base)]",
+                  "mx-auto overflow-hidden bg-surface-subtle transition-[max-width] duration-[var(--dur-base)]",
                   device === "mobile" ? "max-w-[200px]" : "max-w-full",
                 )}
               >
                 <div className="border-b border-divider px-3 py-2">
-                  <div className="h-1.5 w-16 rounded-full bg-surface-sunken" />
+                  <div className="h-1.5 w-16 bg-surface-sunken" />
                 </div>
                 <div className="space-y-3 p-3">
                   {sections
                     .filter((s) => s.enabled)
                     .map((s) => (
-                      <div key={s.id} className="rounded-md bg-surface-subtle p-2.5">
-                        <div className="h-1.5 w-14 rounded-full bg-line-strong" />
-                        <div className="mt-1.5 h-1 w-full rounded-full bg-line" />
-                        <div className="mt-1 h-1 w-3/4 rounded-full bg-line" />
+                      <div key={s.id} className="bg-surface-subtle p-2.5">
+                        <div className="h-1.5 w-14 bg-line-strong" />
+                        <div className="mt-1.5 h-1 w-full bg-line" />
+                        <div className="mt-1 h-1 w-3/4 bg-line" />
                       </div>
                     ))}
                 </div>
                 <div className="flex justify-end p-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-[8px] font-semibold text-text-inverse">
+                  <span className="flex h-6 w-6 items-center justify-center bg-ink text-[8px] font-semibold text-text-inverse">
                     C+
                   </span>
                 </div>
@@ -265,14 +270,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             </div>
 
             <div className="border-t border-divider p-4">
-              <p className="flex items-center gap-2 text-[14px] font-medium">
+              <p className="flex items-center gap-2 text-[12.5px] font-medium">
                 <AgentIcon size={14} className="text-text-tertiary" />
                 Concierge is on every page
               </p>
-              <p className="mt-1.5 text-[14px] leading-[1.55] text-text-tertiary">
+              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-text-tertiary">
                 It answers from the same Site Brain as your Agent, and uses the same actions and routing.
               </p>
-              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-success">
+              <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-success">
                 <CheckIcon size={12} strokeWidth={2.4} />
                 Site Brain ready · 3 actions placed
               </p>

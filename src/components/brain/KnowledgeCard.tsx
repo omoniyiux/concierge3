@@ -59,7 +59,7 @@ export function KnowledgeCard({
   return (
     <article
       className={cx(
-        "overflow-hidden rounded-xl border bg-surface transition-colors duration-[var(--dur-micro)]",
+        "overflow-hidden border bg-surface transition-colors duration-[var(--dur-micro)]",
         item.status === "needs-review" ? "border-warning-line" : "border-line",
         missing && "border-dashed",
       )}
@@ -85,7 +85,7 @@ export function KnowledgeCard({
             </Badge>
           </div>
 
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-text-tertiary">
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-text-tertiary">
             <span>{CATEGORY_LABEL[item.category]}</span>
             <span aria-hidden>·</span>
             <span className={cx(item.confidence > 0 && item.confidence < 0.65 && "text-warning")}>
@@ -97,10 +97,10 @@ export function KnowledgeCard({
           </p>
 
           {!open && item.body && (
-            <p className="mt-2 line-clamp-2 text-[14px] leading-[1.6] text-text-secondary">{item.body}</p>
+            <p className="mt-2 line-clamp-2 text-[12.5px] leading-[1.6] text-text-secondary">{item.body}</p>
           )}
           {!open && missing && (
-            <p className="mt-2 text-[14px] text-text-tertiary">
+            <p className="mt-2 text-[12.5px] text-text-tertiary">
               Concierge found nothing about this. Visitors asking will get a handoff instead of an answer.
             </p>
           )}
@@ -109,7 +109,11 @@ export function KnowledgeCard({
         {onStatusChange && !restricted && (
           <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
             {item.status !== "approved" && !missing && (
-              <Button size="sm" leading={<CheckIcon size={13} />} onClick={() => onStatusChange(item.id, "approved")}>
+              <Button
+                size="sm"
+                leading={<CheckIcon size={13} />}
+                onClick={() => onStatusChange(item.id, "approved")}
+              >
                 Approve
               </Button>
             )}
@@ -119,7 +123,14 @@ export function KnowledgeCard({
               </Button>
             )}
             {item.status === "approved" && (
-              <IconButton label="Edit this item" size={28} onClick={() => { setOpen(true); setEditing(true); }}>
+              <IconButton
+                label="Edit this item"
+                size={28}
+                onClick={() => {
+                  setOpen(true);
+                  setEditing(true);
+                }}
+              >
                 <EditIcon size={14} />
               </IconButton>
             )}
@@ -136,10 +147,10 @@ export function KnowledgeCard({
               <Textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                className="min-h-[120px] bg-surface text-[13px]"
+                className="min-h-[120px] bg-surface text-[11.5px]"
                 aria-label={`Edit ${item.title}`}
               />
-              <p className="mt-2 text-[14px] text-text-tertiary">
+              <p className="mt-2 text-[12.5px] text-text-tertiary">
                 Edited items count as owner-approved. Concierge will answer from exactly this wording.
               </p>
               <div className="mt-3 flex items-center gap-2">
@@ -168,9 +179,9 @@ export function KnowledgeCard({
           ) : (
             <>
               {item.body ? (
-                <p className="text-[14px] leading-[1.55] text-text-primary">{item.body}</p>
+                <p className="text-[12.5px] leading-[1.55] text-text-primary">{item.body}</p>
               ) : (
-                <p className="text-[14px] leading-[1.55] text-text-tertiary">
+                <p className="text-[12.5px] leading-[1.55] text-text-tertiary">
                   Nothing found. Add it yourself, or point Concierge at a page that covers it.
                 </p>
               )}
@@ -182,7 +193,7 @@ export function KnowledgeCard({
                   <ul className="flex flex-wrap gap-1.5">
                     {item.sources.map((s) => (
                       <li key={s.id}>
-                        <span className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2 py-1 text-[14px] text-text-secondary">
+                        <span className="inline-flex items-center gap-1.5 bg-surface px-2 py-1 text-[12.5px] text-text-secondary">
                           <SourceIcon size={12} className="text-text-muted" />
                           {s.label}
                           {s.url && <ExternalIcon size={11} className="text-text-muted" />}
@@ -196,11 +207,20 @@ export function KnowledgeCard({
               {onStatusChange && !restricted && (
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-divider pt-4">
                   {item.status !== "approved" && item.body && (
-                    <Button size="sm" leading={<CheckIcon size={13} />} onClick={() => onStatusChange(item.id, "approved")}>
+                    <Button
+                      size="sm"
+                      leading={<CheckIcon size={13} />}
+                      onClick={() => onStatusChange(item.id, "approved")}
+                    >
                       Approve
                     </Button>
                   )}
-                  <Button size="sm" variant="secondary" leading={<EditIcon size={13} />} onClick={() => setEditing(true)}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    leading={<EditIcon size={13} />}
+                    onClick={() => setEditing(true)}
+                  >
                     {item.body ? "Edit" : "Write it"}
                   </Button>
                   {item.status !== "restricted" && (
@@ -216,7 +236,7 @@ export function KnowledgeCard({
                 </div>
               )}
               {restricted && (
-                <p className="mt-4 flex items-center gap-2 border-t border-divider pt-4 text-[13.5px] text-text-secondary">
+                <p className="mt-4 flex items-center gap-2 border-t border-divider pt-4 text-[12px] text-text-secondary">
                   <LockIcon size={13} className="text-danger" />
                   Concierge will refuse to discuss this, and will offer a handoff instead.
                 </p>

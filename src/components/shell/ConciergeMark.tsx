@@ -7,10 +7,7 @@ export function ConciergeMark({ size = 26, className }: { size?: number; classNa
         d="M 49.835 48.059 A 24 24 0 1 1 49.835 15.941 L 43.519 21.628 A 15.5 15.5 0 1 0 43.519 42.372 Z"
         fill="#FF7A00"
       />
-      <path
-        d="M 49 24 H 53 V 30 H 59 V 34 H 53 V 40 H 49 V 34 H 43 V 30 H 49 Z"
-        fill="#FFB347"
-      />
+      <path d="M 49 24 H 53 V 30 H 59 V 34 H 53 V 40 H 49 V 34 H 43 V 30 H 49 Z" fill="#FFB347" />
     </svg>
   );
 }
@@ -20,7 +17,7 @@ export function ConciergeWordmark({ className }: { className?: string }) {
     <span className={`inline-flex items-center gap-2.5 ${className ?? ""}`}>
       <ConciergeMark size={26} />
       <span
-        className="text-[18px] font-medium tracking-[-0.028em]"
+        className="text-[14.5px] font-medium tracking-[-0.028em]"
         style={{ fontFamily: "var(--font-display)" }}
       >
         Concierge
@@ -40,7 +37,7 @@ export function SiteMark({ name, size = 26 }: { name: string; size?: number }) {
   return (
     <span
       style={{ width: size, height: size, fontSize: size * 0.38 }}
-      className="inline-flex shrink-0 items-center justify-center rounded-[7px] bg-surface-subtle font-semibold tracking-tight text-text-secondary"
+      className="inline-flex shrink-0 items-center justify-center bg-surface-subtle font-semibold tracking-tight text-text-secondary"
       aria-hidden
     >
       {initials}

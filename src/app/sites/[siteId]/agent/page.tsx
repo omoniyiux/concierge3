@@ -34,8 +34,16 @@ import type { AgentMode, AgentTone } from "@/lib/types";
 const MODES: { key: AgentMode; label: string; description: string }[] = [
   { key: "receptionist", label: "Receptionist", description: "Answers, books and puts people through." },
   { key: "sales-assistant", label: "Sales assistant", description: "Qualifies interest and captures leads." },
-  { key: "customer-service", label: "Customer service", description: "Resolves first, escalates when it cannot." },
-  { key: "knowledge-assistant", label: "Knowledge assistant", description: "Explains without pushing to convert." },
+  {
+    key: "customer-service",
+    label: "Customer service",
+    description: "Resolves first, escalates when it cannot.",
+  },
+  {
+    key: "knowledge-assistant",
+    label: "Knowledge assistant",
+    description: "Explains without pushing to convert.",
+  },
   { key: "custom", label: "Custom", description: "Write the role yourself." },
 ];
 
@@ -66,10 +74,12 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
   const [voice, setVoice] = useState(AGENT.voiceEnabled);
   const [dirty, setDirty] = useState(false);
 
-  const touch = <T,>(setter: (v: T) => void) => (v: T) => {
-    setter(v);
-    setDirty(true);
-  };
+  const touch =
+    <T,>(setter: (v: T) => void) =>
+    (v: T) => {
+      setter(v);
+      setDirty(true);
+    };
 
   const readyActions = ACTIONS.filter((a) => a.readiness === "ready");
   const connectedRoutes = DESTINATIONS.filter((d) => d.status === "connected").length;
@@ -90,14 +100,24 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             </Button>
           </>
         }
-        meta={<AgentReadiness siteId={siteId} readyActions={readyActions.length} connectedRoutes={connectedRoutes} />}
+        meta={
+          <AgentReadiness
+            siteId={siteId}
+            readyActions={readyActions.length}
+            connectedRoutes={connectedRoutes}
+          />
+        }
       />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
         <div className="space-y-5">
           {/* Identity ------------------------------------------------- */}
           <Panel className="p-6">
-            <SectionHead title="Identity" hint="What visitors see before they type anything." className="mb-5" />
+            <SectionHead
+              title="Identity"
+              hint="What visitors see before they type anything."
+              className="mb-5"
+            />
             <div className="space-y-5">
               <Field label="Agent name" htmlFor="agent-name" hint="Shown at the top of the conversation.">
                 <Input id="agent-name" value={name} onChange={(e) => touch(setName)(e.target.value)} />
@@ -118,7 +138,11 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
           </Panel>
 
           <Panel className="p-6">
-            <SectionHead title="Role" hint="Sets what Concierge leads with when intent is unclear." className="mb-4" />
+            <SectionHead
+              title="Role"
+              hint="Sets what Concierge leads with when intent is unclear."
+              className="mb-4"
+            />
             <div className="grid gap-2.5 sm:grid-cols-2">
               {MODES.map((m) => (
                 <RadioCard
@@ -137,20 +161,26 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
           <GroupLabel>Behaviour</GroupLabel>
 
           <Panel className="p-6">
-            <SectionHead title="Tone" hint="How it sounds. It never changes what it is allowed to say." className="mb-4" />
+            <SectionHead
+              title="Tone"
+              hint="How it sounds. It never changes what it is allowed to say."
+              className="mb-4"
+            />
             <SegmentedControl
               label="Tone"
               value={tone}
               onChange={touch(setTone)}
               options={TONES.map((t) => ({ value: t.key, label: t.label }))}
             />
-            <p className="mt-4 rounded-xl bg-surface-subtle-subtle p-3.5 text-[14px] leading-[1.6] text-text-secondary">
+            <p className="mt-4 bg-surface-subtle-subtle p-3.5 text-[12.5px] leading-[1.6] text-text-secondary">
               <span className="t-eyebrow mb-1.5 block text-text-muted">Sounds like</span>
-              {tone === "warm" && "Happy to help with that — the New Patient Exam is $89 and includes a cleaning."}
+              {tone === "warm" &&
+                "Happy to help with that — the New Patient Exam is $89 and includes a cleaning."}
               {tone === "professional" && "The New Patient Exam is $89 and includes X-rays and a cleaning."}
               {tone === "concise" && "$89. Includes X-rays and a cleaning."}
               {tone === "friendly" && "Good news — that one's $89, and it covers X-rays and a cleaning too!"}
-              {tone === "expert" && "The New Patient Exam is $89. It covers a full periodontal assessment, bitewing X-rays and a scale and polish."}
+              {tone === "expert" &&
+                "The New Patient Exam is $89. It covers a full periodontal assessment, bitewing X-rays and a scale and polish."}
             </p>
           </Panel>
 
@@ -167,11 +197,11 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             />
             <ul className="space-y-3">
               {readyActions.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
+                <li key={a.id} className="flex items-center gap-3 bg-surface-subtle px-3.5 py-2.5">
                   <ActionsIcon size={15} className="shrink-0 text-text-tertiary" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-medium">{a.name}</span>
-                    <span className="block truncate text-[14px] text-text-tertiary">{a.outcome}</span>
+                    <span className="block text-[12.5px] font-medium">{a.name}</span>
+                    <span className="block truncate text-[12.5px] text-text-tertiary">{a.outcome}</span>
                   </span>
                   <Toggle
                     size="sm"
@@ -190,10 +220,10 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               hint="Lets a visitor talk instead of type. Answers stay grounded in Site Brain."
               className="mb-4"
             />
-            <div className="flex items-center gap-3 rounded-xl bg-surface-subtle-subtle px-3.5 py-2.5">
+            <div className="flex items-center gap-3 bg-surface-subtle-subtle px-3.5 py-2.5">
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-medium">Talk to Concierge</p>
-                <p className="mt-0.5 text-[13px] text-text-tertiary">
+                <p className="text-[12.5px] font-medium">Talk to Concierge</p>
+                <p className="mt-0.5 text-[11.5px] text-text-tertiary">
                   Premium feature. Voice always confirms before moving a visitor into a route.
                 </p>
               </div>
@@ -209,7 +239,12 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               title="How it should behave"
               hint="Instructions layered on top of your approved knowledge."
               action={
-                <Button size="sm" variant="secondary" leading={<PlusIcon size={13} />} onClick={() => setDirty(true)}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  leading={<PlusIcon size={13} />}
+                  onClick={() => setDirty(true)}
+                >
                   Add rule
                 </Button>
               }
@@ -217,9 +252,9 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             />
             <ul className="space-y-3">
               {rules.map((r, i) => (
-                <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
+                <li key={r} className="flex items-start gap-3 bg-surface-subtle px-3.5 py-2.5">
                   <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                  <span className="min-w-0 flex-1 text-[14px] leading-[1.55]">{r}</span>
+                  <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                   <button
                     type="button"
                     aria-label={`Remove rule ${i + 1}`}
@@ -244,13 +279,16 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             />
             <ul className="space-y-3">
               {AGENT.neverPromise.map((r) => (
-                <li key={r} className="flex items-start gap-3 rounded-lg border border-danger-line bg-danger-soft px-3.5 py-3">
+                <li
+                  key={r}
+                  className="flex items-start gap-3 border border-danger-line bg-danger-soft px-3.5 py-3"
+                >
                   <LockIcon size={14} className="mt-0.5 shrink-0 text-danger" />
-                  <span className="min-w-0 flex-1 text-[14px] leading-[1.55]">{r}</span>
+                  <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3.5 text-[14px] text-text-tertiary">
+            <p className="mt-3.5 text-[12.5px] text-text-tertiary">
               These came from your approved Site Brain. Edit them there so the change applies everywhere.
             </p>
           </Panel>
@@ -259,9 +297,9 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             <SectionHead title="Hand off to a person when" className="mb-4" />
             <ul className="space-y-3">
               {AGENT.escalationTriggers.map((r) => (
-                <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
+                <li key={r} className="flex items-start gap-3 bg-surface-subtle px-3.5 py-2.5">
                   <RoutingIcon size={14} className="mt-0.5 shrink-0 text-text-tertiary" />
-                  <span className="min-w-0 flex-1 text-[14px] leading-[1.55]">{r}</span>
+                  <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                 </li>
               ))}
             </ul>
@@ -278,12 +316,12 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               </Badge>
             </div>
             <div className="space-y-3 bg-surface-subtle p-4">
-              <div className="w-fit max-w-[92%] rounded-xl rounded-tl-sm bg-surface px-3.5 py-2.5">
-                <p className="text-[13px] leading-[1.5]">{greeting}</p>
+              <div className="w-fit max-w-[92%] bg-surface px-3.5 py-2.5">
+                <p className="text-[11.5px] leading-[1.5]">{greeting}</p>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {readyActions.slice(0, 3).map((a) => (
-                  <span key={a.id} className="rounded-full bg-surface px-2.5 py-1 text-[13.5px] text-text-secondary">
+                  <span key={a.id} className="bg-surface px-2.5 py-1 text-[12px] text-text-secondary">
                     {a.name}
                   </span>
                 ))}
@@ -327,7 +365,12 @@ function AgentReadiness({
   return (
     <Card className="flex flex-wrap items-center gap-x-8 gap-y-5 p-5">
       <div className="flex items-center gap-4">
-        <RadialGauge value={confidence} label="Agent confidence" tone={confidence >= 80 ? "success" : "accent"} size={54} />
+        <RadialGauge
+          value={confidence}
+          label="Agent confidence"
+          tone={confidence >= 80 ? "success" : "accent"}
+          size={54}
+        />
         <div className="max-w-[34ch]">
           <p className="t-card">Autonomous when confident, human when it matters</p>
           <p className="t-body-sm mt-0.5 text-text-tertiary">
@@ -339,21 +382,21 @@ function AgentReadiness({
       <dl className="flex flex-wrap items-center gap-x-7 gap-y-3">
         <div>
           <dt className="t-eyebrow text-text-muted">Knowledge</dt>
-          <dd className="mt-1.5 flex items-center gap-1.5 text-[14px] font-medium">
+          <dd className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium">
             <BrainIcon size={14} className="text-text-tertiary" />
             {BRAIN.approvedCount} approved
           </dd>
         </div>
         <div>
           <dt className="t-eyebrow text-text-muted">Actions</dt>
-          <dd className="mt-1.5 flex items-center gap-1.5 text-[14px] font-medium">
+          <dd className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium">
             <ActionsIcon size={14} className="text-text-tertiary" />
             {readyActions} ready
           </dd>
         </div>
         <div>
           <dt className="t-eyebrow text-text-muted">Routing</dt>
-          <dd className="mt-1.5 flex items-center gap-1.5 text-[14px] font-medium">
+          <dd className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium">
             <RoutingIcon size={14} className="text-text-tertiary" />
             {connectedRoutes} connected
           </dd>

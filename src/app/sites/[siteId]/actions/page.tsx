@@ -79,17 +79,25 @@ export default function ActionsPage({ params }: { params: Promise<{ siteId: stri
         description="Answering is the floor. These are the jobs Concierge can finish on its own — booking a time, taking a number, starting a quote."
         actions={<Button leading={<PlusIcon size={15} />}>Add an action</Button>}
         meta={
-          <div className="grid grid-cols-2 gap-3 overflow-hidden rounded-none bg-transparent sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 overflow-hidden bg-transparent sm:grid-cols-4">
             {[
               { label: "Ready", value: ready, hint: "Offered to visitors now" },
-              { label: "Needs work", value: ACTIONS.filter((a) => a.readiness !== "ready" && a.readiness !== "disabled").length, hint: "Setup or a connection" },
+              {
+                label: "Needs work",
+                value: ACTIONS.filter((a) => a.readiness !== "ready" && a.readiness !== "disabled").length,
+                hint: "Setup or a connection",
+              },
               { label: "Completed", value: completions, hint: "Last 30 days" },
-              { label: "Placements", value: ACTIONS.reduce((n, a) => n + a.placements.length, 0), hint: "Across Agent, Pages and routing" },
+              {
+                label: "Placements",
+                value: ACTIONS.reduce((n, a) => n + a.placements.length, 0),
+                hint: "Across Agent, Pages and routing",
+              },
             ].map((s) => (
               <div key={s.label} className="bg-surface p-4">
                 <p className="t-eyebrow text-text-muted">{s.label}</p>
-                <p className="t-num mt-2 text-[19px] leading-none">{s.value}</p>
-                <p className="mt-1.5 text-[14px] text-text-tertiary">{s.hint}</p>
+                <p className="t-num mt-2 text-[15px] leading-none">{s.value}</p>
+                <p className="mt-1.5 text-[12.5px] text-text-tertiary">{s.hint}</p>
               </div>
             ))}
           </div>
@@ -169,7 +177,7 @@ function ActionCard({
       <div className="flex items-start gap-3">
         <span
           className={cx(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+            "flex h-8 w-8 shrink-0 items-center justify-center",
             live ? "bg-accent-soft text-accent-ink" : "bg-surface-sunken text-text-tertiary",
           )}
         >
@@ -177,7 +185,7 @@ function ActionCard({
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{action.name}</h3>
-          <p className="mt-1 text-[13px] leading-[1.5] text-text-tertiary">{action.description}</p>
+          <p className="mt-1 text-[11.5px] leading-[1.5] text-text-tertiary">{action.description}</p>
         </div>
       </div>
 
@@ -187,7 +195,7 @@ function ActionCard({
         </Badge>
         {action.provider && <Badge tone="neutral">{action.provider}</Badge>}
         {live && action.completions30d > 0 && (
-          <span className="text-[12.5px] tabular-nums text-text-tertiary">
+          <span className="text-[11px] tabular-nums text-text-tertiary">
             {action.completions30d} completed this month
           </span>
         )}
@@ -210,14 +218,14 @@ function ActionCard({
             <dt className="t-eyebrow text-text-muted">It asks for</dt>
             <dd className="mt-1.5">
               {action.collects.length === 0 ? (
-                <p className="text-[13px] text-text-tertiary">Nothing — it runs on its own.</p>
+                <p className="text-[11.5px] text-text-tertiary">Nothing — it runs on its own.</p>
               ) : (
                 <ul className="space-y-1">
                   {action.collects.map((f) => (
-                    <li key={f.key} className="flex items-center gap-2 text-[13.5px]">
+                    <li key={f.key} className="flex items-center gap-2 text-[12px]">
                       <CheckIcon size={12} className="shrink-0 text-text-muted" />
                       {f.label}
-                      {f.required && <span className="text-[11px] text-text-muted">required</span>}
+                      {f.required && <span className="text-[10px] text-text-muted">required</span>}
                     </li>
                   ))}
                 </ul>
@@ -227,7 +235,7 @@ function ActionCard({
 
           <div>
             <dt className="t-eyebrow text-text-muted">Then</dt>
-            <dd className="mt-1.5 text-[13px] leading-[1.5] text-text-secondary">{action.outcome}</dd>
+            <dd className="mt-1.5 text-[11.5px] leading-[1.5] text-text-secondary">{action.outcome}</dd>
           </div>
 
           {action.placements.length > 0 && (
@@ -236,7 +244,13 @@ function ActionCard({
               <dd className="mt-1.5 flex flex-wrap gap-1.5">
                 {action.placements.map((p) => (
                   <Badge key={p} tone="neutral">
-                    {p === "agent" ? "Agent" : p === "pages" ? "Pages" : p === "website" ? "Website" : "Routing"}
+                    {p === "agent"
+                      ? "Agent"
+                      : p === "pages"
+                        ? "Pages"
+                        : p === "website"
+                          ? "Website"
+                          : "Routing"}
                   </Badge>
                 ))}
               </dd>

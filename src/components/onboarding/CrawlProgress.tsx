@@ -53,9 +53,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
         <p className="t-mono truncate text-text-secondary">{url}</p>
       </div>
 
-      <h2 className="t-page mt-5">
-        {finished ? "Site Brain ready" : "Concierge is learning your business"}
-      </h2>
+      <h2 className="t-page mt-5">{finished ? "Site Brain ready" : "Concierge is learning your business"}</h2>
       <p className="t-body mt-2.5 text-text-tertiary">
         {finished
           ? `${itemsFound} knowledge items found across ${PAGES.length} pages. Next you will approve what Concierge is allowed to say.`
@@ -71,7 +69,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
               <div className="flex flex-col items-center self-stretch">
                 <span
                   className={cx(
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                    "flex h-5 w-5 shrink-0 items-center justify-center border transition-colors",
                     state === "done"
                       ? "border-success bg-success text-white"
                       : state === "active"
@@ -84,7 +82,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
                   ) : state === "active" ? (
                     <Spinner size={11} />
                   ) : (
-                    <span className="h-1 w-1 rounded-full bg-current" />
+                    <span className="h-1 w-1 bg-current" />
                   )}
                 </span>
                 {i < PHASES.length - 1 && (
@@ -93,7 +91,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
               </div>
               <p
                 className={cx(
-                  "pb-4 text-[13.5px]",
+                  "pb-4 text-[12px]",
                   state === "pending" ? "text-text-disabled" : "text-text-primary",
                   state === "active" && "font-medium",
                 )}
@@ -106,10 +104,10 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
       </ol>
 
       {/* Pages, named as they land -------------------------------------- */}
-      <div className="mt-2 overflow-hidden rounded-[18px] bg-surface">
+      <div className="mt-2 overflow-hidden bg-surface">
         <div className="flex items-center justify-between border-b border-divider px-4 py-2.5">
           <p className="t-eyebrow text-text-muted">Pages read</p>
-          <p className="text-[13px] tabular-nums text-text-tertiary">
+          <p className="text-[11.5px] tabular-nums text-text-tertiary">
             {done} of {PAGES.length}
           </p>
         </div>
@@ -127,7 +125,11 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
                 <span
                   className={cx(
                     "shrink-0",
-                    state === "done" ? "text-success" : state === "reading" ? "text-accent" : "text-text-disabled",
+                    state === "done"
+                      ? "text-success"
+                      : state === "reading"
+                        ? "text-accent"
+                        : "text-text-disabled",
                   )}
                 >
                   {state === "done" ? (
@@ -140,12 +142,12 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
                 </span>
                 <span
                   className={cx(
-                    "min-w-0 flex-1 truncate text-[13px]",
+                    "min-w-0 flex-1 truncate text-[11.5px]",
                     state === "pending" ? "text-text-disabled" : "text-text-primary",
                   )}
                 >
                   {page.label}
-                  <span className="ml-2 text-[13px] text-text-muted">{page.path}</span>
+                  <span className="ml-2 text-[11.5px] text-text-muted">{page.path}</span>
                 </span>
                 {state === "done" && (
                   <Badge tone="neutral">
@@ -164,9 +166,9 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
           label="Crawl progress"
           tone="accent"
         />
-        <p className="mt-2 text-[13px] tabular-nums text-text-tertiary">
+        <p className="mt-2 text-[11.5px] tabular-nums text-text-tertiary">
           {itemsFound} knowledge items found
-          {!finished && " so far"}
+          {!finished && "so far"}
         </p>
       </div>
     </div>

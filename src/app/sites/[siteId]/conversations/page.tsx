@@ -79,7 +79,7 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
           <div className="border-b border-divider px-4 pb-3 pt-4">
             <div className="flex items-baseline justify-between">
               <h1 className="t-section">Conversations</h1>
-              <span className="text-[13px] tabular-nums text-text-tertiary">{list.length} shown</span>
+              <span className="text-[11.5px] tabular-nums text-text-tertiary">{list.length} shown</span>
             </div>
             <SearchInput
               value={query}
@@ -105,7 +105,7 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
           <ul className="cg-scroll min-h-0 flex-1 overflow-y-auto">
             {list.length === 0 ? (
               <li className="p-6">
-                <p className="text-[14px] text-text-tertiary">
+                <p className="text-[12.5px] text-text-tertiary">
                   Nothing matches that filter. Try widening it.
                 </p>
               </li>
@@ -125,19 +125,23 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
                     >
                       {active && <span className="absolute inset-y-0 left-0 w-[3px] bg-accent" />}
                       <div className="flex items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{c.visitorName}</span>
-                        <span className="shrink-0 text-[13px] tabular-nums text-text-muted">
+                        <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">
+                          {c.visitorName}
+                        </span>
+                        <span className="shrink-0 text-[11.5px] tabular-nums text-text-muted">
                           {relativeTime(c.lastMessageAt)}
                         </span>
                       </div>
-                      <p className="mt-1 line-clamp-2 text-[13.5px] leading-[1.45] text-text-tertiary">{c.preview}</p>
+                      <p className="mt-1 line-clamp-2 text-[12px] leading-[1.45] text-text-tertiary">
+                        {c.preview}
+                      </p>
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         <Badge tone={STATUS_TONE[c.status]} dot={c.status === "new" || c.status === "active"}>
                           {STATUS_LABEL[c.status]}
                         </Badge>
                         <Badge tone="neutral">{INTENT_LABEL[c.intent]}</Badge>
                         {c.unanswered && (
-                          <span className="text-[11px] font-medium text-warning">Unanswered</span>
+                          <span className="text-[10px] font-medium text-warning">Unanswered</span>
                         )}
                       </div>
                     </button>
@@ -150,11 +154,7 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
 
         {/* Pane 2 + 3 ---------------------------------------------------- */}
         {selected ? (
-          <ConversationDetail
-            conversation={selected}
-            siteId={siteId}
-            onBack={() => setSelectedId(null)}
-          />
+          <ConversationDetail conversation={selected} siteId={siteId} onBack={() => setSelectedId(null)} />
         ) : (
           <div className="hidden flex-1 items-center justify-center lg:flex">
             <EmptyState
@@ -190,8 +190,8 @@ function ConversationDetail({
             <ChevronLeft size={17} />
           </IconButton>
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-[14px] font-semibold">{c.visitorName}</h2>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[14px] text-text-tertiary">
+            <h2 className="truncate text-[12.5px] font-semibold">{c.visitorName}</h2>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px] text-text-tertiary">
               <span className="inline-flex items-center gap-1">
                 <GlobeIcon size={11} />
                 {c.pageUrl}
@@ -217,7 +217,7 @@ function ConversationDetail({
               return (
                 <div key={m.id} className="flex items-center gap-2.5">
                   <span className="h-px flex-1 bg-line" />
-                  <p className="flex items-center gap-1.5 text-[13px] text-text-tertiary">
+                  <p className="flex items-center gap-1.5 text-[11.5px] text-text-tertiary">
                     <RoutingIcon size={12} />
                     {m.body}
                   </p>
@@ -230,13 +230,11 @@ function ConversationDetail({
               <div key={m.id} className={cx("flex flex-col", isVisitor ? "items-start" : "items-end")}>
                 <div
                   className={cx(
-                    "max-w-[76%] rounded-xl px-3.5 py-2.5",
-                    isVisitor
-                      ? "rounded-tl-sm bg-surface"
-                      : "rounded-tr-sm bg-ink text-text-inverse",
+                    "max-w-[76%] px-3.5 py-2.5",
+                    isVisitor ? "bg-surface" : "bg-ink text-text-inverse",
                   )}
                 >
-                  <p className="text-[14px] leading-[1.55]">{m.body}</p>
+                  <p className="text-[12.5px] leading-[1.55]">{m.body}</p>
                 </div>
 
                 <div
@@ -245,11 +243,11 @@ function ConversationDetail({
                     isVisitor ? "" : "justify-end",
                   )}
                 >
-                  <span className="text-[11px] tabular-nums text-text-muted">{clockTime(m.at)}</span>
+                  <span className="text-[10px] tabular-nums text-text-muted">{clockTime(m.at)}</span>
                   {m.confidence !== undefined && (
                     <span
                       className={cx(
-                        "text-[11px] tabular-nums",
+                        "text-[10px] tabular-nums",
                         m.confidence < 0.6 ? "text-warning" : "text-text-muted",
                       )}
                     >
@@ -257,7 +255,10 @@ function ConversationDetail({
                     </span>
                   )}
                   {m.citations?.map((cit) => (
-                    <span key={cit.itemId} className="inline-flex items-center gap-1 text-[11px] text-text-tertiary">
+                    <span
+                      key={cit.itemId}
+                      className="inline-flex items-center gap-1 text-[10px] text-text-tertiary"
+                    >
                       <ShieldIcon size={10} className="text-success" />
                       {cit.title}
                     </span>
@@ -268,16 +269,21 @@ function ConversationDetail({
           })}
 
           {c.unanswered && (
-            <div className="rounded-xl border border-warning-line bg-warning-soft p-4">
-              <p className="flex items-center gap-2 text-[15px] font-medium text-warning">
+            <div className="border border-warning-line bg-warning-soft p-4">
+              <p className="flex items-center gap-2 text-[13px] font-medium text-warning">
                 <SparkIcon size={14} />
                 Concierge could not answer this
               </p>
-              <p className="mt-1.5 text-[13px] leading-[1.5] text-text-secondary">
-                &ldquo;{c.unanswered}&rdquo; is not in your approved knowledge. Adding it means the next visitor gets
-                an answer instead of a handoff.
+              <p className="mt-1.5 text-[11.5px] leading-[1.5] text-text-secondary">
+                &ldquo;{c.unanswered}&rdquo; is not in your approved knowledge. Adding it means the next
+                visitor gets an answer instead of a handoff.
               </p>
-              <LinkButton href={`/sites/${siteId}/agent/brain`} size="sm" variant="secondary" className="mt-3">
+              <LinkButton
+                href={`/sites/${siteId}/agent/brain`}
+                size="sm"
+                variant="secondary"
+                className="mt-3"
+              >
                 Add to Site Brain
               </LinkButton>
             </div>
@@ -312,15 +318,15 @@ function ConversationDetail({
           {lead && (
             <>
               <h3 className="t-eyebrow mt-7 text-text-muted">Qualification</h3>
-              <div className="mt-3 rounded-xl p-4">
+              <div className="mt-3 p-4">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[15px] font-medium capitalize">{lead.qualification} lead</span>
-                  <span className="t-num text-[19px]">{lead.score}</span>
+                  <span className="text-[13px] font-medium capitalize">{lead.qualification} lead</span>
+                  <span className="t-num text-[15px]">{lead.score}</span>
                 </div>
-                <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-sunken">
+                <div className="mt-2.5 h-1.5 w-full overflow-hidden bg-surface-sunken">
                   <div
                     className={cx(
-                      "h-full rounded-full",
+                      "h-full",
                       lead.score >= 80 ? "bg-success" : lead.score >= 50 ? "bg-accent" : "bg-text-muted",
                     )}
                     style={{ width: `${lead.score}%` }}
@@ -329,7 +335,7 @@ function ConversationDetail({
                 <dl className="mt-4 space-y-3">
                   {lead.service && <Row label="Service" value={lead.service} />}
                   {lead.budget && <Row label="Budget" value={lead.budget} />}
-                  {lead.urgency && <Row label="Urgency" value={lead.urgency.replace("-", " ")} caps />}
+                  {lead.urgency && <Row label="Urgency" value={lead.urgency.replace("-", "")} caps />}
                   {lead.email && <Row label="Email" value={lead.email} />}
                   {lead.phone && <Row label="Phone" value={lead.phone} />}
                 </dl>
@@ -345,9 +351,9 @@ function ConversationDetail({
                   const a = ACTIONS.find((x) => x.id === id);
                   if (!a) return null;
                   return (
-                    <li key={id} className="flex items-center gap-2.5 rounded-xl bg-surface-subtle px-3.5 py-3">
+                    <li key={id} className="flex items-center gap-2.5 bg-surface-subtle px-3.5 py-3">
                       <ActionsIcon size={14} className="shrink-0 text-text-tertiary" />
-                      <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{a.name}</span>
+                      <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">{a.name}</span>
                     </li>
                   );
                 })}
@@ -358,7 +364,7 @@ function ConversationDetail({
           {c.routedTo && (
             <>
               <h3 className="t-eyebrow mt-7 text-text-muted">Routed to</h3>
-              <p className="mt-2.5 flex items-center gap-2 rounded-xl bg-surface-subtle px-3.5 py-3 text-[13.5px]">
+              <p className="mt-2.5 flex items-center gap-2 bg-surface-subtle px-3.5 py-3 text-[12px]">
                 <RoutingIcon size={14} className="shrink-0 text-text-tertiary" />
                 {c.routedTo}
               </p>
@@ -369,7 +375,7 @@ function ConversationDetail({
             href={`https://northlanedental.com${c.pageUrl}`}
             target="_blank"
             rel="noreferrer"
-            className="mt-7 inline-flex items-center gap-1.5 text-[13px] text-text-tertiary transition-colors hover:text-text-primary"
+            className="mt-7 inline-flex items-center gap-1.5 text-[11.5px] text-text-tertiary transition-colors hover:text-text-primary"
           >
             Open the page they were on
             <ExternalIcon size={12} />
@@ -383,9 +389,11 @@ function ConversationDetail({
 function Row({ label, value, caps }: { label: string; value: string; caps?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="shrink-0 text-[14px] text-text-tertiary">{label}</dt>
+      <dt className="shrink-0 text-[12.5px] text-text-tertiary">{label}</dt>
       {/* Only the enum-ish fields get title-casing; URLs and emails must not. */}
-      <dd className={cx("min-w-0 truncate text-right text-[15px] font-medium", caps && "capitalize")}>{value}</dd>
+      <dd className={cx("min-w-0 truncate text-right text-[13px] font-medium", caps && "capitalize")}>
+        {value}
+      </dd>
     </div>
   );
 }

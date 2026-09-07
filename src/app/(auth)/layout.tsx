@@ -10,13 +10,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       <div className="flex flex-1 flex-col px-5 py-8 sm:px-8">
-        <Link href="/" className="w-fit rounded-lg" aria-label="Concierge">
+        <Link href="/" className="w-fit" aria-label="Concierge">
           <ConciergeWordmark />
         </Link>
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-[380px]">{children}</div>
         </div>
-        <p className="text-[14px] text-text-tertiary">
+        <p className="text-[12.5px] text-text-tertiary">
           <Link href="/legal/terms" className="hover:text-text-primary">
             Terms
           </Link>
@@ -47,12 +47,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             ["Learns again", "Tells you every question your site could not answer."],
           ].map(([title, body], i) => (
             <li key={title} className="flex gap-4">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-[14px] font-semibold tabular-nums text-text-tertiary">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center bg-surface-subtle text-[12.5px] font-semibold tabular-nums text-text-tertiary">
                 {i + 1}
               </span>
               <span>
-                <span className="block text-[14px] font-medium">{title}</span>
-                <span className="mt-0.5 block text-[14px] leading-[1.55] text-text-tertiary">{body}</span>
+                <span className="block text-[12.5px] font-medium">{title}</span>
+                <span className="mt-0.5 block text-[12.5px] leading-[1.55] text-text-tertiary">{body}</span>
               </span>
             </li>
           ))}

@@ -12,7 +12,7 @@ export default function AccountPage() {
     <div className="min-h-dvh bg-canvas">
       <header className="border-b border-divider bg-surface px-6 py-4 lg:px-8">
         <div className="mx-auto flex w-full max-w-[760px] items-center gap-4">
-          <Link href="/" className="rounded-lg" aria-label="Concierge home">
+          <Link href="/" className="" aria-label="Concierge home">
             <ConciergeWordmark />
           </Link>
           <LinkButton
@@ -30,7 +30,7 @@ export default function AccountPage() {
       <main className="mx-auto w-full max-w-[760px] px-5 py-12 lg:px-8">
         <p className="t-eyebrow text-text-muted">Account</p>
         <h1 className="t-page mt-2.5">Your profile</h1>
-        <p className="t-body mt-3 text-text-tertiary">
+        <p className="t-body mt-3 text-text-primary">
           This is you across every organisation and website you belong to.
         </p>
 
@@ -50,12 +50,15 @@ export default function AccountPage() {
           <Panel className="p-6">
             <SectionHead title="Organisation" hint="You can belong to more than one." className="mb-4" />
             <Card className="flex items-center gap-3.5 p-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-subtle text-[13px] font-semibold text-text-secondary">
-                {ORG.name.split(" ").map((w) => w[0]).join("")}
+              <span className="flex h-9 w-9 items-center justify-center bg-surface-subtle text-[11.5px] font-semibold text-text-secondary">
+                {ORG.name
+                  .split("")
+                  .map((w) => w[0])
+                  .join("")}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-medium">{ORG.name}</span>
-                <span className="block text-[14px] text-text-tertiary">
+                <span className="block text-[12.5px] font-medium">{ORG.name}</span>
+                <span className="block text-[12.5px] text-text-tertiary">
                   {ORG.seatsUsed} of {ORG.seatsIncluded} seats · {ORG.plan} plan
                 </span>
               </span>

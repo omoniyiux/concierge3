@@ -15,7 +15,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
     <div className="min-h-dvh bg-canvas">
       <header className="sticky top-0 z-40 bg-canvas/85 backdrop-blur">
         <div className="mx-auto flex h-[84px] w-full max-w-[1180px] items-center gap-8 px-5 lg:px-8">
-          <Link href="/" className="rounded-lg" aria-label="Concierge home">
+          <Link href="/" className="" aria-label="Concierge home">
             <ConciergeWordmark />
           </Link>
           <nav aria-label="Main" className="hidden lg:block">
@@ -24,7 +24,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
                 <li key={n.href}>
                   <Link
                     href={n.href}
-                    className="rounded-md px-2.5 py-1.5 text-[14px] text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
+                    className="px-2.5 py-1.5 text-[12.5px] text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
                   >
                     {n.label}
                   </Link>
@@ -51,13 +51,19 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             <div className="min-w-[240px] flex-1">
               <ConciergeWordmark />
               <p className="t-body-sm mt-3.5 max-w-[34ch] text-text-tertiary">
-                A website agent that understands your business, answers from what you approve, and brings the right
-                person in when it matters.
+                A website agent that understands your business, answers from what you approve, and brings the
+                right person in when it matters.
               </p>
             </div>
             {[
-              { title: "Product", links: ["How it works", "Site Brain", "Actions", "Routing", "Concierge Pages", "Pricing"] },
-              { title: "Developers", links: ["Documentation", "API reference", "Webhooks", "Install guides", "Status"] },
+              {
+                title: "Product",
+                links: ["How it works", "Site Brain", "Actions", "Routing", "Concierge Pages", "Pricing"],
+              },
+              {
+                title: "Developers",
+                links: ["Documentation", "API reference", "Webhooks", "Install guides", "Status"],
+              },
               { title: "Company", links: ["About", "Security", "AI disclosure", "Privacy", "Terms"] },
             ].map((col) => (
               <div key={col.title}>
@@ -65,7 +71,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
                 <ul className="mt-3.5 space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l}>
-                      <span className="text-[14px] text-text-secondary transition-colors hover:text-text-primary">
+                      <span className="text-[12.5px] text-text-secondary transition-colors hover:text-text-primary">
                         {l}
                       </span>
                     </li>
@@ -74,7 +80,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               </div>
             ))}
           </div>
-          <p className="mt-9 border-t border-divider pt-6 text-[14px] text-text-tertiary">
+          <p className="mt-9 border-t border-divider pt-6 text-[12.5px] text-text-tertiary">
             © {new Date().getFullYear()} Concierge. All rights reserved.
           </p>
         </div>

@@ -18,10 +18,7 @@ export type AttentionItem = {
   severity: "urgent" | "review" | "opportunity";
 };
 
-const SEVERITY: Record<
-  AttentionItem["severity"],
-  { tone: Tone; label: string; Icon: typeof AlertIcon }
-> = {
+const SEVERITY: Record<AttentionItem["severity"], { tone: Tone; label: string; Icon: typeof AlertIcon }> = {
   urgent: { tone: "restricted", label: "Needs fixing", Icon: AlertIcon },
   review: { tone: "review", label: "Needs review", Icon: BrainIcon },
   opportunity: { tone: "accent", label: "Opportunity", Icon: SparkIcon },
@@ -34,8 +31,8 @@ const SEVERITY: Record<
 export function AttentionList({ items }: { items: AttentionItem[] }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-[18px] bg-surface px-5 py-6">
-        <p className="text-[14px] font-medium">Nothing needs you right now.</p>
+      <div className="border border-line-strong bg-surface px-5 py-6">
+        <p className="text-[12.5px] font-medium">Nothing needs you right now.</p>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Concierge is answering from approved knowledge and every route is delivering.
         </p>
@@ -44,18 +41,20 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
   }
 
   return (
-    <ul className="divide-y divide-divider overflow-hidden rounded-[18px] bg-surface">
+    <ul className="divide-y divide-line-strong overflow-hidden border border-line-strong bg-surface">
       {items.map((item) => {
         const { tone, label, Icon } = SEVERITY[item.severity];
         return (
           <li key={item.id}>
+            {/* No fill change on hover — repainting a whole row grey reads as a
+                banding glitch. The action label and arrow carry the state. */}
             <Link
               href={item.href}
-              className="group flex items-start gap-4 px-6 py-4 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle"
+              className="group flex items-start gap-4 px-6 py-4 transition-colors duration-[var(--dur-micro)]"
             >
               <span
                 className={cx(
-                  "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                  "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center",
                   item.severity === "urgent"
                     ? "bg-danger-soft text-danger"
                     : item.severity === "review"
@@ -68,15 +67,18 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
 
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="text-[14px] font-semibold">{item.title}</span>
+                  <span className="text-[12.5px] font-semibold">{item.title}</span>
                   <Badge tone={tone}>{label}</Badge>
                 </span>
                 <span className="t-body mt-2 block max-w-[68ch] text-text-tertiary">{item.detail}</span>
               </span>
 
-              <span className="ml-2 hidden shrink-0 items-center gap-1.5 self-center text-[15px] font-medium text-text-secondary transition-colors group-hover:text-text-primary sm:flex">
+              <span className="ml-2 hidden shrink-0 items-center gap-1.5 self-center text-[13px] font-medium text-text-secondary transition-colors group-hover:text-text-primary sm:flex">
                 {item.actionLabel}
-                <ArrowRight size={14} className="transition-transform duration-[var(--dur-micro)] group-hover:translate-x-0.5" />
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-[var(--dur-micro)] group-hover:translate-x-0.5"
+                />
               </span>
             </Link>
           </li>
