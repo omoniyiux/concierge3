@@ -356,14 +356,14 @@ export function Toggle({
       onClick={() => onChange(!checked)}
       style={{ width: w, height: h }}
       className={cx(
-        "relative shrink-0 transition-colors duration-[var(--dur-base)] ease-[var(--ease-out-cg)]",
+        "relative shrink-0 rounded-full transition-colors duration-[var(--dur-base)] ease-[var(--ease-out-cg)]",
         checked ? "bg-ink" : "bg-surface-sunken",
         disabled && "cursor-not-allowed opacity-45",
       )}
     >
       <span
         style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 3 : 3}px)` }}
-        className="absolute top-1/2 left-0 -translate-y-1/2 bg-white shadow-sm transition-transform duration-[var(--dur-base)] ease-[var(--ease-out-cg)]"
+        className="absolute top-1/2 left-0 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-[var(--dur-base)] ease-[var(--ease-out-cg)]"
       />
     </button>
   );
@@ -635,10 +635,10 @@ export function ProgressBar({
       aria-valuemin={0}
       aria-valuemax={max}
       style={{ height }}
-      className="w-full overflow-hidden bg-surface-sunken"
+      className="w-full overflow-hidden rounded-full bg-surface-sunken"
     >
       <div
-        className={cx("h-full transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]", bg)}
+        className={cx("h-full rounded-full transition-[width] duration-[var(--dur-large)] ease-[var(--ease-out-cg)]", bg)}
         style={{ width: `${pct}%` }}
       />
     </div>

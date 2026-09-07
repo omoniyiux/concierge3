@@ -99,8 +99,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
         description="Everything about how this site behaves. Changes take effect straight away — you never reinstall the script."
       />
 
-      <div className="grid gap-8 lg:grid-cols-[196px_1fr]">
-        <nav aria-label="Settings sections">
+      <div className="grid items-start gap-8 lg:grid-cols-[196px_1fr]">
+        {/* Pinned so the section list stays put while the panel scrolls. */}
+        <nav aria-label="Settings sections" className="lg:sticky lg:top-0 lg:max-h-dvh lg:self-start lg:overflow-y-auto lg:pb-6">
           <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
             {SECTIONS.map(({ key, label, Icon }) => {
               const active = key === section;
@@ -326,7 +327,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                     <button
                       key={p}
                       type="button"
-                      className="bg-surface-subtle px-3 py-2.5 text-left text-[12px] transition-colors hover:border-line-strong"
+                      className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[12px] transition-colors hover:border-line-strong"
                     >
                       <span className="block font-medium">{p}</span>
                       <span className="mt-0.5 block text-[11.5px] text-text-tertiary">2 minute guide</span>
@@ -511,7 +512,7 @@ function SettingRow({
   control: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 bg-surface-subtle px-3.5 py-2.5">
+    <div className="flex items-center gap-4 rounded-xl bg-surface-subtle px-3.5 py-2.5">
       <div className="min-w-0 flex-1">
         <p className="text-[12.5px] font-medium">{title}</p>
         {description && <p className="mt-0.5 text-[12px] leading-[1.45] text-text-tertiary">{description}</p>}

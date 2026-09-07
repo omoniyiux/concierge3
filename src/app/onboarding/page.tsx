@@ -541,7 +541,7 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
             {Object.entries(MOMENT_LABELS).map(([key, label]) => (
               <label
                 key={key}
-                className="flex cursor-pointer items-center justify-between gap-3 bg-surface-subtle px-3.5 py-3"
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-surface-subtle px-3.5 py-3"
               >
                 <span className="text-[11.5px]">{label}</span>
                 <Toggle
@@ -578,7 +578,7 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
           <button
             key={name}
             type="button"
-            className="bg-surface-subtle px-3 py-2.5 text-[12px] text-text-secondary transition-colors hover:border-line-strong hover:text-text-primary"
+            className="rounded-xl bg-surface-subtle px-3 py-2.5 text-[12px] text-text-secondary transition-colors hover:border-line-strong hover:text-text-primary"
           >
             + {name}
           </button>
@@ -694,7 +694,7 @@ function PreviewPane({ run }: { run: string[] }) {
       </div>
 
       <div className="min-h-[320px] space-y-4 p-4">
-        <div className="max-w-[85%] bg-surface-subtle px-3.5 py-2.5">
+        <div className="max-w-[85%] rounded-xl bg-surface-subtle px-3.5 py-2.5">
           <p className="text-[12.5px] leading-[1.55]">
             Hi — I can help with appointments, treatments and pricing at Northlane Dental. What brings you in?
           </p>
@@ -714,7 +714,7 @@ function PreviewPane({ run }: { run: string[] }) {
                 <p className="text-[12.5px] leading-[1.55] text-text-inverse">{q}</p>
               </div>
               <div className="max-w-[88%]">
-                <div className="bg-surface-subtle px-3.5 py-2.5">
+                <div className="rounded-xl bg-surface-subtle px-3.5 py-2.5">
                   <p className="text-[12.5px] leading-[1.55]">{r.body}</p>
                 </div>
                 <p
@@ -796,7 +796,7 @@ function InstallStep({ onDone, onBack }: { onDone: () => void; onBack: () => voi
           <button
             key={p}
             type="button"
-            className="bg-surface-subtle px-3 py-2.5 text-left text-[12px] transition-colors hover:border-line-strong"
+            className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[12px] transition-colors hover:border-line-strong"
           >
             <span className="block font-medium">{p}</span>
             <span className="mt-0.5 block text-[11.5px] text-text-tertiary">Step-by-step guide</span>

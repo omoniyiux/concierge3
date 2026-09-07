@@ -197,7 +197,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             />
             <ul className="space-y-3">
               {readyActions.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 bg-surface-subtle px-3.5 py-2.5">
+                <li key={a.id} className="flex items-center gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
                   <ActionsIcon size={15} className="shrink-0 text-text-tertiary" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[12.5px] font-medium">{a.name}</span>
@@ -252,7 +252,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             />
             <ul className="space-y-3">
               {rules.map((r, i) => (
-                <li key={r} className="flex items-start gap-3 bg-surface-subtle px-3.5 py-2.5">
+                <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
                   <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
                   <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                   <button
@@ -297,7 +297,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             <SectionHead title="Hand off to a person when" className="mb-4" />
             <ul className="space-y-3">
               {AGENT.escalationTriggers.map((r) => (
-                <li key={r} className="flex items-start gap-3 bg-surface-subtle px-3.5 py-2.5">
+                <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
                   <RoutingIcon size={14} className="mt-0.5 shrink-0 text-text-tertiary" />
                   <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                 </li>

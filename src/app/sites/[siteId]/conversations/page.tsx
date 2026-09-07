@@ -322,7 +322,7 @@ function ConversationDetail({
                   <span className="text-[13px] font-medium capitalize">{lead.qualification} lead</span>
                   <span className="t-num text-[15px]">{lead.score}</span>
                 </div>
-                <div className="mt-2.5 h-1.5 w-full overflow-hidden bg-surface-sunken">
+                <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-sunken">
                   <div
                     className={cx(
                       "h-full",
@@ -350,7 +350,7 @@ function ConversationDetail({
                   const a = ACTIONS.find((x) => x.id === id);
                   if (!a) return null;
                   return (
-                    <li key={id} className="flex items-center gap-2.5 bg-surface-subtle px-3 py-2.5">
+                    <li key={id} className="flex items-center gap-2.5 rounded-xl bg-surface-subtle px-3 py-2.5">
                       <ActionsIcon size={14} className="shrink-0 text-text-tertiary" />
                       <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">{a.name}</span>
                     </li>
@@ -363,7 +363,7 @@ function ConversationDetail({
           {c.routedTo && (
             <>
               <h3 className="t-eyebrow mt-7 text-text-muted">Routed to</h3>
-              <p className="mt-2.5 flex items-center gap-2 bg-surface-subtle px-3 py-2.5 text-[12px]">
+              <p className="mt-2.5 flex items-center gap-2 rounded-xl bg-surface-subtle px-3 py-2.5 text-[12px]">
                 <RoutingIcon size={14} className="shrink-0 text-text-tertiary" />
                 {c.routedTo}
               </p>

@@ -210,7 +210,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
             <ArrowRight size={15} className="shrink-0 text-text-muted" />
 
             <span className="t-eyebrow shrink-0 text-text-muted">Then</span>
-            <span className="inline-flex items-center gap-2 bg-surface-subtle px-2.5 py-1.5 text-[12.5px] font-medium">
+            <span className="inline-flex items-center gap-2 rounded-xl bg-surface-subtle px-2.5 py-1.5 text-[12.5px] font-medium">
               <Icon size={13} className="text-text-tertiary" />
               {destination?.name ?? "No destination"}
             </span>

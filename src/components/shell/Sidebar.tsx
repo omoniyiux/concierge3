@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConciergeMark, ConciergeWordmark } from "@/components/shell/ConciergeMark";
 import { SiteSwitcher } from "@/components/shell/SiteSwitcher";
+import { Avatar } from "@/components/shell/Avatar";
 import { BellIcon, HelpIcon, PanelIcon, SearchIcon, SettingsIcon } from "@/components/icons";
 import { IconButton, Tooltip } from "@/components/ui";
 import { cx } from "@/lib/cx";
@@ -116,7 +117,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
                     {!collapsed && attention !== null && (
                       <span className="ml-auto shrink-0">
                         {attention === "dot" ? (
-                          <span className="block h-1.5 w-1.5 bg-danger" aria-label="Needs attention" />
+                          <span className="block h-1.5 w-1.5 rounded-full bg-danger" aria-label="Needs attention" />
                         ) : (
                           <span className="bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums text-accent-ink">
                             {attention}
@@ -125,7 +126,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
                       </span>
                     )}
                     {collapsed && attention !== null && (
-                      <span className="absolute right-1 top-1 h-1.5 w-1.5 bg-accent" />
+                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />
                     )}
                   </Link>
                 );
@@ -163,15 +164,13 @@ export function Sidebar({ siteId }: { siteId: string }) {
         {!collapsed && (
           <Link
             href="/account"
-            className="mt-2 flex items-center gap-2.5 py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
+            className="mt-2 flex items-center gap-2.5 rounded-[10px] py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-ink text-[11.5px] font-semibold text-text-inverse">
-              OP
-            </span>
+            <Avatar size={32} />
             <span className="mr-auto truncate text-[14px] font-semibold">Olaifa Promise</span>
             <span className="relative mr-1">
               <BellIcon size={19} className="text-text-primary" />
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 border-2 border-surface bg-accent" />
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-surface bg-accent" />
             </span>
           </Link>
         )}

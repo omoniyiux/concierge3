@@ -175,7 +175,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
                   </span>
 
                   <span className="flex items-center gap-2.5 lg:justify-end">
-                    <span className="h-1.5 w-16 overflow-hidden bg-surface-sunken">
+                    <span className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-sunken">
                       <span
                         className={cx(
                           "block h-full",
@@ -200,7 +200,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
 
 function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
   return (
-    <div className="cg-enter border-t border-divider bg-surface-subtle px-5 py-5">
+    <div className="cg-enter border-t border-divider rounded-xl bg-surface-subtle px-5 py-5">
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div>
           <h3 className="t-eyebrow text-text-muted">What Concierge worked out</h3>

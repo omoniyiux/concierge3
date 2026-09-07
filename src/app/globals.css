@@ -45,10 +45,10 @@
   --color-surface-inverse: #000000;
 
   /* ---- Lines: dividers only. Surfaces separate by colour, not borders --- */
-  --color-line: #e5e5e5;
-  --color-line-strong: #d2d2d2;
-  --color-line-hover: #c2c2c2;
-  --color-divider: #ececec;
+  --color-line: #ededed;
+  --color-line-strong: #e0e0e0;
+  --color-line-hover: #cfcfcf;
+  --color-divider: #f0f0f0;
 
   /* ---- Semantic --------------------------------------------------------- */
   --color-success: #1c7a4e;

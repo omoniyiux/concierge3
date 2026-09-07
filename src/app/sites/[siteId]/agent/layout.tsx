@@ -63,7 +63,7 @@ export default function AgentLayout({
                 )}
               >
                 {label}
-                {badge === "dot" && <span className="h-1.5 w-1.5 bg-danger" />}
+                {badge === "dot" && <span className="h-1.5 w-1.5 rounded-full bg-danger" />}
                 {typeof badge === "number" && (
                   <span
                     className={cx(

@@ -149,7 +149,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                 className={`mt-3.5 text-[14px] font-semibold tracking-[-0.02em] ${c.alert ? "text-danger" : ""}`}
               >
                 {c.live && (
-                  <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 bg-success cg-live-dot" />
+                  <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-success cg-live-dot" />
                 )}
                 {c.value}
               </p>

@@ -41,7 +41,7 @@ export function ProductFrame({
   return (
     <div className={cx("overflow-hidden bg-surface shadow-lg", className)} role="img" aria-label={label}>
       {chrome === "app" && (
-        <div className="flex items-center gap-2 bg-surface-subtle px-3.5 py-2.5">
+        <div className="flex items-center gap-2 rounded-xl bg-surface-subtle px-3.5 py-2.5">
           <span className="flex gap-1.5" aria-hidden>
             {["#E8E8E3", "#E8E8E3", "#E8E8E3"].map((c, i) => (
               <span key={i} className="h-2.5 w-2.5" style={{ background: c }} />
@@ -283,7 +283,7 @@ export function RoutingFrame() {
               <p className="text-[12.5px] font-semibold">{r.name}</p>
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 <span className="t-eyebrow text-text-muted">If</span>
-                <span className="inline-flex items-center gap-1.5 bg-surface-subtle px-2 py-1 text-[10px]">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-surface-subtle px-2 py-1 text-[10px]">
                   <span className="text-text-tertiary">{r.cond[0]}</span>
                   <span className="text-text-muted">{r.cond[1]}</span>
                   <span className="font-medium">{r.cond[2]}</span>
@@ -325,7 +325,7 @@ export function InsightsFrame() {
 
       <ul className="mt-3 space-y-3">
         {gaps.map(([q, n]) => (
-          <li key={q} className="flex items-center gap-3 bg-surface-subtle px-3.5 py-2.5">
+          <li key={q} className="flex items-center gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[12.5px] font-medium">&ldquo;{q}&rdquo;</span>
               <span className="mt-0.5 block text-[10px] text-text-tertiary">Asked {n} times</span>
@@ -416,7 +416,7 @@ export function OverviewFrame() {
             ["3 knowledge items need review", "review"],
             ["5 questions your site could not answer", "accent"],
           ].map(([title, tone]) => (
-            <div key={title} className="flex items-center gap-2.5 bg-surface-subtle px-3 py-2">
+            <div key={title} className="flex items-center gap-2.5 rounded-xl bg-surface-subtle px-3 py-2">
               <span
                 className={cx(
                   "h-1.5 w-1.5 shrink-0",

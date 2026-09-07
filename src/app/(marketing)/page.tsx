@@ -336,7 +336,7 @@ function ActionsSection() {
           ["Book a consultation", "For anything you will not quote sight unseen."],
         ].map(([title, body]) => (
           <Card key={title} className="p-5">
-            <span className="flex h-8 w-8 items-center justify-center bg-accent-soft text-accent-ink">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft text-accent-ink">
               <ActionsIcon size={15} />
             </span>
             <h3 className="mt-3.5 text-[13.5px] font-semibold tracking-[-0.015em]">{title}</h3>
