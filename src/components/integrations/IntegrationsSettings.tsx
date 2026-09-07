@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import {
   Badge,
   Button,
@@ -9,6 +8,7 @@ import {
   EmptyState,
   Panel,
   SearchInput,
+  SectionHead,
   SegmentedControl,
 } from "@/components/ui";
 import {
@@ -75,7 +75,11 @@ const CATEGORY_LABEL: Record<IntegrationCategory, string> = {
 
 type Filter = "all" | "connected" | IntegrationCategory;
 
-export default function IntegrationsPage() {
+/**
+ * Integrations are connect-once plumbing, so they live inside Settings rather
+ * than holding a sidebar row of their own.
+ */
+export function IntegrationsSettings() {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
 
@@ -93,61 +97,64 @@ export default function IntegrationsPage() {
   const broken = INTEGRATIONS.filter((i) => i.status === "error");
 
   return (
-    <PageContainer wide>
-      <PageHeader
-        eyebrow="Integrations"
-        title="The tools Concierge works through"
-        description="Connect a tool once and every agent, action and routing rule on this site can use it."
-        actions={<Button leading={<PlusIcon size={15} />}>Connect a custom endpoint</Button>}
-        meta={
-          broken.length > 0 ? (
-            <Card className="flex flex-wrap items-center gap-3 border-danger-line bg-danger-soft p-4">
-              <AlertIcon size={17} className="shrink-0 text-danger" />
-              <p className="min-w-0 flex-1 text-[13px]">
-                <span className="font-medium">{broken[0].name} stopped responding.</span>{" "}
-                <span className="text-text-secondary">
-                  Anything that depends on it is queued rather than lost.
-                </span>
-              </p>
-              <Button size="sm" variant="secondary">
-                Reconnect
-              </Button>
-            </Card>
-          ) : (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-divider pt-5">
-              <span className="text-[13px]">
-                <span className="font-medium">{connected.length}</span>{" "}
-                <span className="text-text-tertiary">connected</span>
-              </span>
-              <span className="text-[13px]">
-                <span className="font-medium">{INTEGRATIONS.length - connected.length}</span>{" "}
-                <span className="text-text-tertiary">available</span>
-              </span>
-            </div>
-          )
-        }
-      />
+    <>
+      <Panel className="p-6">
+        <SectionHead
+          title="Integrations"
+          hint="Connect a tool once and every agent, action and routing rule on this site can use it."
+          action={
+            <Button size="sm" variant="secondary" leading={<PlusIcon size={13} />}>
+              Custom endpoint
+            </Button>
+          }
+          className="mb-5"
+        />
 
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <SearchInput
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search integrations"
-          className="min-w-[200px] flex-1 sm:max-w-[300px]"
-          aria-label="Search integrations"
-        />
-        <SegmentedControl
-          label="Filter integrations"
-          value={filter}
-          onChange={setFilter}
-          options={[
-            { value: "all", label: "All" },
-            { value: "connected", label: "Connected" },
-            { value: "routing", label: "Routing" },
-            { value: "crm", label: "CRM" },
-          ]}
-        />
-      </div>
+        {broken.length > 0 ? (
+          <Card className="mb-5 flex flex-wrap items-center gap-3 border-danger-line bg-danger-soft p-4">
+            <AlertIcon size={17} className="shrink-0 text-danger" />
+            <p className="min-w-0 flex-1 text-[13px]">
+              <span className="font-medium">{broken[0].name} stopped responding.</span>{" "}
+              <span className="text-text-secondary">Anything that depends on it is queued rather than lost.</span>
+            </p>
+            <Button size="sm" variant="secondary">
+              Reconnect
+            </Button>
+          </Card>
+        ) : (
+          <div className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <span className="text-[13px]">
+              <span className="font-medium">{connected.length}</span>{" "}
+              <span className="text-text-tertiary">connected</span>
+            </span>
+            <span className="text-[13px]">
+              <span className="font-medium">{INTEGRATIONS.length - connected.length}</span>{" "}
+              <span className="text-text-tertiary">available</span>
+            </span>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          <SearchInput
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search integrations"
+            className="min-w-[200px] flex-1 sm:max-w-[300px]"
+            aria-label="Search integrations"
+          />
+          <SegmentedControl
+            label="Filter integrations"
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: "all", label: "All" },
+              { value: "connected", label: "Connected" },
+              { value: "routing", label: "Routing" },
+              { value: "crm", label: "CRM" },
+            ]}
+          />
+        </div>
+      </Panel>
 
       {list.length === 0 ? (
         <Panel>
@@ -159,13 +166,13 @@ export default function IntegrationsPage() {
           />
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {list.map((integration) => (
             <IntegrationCard key={integration.id} integration={integration} />
           ))}
         </div>
       )}
-    </PageContainer>
+    </>
   );
 }
 

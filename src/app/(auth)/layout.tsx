@@ -47,12 +47,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             ["Learns again", "Tells you every question your site could not answer."],
           ].map(([title, body], i) => (
             <li key={title} className="flex gap-4">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-[14.5px] font-semibold tabular-nums text-text-tertiary">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-[14px] font-semibold tabular-nums text-text-tertiary">
                 {i + 1}
               </span>
               <span>
                 <span className="block text-[14px] font-medium">{title}</span>
-                <span className="mt-0.5 block text-[15px] leading-[1.6] text-text-tertiary">{body}</span>
+                <span className="mt-0.5 block text-[14px] leading-[1.55] text-text-tertiary">{body}</span>
               </span>
             </li>
           ))}

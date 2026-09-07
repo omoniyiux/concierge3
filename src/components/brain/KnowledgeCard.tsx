@@ -65,7 +65,7 @@ export function KnowledgeCard({
       )}
     >
       {/* Head ----------------------------------------------------------- */}
-      <div className="flex items-start gap-3 px-7 py-5">
+      <div className="flex items-start gap-3 px-6 py-4">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -130,7 +130,7 @@ export function KnowledgeCard({
 
       {/* Body ----------------------------------------------------------- */}
       {open && (
-        <div className="border-t border-divider bg-surface-subtle/50 px-7 py-5">
+        <div className="border-t border-divider bg-surface-subtle/50 px-6 py-4">
           {editing ? (
             <>
               <Textarea
@@ -168,9 +168,9 @@ export function KnowledgeCard({
           ) : (
             <>
               {item.body ? (
-                <p className="text-[15px] leading-[1.6] text-text-primary">{item.body}</p>
+                <p className="text-[14px] leading-[1.55] text-text-primary">{item.body}</p>
               ) : (
-                <p className="text-[15px] leading-[1.6] text-text-tertiary">
+                <p className="text-[14px] leading-[1.55] text-text-tertiary">
                   Nothing found. Add it yourself, or point Concierge at a page that covers it.
                 </p>
               )}

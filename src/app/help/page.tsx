@@ -15,7 +15,7 @@ const TOPICS = [
 export default function HelpPage() {
   return (
     <div className="min-h-dvh bg-canvas">
-      <header className="border-b border-divider bg-surface px-7 py-5 lg:px-8">
+      <header className="border-b border-divider bg-surface px-6 py-4 lg:px-8">
         <div className="mx-auto flex w-full max-w-[900px] items-center">
           <Link href="/" className="rounded-lg" aria-label="Concierge home">
             <ConciergeWordmark />
@@ -30,7 +30,7 @@ export default function HelpPage() {
           Setup guides, how Concierge decides what to say, and what to do when something is not behaving.
         </p>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {TOPICS.map(({ Icon, title, body }) => (
             <Card key={title} interactive className="p-5">
               <Icon size={18} className="text-text-tertiary" />

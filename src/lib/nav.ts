@@ -13,47 +13,43 @@ import {
 } from "@/components/icons";
 
 export type NavItem = {
-  slug: string;
+  /** Path under /sites/[siteId]/. */
+  path: string;
   label: string;
   Icon: ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
-  /** Rendered as a small dot when the surface needs the owner. */
-  attention?: "count" | "dot";
 };
 
 export type NavGroup = { label: string | null; items: NavItem[] };
 
 /**
- * Four groups, nine destinations. The grouping follows the product's own
- * mental model — understand, engage, automate, grow — rather than listing
- * every feature the app happens to have.
+ * Nine destinations under four quiet headings, following the product's own
+ * model: understand the business, engage the visitor, automate the work,
+ * grow on what you learn.
  */
 export const NAV: NavGroup[] = [
-  { label: null, items: [{ slug: "overview", label: "Overview", Icon: OverviewIcon }] },
-  {
-    label: "Understand",
-    items: [{ slug: "brain", label: "Site Brain", Icon: BrainIcon, attention: "count" }],
-  },
+  { label: null, items: [{ path: "overview", label: "Overview", Icon: OverviewIcon }] },
+  { label: "Understand", items: [{ path: "brain", label: "Site Brain", Icon: BrainIcon }] },
   {
     label: "Engage",
     items: [
-      { slug: "agent", label: "Agent", Icon: AgentIcon },
-      { slug: "conversations", label: "Conversations", Icon: ConversationsIcon, attention: "count" },
-      { slug: "leads", label: "Leads", Icon: LeadsIcon },
+      { path: "agent", label: "Agent", Icon: AgentIcon },
+      { path: "conversations", label: "Conversations", Icon: ConversationsIcon },
+      { path: "leads", label: "Leads", Icon: LeadsIcon },
     ],
   },
   {
     label: "Automate",
     items: [
-      { slug: "actions", label: "Actions", Icon: ActionsIcon },
-      { slug: "routing", label: "Routing", Icon: RoutingIcon, attention: "dot" },
+      { path: "actions", label: "Actions", Icon: ActionsIcon },
+      { path: "routing", label: "Routing", Icon: RoutingIcon },
     ],
   },
   {
     label: "Grow",
     items: [
-      { slug: "insights", label: "Insights", Icon: InsightsIcon },
-      { slug: "pages", label: "Pages", Icon: PagesIcon },
-      { slug: "integrations", label: "Integrations", Icon: IntegrationsIcon },
+      { path: "insights", label: "Insights", Icon: InsightsIcon },
+      { path: "pages", label: "Pages", Icon: PagesIcon },
+      { path: "integrations", label: "Integrations", Icon: IntegrationsIcon },
     ],
   },
 ];

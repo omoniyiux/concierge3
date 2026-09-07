@@ -74,7 +74,7 @@ export default function ActionsPage({ params }: { params: Promise<{ siteId: stri
   return (
     <PageContainer wide>
       <PageHeader
-        eyebrow="Actions"
+        eyebrow="Agent"
         title="What Concierge can do for a visitor"
         description="Answering is the floor. These are the jobs Concierge can finish on its own — booking a time, taking a number, starting a quote."
         actions={<Button leading={<PlusIcon size={15} />}>Add an action</Button>}

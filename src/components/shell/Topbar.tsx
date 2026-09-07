@@ -32,7 +32,7 @@ export function Topbar({ siteId }: { siteId: string }) {
         href={`https://${site.url}`}
         target="_blank"
         rel="noreferrer"
-        className="hidden items-center gap-1.5 rounded-md px-2 py-1 text-[13.5px] text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary md:inline-flex"
+        className="hidden items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary md:inline-flex"
       >
         {site.url}
         <ExternalIcon size={13} />
@@ -58,7 +58,7 @@ export function Topbar({ siteId }: { siteId: string }) {
 
       <Link
         href="/help"
-        className="hidden h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13.5px] text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary md:inline-flex"
+        className="hidden h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary md:inline-flex"
       >
         <HelpIcon size={15} />
         Help

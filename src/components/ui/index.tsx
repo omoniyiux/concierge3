@@ -37,9 +37,9 @@ const VARIANT: Record<Variant, string> = {
 };
 
 const SIZE: Record<Size, string> = {
-  sm: "h-8 px-3 text-[13px] gap-1.5 rounded-lg",
-  md: "h-10 px-4 text-[14px] gap-2 rounded-[10px]",
-  lg: "h-12 px-5 text-[15px] gap-2 rounded-xl",
+  sm: "h-7 px-2.5 text-[12.5px] gap-1.5 rounded-lg",
+  md: "h-9 px-3.5 text-[13px] gap-1.5 rounded-[9px]",
+  lg: "h-10 px-4 text-[14px] gap-2 rounded-[10px]",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -229,20 +229,20 @@ export function SectionHead({
    ========================================================================== */
 
 const FIELD_BASE =
-  "w-full rounded-[10px] border border-line-strong bg-surface text-[14px] text-text-primary " +
+  "w-full rounded-[9px] border border-line-strong bg-surface text-[13.5px] text-text-primary " +
   "placeholder:text-text-muted transition-[border-color,box-shadow] duration-[var(--dur-micro)] " +
   "focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/8 " +
   "disabled:bg-surface-subtle disabled:text-text-disabled";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...rest }, ref) {
-    return <input ref={ref} className={cx(FIELD_BASE, "h-11 px-3.5", className)} {...rest} />;
+    return <input ref={ref} className={cx(FIELD_BASE, "h-10 px-3", className)} {...rest} />;
   },
 );
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
   function Textarea({ className, ...rest }, ref) {
-    return <textarea ref={ref} className={cx(FIELD_BASE, "min-h-[96px] resize-y px-3.5 py-2.5 leading-[1.55]", className)} {...rest} />;
+    return <textarea ref={ref} className={cx(FIELD_BASE, "min-h-[84px] resize-y px-3 py-2 leading-[1.5]", className)} {...rest} />;
   },
 );
 
@@ -250,7 +250,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   function Select({ className, children, ...rest }, ref) {
     return (
       <div className="relative">
-        <select ref={ref} className={cx(FIELD_BASE, "h-11 appearance-none pl-3.5 pr-9", className)} {...rest}>
+        <select ref={ref} className={cx(FIELD_BASE, "h-10 appearance-none pl-3 pr-9", className)} {...rest}>
           {children}
         </select>
         <ChevronDown
@@ -268,8 +268,8 @@ export function SearchInput({
 }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className={cx("relative", className)}>
-      <SearchIcon size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
-      <input className={cx(FIELD_BASE, "h-11 pl-10 pr-3.5")} {...rest} />
+      <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+      <input className={cx(FIELD_BASE, "h-10 pl-9 pr-3")} {...rest} />
     </div>
   );
 }
@@ -378,7 +378,7 @@ export function Checkbox({
         {checked && <CheckIcon size={12} strokeWidth={2.6} />}
       </span>
       <span className="min-w-0">
-        <span className="block text-[15px] font-medium">{label}</span>
+        <span className="block text-[14px] font-medium">{label}</span>
         {description && <span className="mt-0.5 block text-[13.5px] leading-[1.45] text-text-tertiary">{description}</span>}
       </span>
     </button>
@@ -415,9 +415,9 @@ export function RadioCard({
         <span className={cx("mt-px shrink-0", selected ? "text-accent" : "text-text-tertiary")}>{icon}</span>
       )}
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-medium">{label}</span>
+        <span className="block text-[14px] font-medium">{label}</span>
         {description && (
-          <span className="mt-1 block text-[13.5px] leading-[1.5] text-text-tertiary">{description}</span>
+          <span className="mt-1 block text-[13px] leading-[1.5] text-text-tertiary">{description}</span>
         )}
       </span>
     </button>
@@ -450,7 +450,7 @@ export function Tabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(t.value)}
             className={cx(
-              "relative -mb-px flex h-11 items-center gap-2 px-3.5 text-[15px] font-medium transition-colors duration-[var(--dur-micro)]",
+              "relative -mb-px flex h-10 items-center gap-2 px-3 text-[14px] font-medium transition-colors duration-[var(--dur-micro)]",
               active ? "text-text-primary" : "text-text-tertiary hover:text-text-secondary",
             )}
           >
@@ -642,7 +642,7 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cx("flex flex-col items-center px-6 py-14 text-center", className)}>
+    <div className={cx("flex flex-col items-center px-6 py-12 text-center", className)}>
       {icon && (
         <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-[18px] bg-surface-subtle text-text-tertiary">
           {icon}
@@ -666,11 +666,11 @@ export function WorkingState({ title, detail }: { title: string; detail?: string
     <div className="flex items-center gap-3" role="status">
       <Spinner className="text-accent" size={16} />
       <div>
-        <p className="text-[15px] font-medium">
+        <p className="text-[14px] font-medium">
           {title}
           <TypingDots />
         </p>
-        {detail && <p className="mt-0.5 text-[13.5px] text-text-tertiary">{detail}</p>}
+        {detail && <p className="mt-0.5 text-[13px] text-text-tertiary">{detail}</p>}
       </div>
     </div>
   );

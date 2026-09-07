@@ -74,7 +74,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               </div>
             ))}
           </div>
-          <p className="mt-12 border-t border-divider pt-6 text-[14px] text-text-tertiary">
+          <p className="mt-9 border-t border-divider pt-6 text-[14px] text-text-tertiary">
             © {new Date().getFullYear()} Concierge. All rights reserved.
           </p>
         </div>

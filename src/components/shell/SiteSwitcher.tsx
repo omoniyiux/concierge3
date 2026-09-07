@@ -63,16 +63,15 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cx(
-          "flex h-[46px] w-full items-center gap-2.5 rounded-xl bg-surface-subtle px-2.5 transition-colors duration-[var(--dur-micro)]",
-          open ? "bg-surface-hover" : "hover:bg-surface-hover",
+          // Same row geometry as a nav destination, and no fill of its own — a
+          // filled block here reads louder than the active page.
+          "flex h-[34px] w-full items-center gap-[14px] rounded-[6px] pl-[11px] pr-[11px] text-text-primary transition-colors duration-[var(--dur-micro)]",
+          open ? "bg-surface-hover" : "hover:bg-[#f4f4f4]",
         )}
       >
-        <SiteMark name={current.name} size={28} />
-        <span className="min-w-0 text-left">
-          <span className="block truncate text-[14.5px] font-semibold leading-tight">{current.name}</span>
-          <span className="block truncate text-[13.5px] leading-tight text-text-tertiary">{ORG.name}</span>
-        </span>
-        <ChevronUpDown size={16} className="ml-auto shrink-0 text-text-muted" />
+        <SiteMark name={current.name} size={18} />
+        <span className="min-w-0 truncate text-left text-[15px] font-semibold leading-none">{current.name}</span>
+        <ChevronUpDown size={15} className="ml-auto shrink-0 text-text-muted" />
       </button>
 
       {open && (
@@ -82,7 +81,7 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
         >
           <div className="flex items-center justify-between border-b border-divider px-3 py-2">
             <p className="t-eyebrow text-text-muted">{ORG.name}</p>
-            <span className="text-[13.5px] text-text-tertiary">
+            <span className="text-[13px] text-text-tertiary">
               {SITES.length} of {ORG.siteLimit} sites
             </span>
           </div>
@@ -107,8 +106,8 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
                   >
                     <SiteMark name={s.name} size={28} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-medium">{s.name}</span>
-                      <span className="block truncate text-[13.5px] text-text-tertiary">{s.url}</span>
+                      <span className="block truncate text-[14px] font-medium">{s.name}</span>
+                      <span className="block truncate text-[13px] text-text-tertiary">{s.url}</span>
                     </span>
                     <SiteStatusBadge site={s} />
                     {active && <CheckIcon size={15} className="shrink-0 text-text-primary" />}

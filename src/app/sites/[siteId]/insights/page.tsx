@@ -68,7 +68,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
       />
 
       {/* The headline insight ------------------------------------------- */}
-      <section className="mb-14">
+      <section className="mb-10">
         <Card className="border-accent-line bg-accent-subtle p-6">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="max-w-[52ch]">
@@ -82,7 +82,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="t-num text-[40px] leading-none text-accent-ink">{open.length}</p>
+              <p className="t-num text-[32px] leading-none text-accent-ink">{open.length}</p>
               <p className="mt-1.5 text-[13.5px] text-text-secondary">distinct questions</p>
             </div>
           </div>
@@ -100,9 +100,9 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
           ) : (
             <ul className="divide-y divide-divider overflow-hidden rounded-[18px] bg-surface">
               {open.map((q) => (
-                <li key={q.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-7 py-5">
+                <li key={q.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-6 py-4">
                   <div className="min-w-[240px] flex-1">
-                    <p className="text-[15px] font-medium">&ldquo;{q.question}&rdquo;</p>
+                    <p className="text-[14px] font-medium">&ldquo;{q.question}&rdquo;</p>
                     <p className="mt-1 flex flex-wrap items-center gap-x-2.5 text-[14px] text-text-tertiary">
                       <span className="tabular-nums">Asked {q.askCount} times</span>
                       <span aria-hidden>·</span>
@@ -132,7 +132,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
             <p className="mt-3 flex items-center gap-2 text-[13.5px] text-success">
               <CheckIcon size={13} strokeWidth={2.4} />
               {resolved.length} added to your Site Brain queue.{" "}
-              <LinkButton href={`/sites/${siteId}/brain`} variant="tertiary" size="sm">
+              <LinkButton href={`/sites/${siteId}/agent/brain`} variant="tertiary" size="sm">
                 Review them
               </LinkButton>
             </p>
@@ -141,7 +141,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
       </section>
 
       {/* Performance ----------------------------------------------------- */}
-      <section className="mb-14">
+      <section className="mb-10">
         <SectionHead
           title="How Concierge performed"
           hint="Measured against the previous period of the same length."
@@ -153,7 +153,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
             return (
               <div key={m.key} className="bg-surface p-4">
                 <p className="t-eyebrow text-text-muted">{m.label}</p>
-                <p className="t-num mt-2 text-[22px] leading-none">{formatMetric(m.value, m.format)}</p>
+                <p className="t-num mt-2 text-[19px] leading-none">{formatMetric(m.value, m.format)}</p>
                 <div className="mt-2.5 flex items-end justify-between gap-2">
                   <span
                     className={cx(
@@ -171,8 +171,8 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
         </div>
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_400px]">
-        <Panel className="p-7">
+      <div className="grid gap-4 lg:grid-cols-[1fr_400px]">
+        <Panel className="p-6">
           <SectionHead
             title="Conversation volume"
             hint="Daily conversations across the selected period."
@@ -181,7 +181,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
           <AreaChart points={conversations.series} label="Conversations per day" />
         </Panel>
 
-        <Panel className="p-7">
+        <Panel className="p-6">
           <SectionHead
             title="What visitors came for"
             hint="Ranked by volume. Conversion is the share that reached an action."
@@ -194,7 +194,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
               sub: `${i.conversionRate}% reached an action`,
             }))}
           />
-          <p className="mt-4 border-t border-divider pt-3.5 text-[13.5px] leading-[1.5] text-text-tertiary">
+          <p className="mt-4 border-t border-divider pt-3.5 text-[13px] leading-[1.5] text-text-tertiary">
             Booking is your highest-volume intent and converts at 41%. Pricing is second by volume but converts at
             22% — worth a look at what Concierge is able to say about price.
           </p>
@@ -203,26 +203,26 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
 
       {/* Agent behaviour -------------------------------------------------- */}
       <section className="mt-6">
-        <div className="grid gap-5 lg:grid-cols-3">
-          <Card className="p-7">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="p-6">
             <p className="t-eyebrow text-text-muted">Answered without a person</p>
-            <p className="t-num mt-2.5 text-[30px] leading-none">83%</p>
+            <p className="t-num mt-2.5 text-[24px] leading-none">83%</p>
             <p className="t-body-sm mt-2 text-text-tertiary">
               320 of 386 conversations resolved from approved knowledge alone.
             </p>
           </Card>
-          <Card className="p-7">
+          <Card className="p-6">
             <p className="t-eyebrow text-text-muted">Average time to a person</p>
-            <p className="t-num mt-2.5 text-[30px] leading-none">
+            <p className="t-num mt-2.5 text-[24px] leading-none">
               4<span className="text-[18px] font-normal text-text-tertiary">s</span>
             </p>
             <p className="t-body-sm mt-2 text-text-tertiary">
               From a visitor asking for a human to your team being told.
             </p>
           </Card>
-          <Card className="p-7">
+          <Card className="p-6">
             <p className="t-eyebrow text-text-muted">Refused safely</p>
-            <p className="t-num mt-2.5 text-[30px] leading-none">28</p>
+            <p className="t-num mt-2.5 text-[24px] leading-none">28</p>
             <p className="t-body-sm mt-2 text-text-tertiary">
               Times Concierge declined to guess and offered a handoff instead.
             </p>
@@ -237,7 +237,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
           and Concierge starts using it immediately — no re-crawl, no reinstall.
         </p>
         <LinkButton
-          href={`/sites/${siteId}/brain`}
+          href={`/sites/${siteId}/agent/brain`}
           variant="secondary"
           size="sm"
           trailing={<ArrowRight size={13} />}

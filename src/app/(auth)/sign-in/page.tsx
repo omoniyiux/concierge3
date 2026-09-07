@@ -16,7 +16,7 @@ export default function SignInPage() {
       <h1 className="t-page">Sign in</h1>
       <p className="t-body mt-2.5 text-text-tertiary">Pick up where you left off.</p>
 
-      <div className="mt-7 space-y-2.5">
+      <div className="mt-5 space-y-2.5">
         <Button variant="secondary" block size="lg" leading={<GoogleMark />}>
           Continue with Google
         </Button>
@@ -32,7 +32,7 @@ export default function SignInPage() {
       </div>
 
       <form
-        className="space-y-4"
+        className="space-y-2.5"
         onSubmit={(e) => {
           e.preventDefault();
           setBusy(true);

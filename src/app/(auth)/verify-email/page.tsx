@@ -20,11 +20,11 @@ export default function VerifyEmailPage() {
       </p>
 
       <Card className="mt-6 p-4">
-        <p className="flex items-center gap-2 text-[15px] font-medium">
+        <p className="flex items-center gap-2 text-[14px] font-medium">
           <CheckIcon size={14} className="text-success" strokeWidth={2.4} />
           What happens after you verify
         </p>
-        <ul className="mt-2.5 space-y-1.5 text-[13.5px] leading-[1.5] text-text-secondary">
+        <ul className="mt-2.5 space-y-1.5 text-[13px] leading-[1.5] text-text-secondary">
           <li>· Concierge starts reading your public pages.</li>
           <li>· Your email becomes the first routing destination.</li>
           <li>· You approve what Concierge is allowed to say.</li>

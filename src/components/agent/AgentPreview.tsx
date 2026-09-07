@@ -91,7 +91,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+    <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
       <div>
         <p className="t-eyebrow mb-2.5 text-text-muted">Suggested tests</p>
         <ul className="space-y-1.5">
@@ -126,7 +126,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[10px] font-semibold text-text-inverse">
             C+
           </span>
-          <p className="text-[15px] font-medium">Northlane Concierge</p>
+          <p className="text-[14px] font-medium">Northlane Concierge</p>
           <Badge tone="neutral" className="ml-auto">
             Simulation · nothing is sent
           </Badge>
@@ -153,10 +153,10 @@ export function AgentPreview({ greeting }: { greeting: string }) {
                     <Badge tone={v.tone} dot>
                       {v.label}
                     </Badge>
-                    <span className="text-[13.5px] text-text-tertiary">{t.verdict.note}</span>
+                    <span className="text-[13px] text-text-tertiary">{t.verdict.note}</span>
                     <span
                       className={cx(
-                        "text-[13.5px] tabular-nums",
+                        "text-[12.5px] tabular-nums",
                         t.confidence < 0.6 ? "text-warning" : "text-text-muted",
                       )}
                     >
@@ -164,7 +164,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
                     </span>
                   </div>
                   {t.cites && (
-                    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[13.5px] text-text-tertiary">
+                    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[13px] text-text-tertiary">
                       <ShieldIcon size={11} className="text-success" />
                       From {t.cites.join(" · ")}
                     </p>
@@ -175,7 +175,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
           })}
 
           {thinking && (
-            <div className="flex items-center gap-2.5 text-[13.5px] text-text-tertiary">
+            <div className="flex items-center gap-2.5 text-[13px] text-text-tertiary">
               <Spinner size={13} className="text-accent" />
               Checking approved knowledge…
             </div>
@@ -209,7 +209,7 @@ function Bubble({ side, children }: { side: "visitor" | "agent"; children: React
   return (
     <div
       className={cx(
-        "w-fit max-w-[88%] rounded-xl px-3.5 py-2.5 text-[15px] leading-[1.6]",
+        "w-fit max-w-[88%] rounded-xl px-3.5 py-2.5 text-[14px] leading-[1.55]",
         side === "agent"
           ? "rounded-tl-sm bg-surface-subtle"
           : "ml-auto rounded-tr-sm bg-ink text-text-inverse",

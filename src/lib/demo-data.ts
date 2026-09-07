@@ -945,9 +945,9 @@ export const INTENTS: IntentBreakdown[] = [
 export const ACTIVITY: ActivityEvent[] = [
   { id: "a_1", kind: "lead", title: "Maya Robinson qualified", detail: "Invisalign consultation · score 92 · routed to Front desk", at: "2026-09-07T07:51:00Z", siteId: "site_northlane", href: "/sites/site_northlane/leads" },
   { id: "a_2", kind: "conversation", title: "New conversation on /services", detail: "Asked about treating children under 5 — Concierge could not answer", at: "2026-09-07T08:20:00Z", siteId: "site_northlane", href: "/sites/site_northlane/conversations" },
-  { id: "a_3", kind: "routing", title: "Webhook delivery failed", detail: "Practice CRM returned 503 · retrying", at: "2026-09-07T05:02:00Z", siteId: "site_northlane", href: "/sites/site_northlane/routing" },
-  { id: "a_4", kind: "action", title: "Call request completed", detail: "Routed to Emergency line in 4 seconds", at: "2026-09-07T06:15:00Z", siteId: "site_northlane", href: "/sites/site_northlane/actions" },
-  { id: "a_5", kind: "knowledge", title: "3 knowledge items need review", detail: "Opening hours, Treatment pricing, Insurance and payment", at: "2026-09-06T22:14:00Z", siteId: "site_northlane", href: "/sites/site_northlane/brain" },
+  { id: "a_3", kind: "routing", title: "Webhook delivery failed", detail: "Practice CRM returned 503 · retrying", at: "2026-09-07T05:02:00Z", siteId: "site_northlane", href: "/sites/site_northlane/agent/routing" },
+  { id: "a_4", kind: "action", title: "Call request completed", detail: "Routed to Emergency line in 4 seconds", at: "2026-09-07T06:15:00Z", siteId: "site_northlane", href: "/sites/site_northlane/agent/actions" },
+  { id: "a_5", kind: "knowledge", title: "3 knowledge items need review", detail: "Opening hours, Treatment pricing, Insurance and payment", at: "2026-09-06T22:14:00Z", siteId: "site_northlane", href: "/sites/site_northlane/agent/brain" },
   { id: "a_6", kind: "conversation", title: "Priya Raman converted", detail: "Veneers quote request · routed to Cosmetic team", at: "2026-09-06T14:34:00Z", siteId: "site_northlane", href: "/sites/site_northlane/conversations" },
 ];
 

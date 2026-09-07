@@ -18,7 +18,7 @@ export default function CreateAccountPage() {
       </p>
 
       <form
-        className="mt-7 space-y-4"
+        className="mt-5 space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
           setBusy(true);

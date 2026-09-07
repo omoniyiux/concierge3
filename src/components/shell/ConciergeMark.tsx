@@ -18,9 +18,9 @@ export function ConciergeMark({ size = 26, className }: { size?: number; classNa
 export function ConciergeWordmark({ className }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className ?? ""}`}>
-      <ConciergeMark size={30} />
+      <ConciergeMark size={26} />
       <span
-        className="text-[21px] font-bold tracking-[-0.035em]"
+        className="text-[18px] font-medium tracking-[-0.028em]"
         style={{ fontFamily: "var(--font-display)" }}
       >
         Concierge

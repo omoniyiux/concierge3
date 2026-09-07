@@ -102,7 +102,7 @@ function SectionIntro({
     <div className={cx(align === "center" ? "mx-auto max-w-[62ch] text-center" : "max-w-[54ch]", className)}>
       <p className="t-eyebrow text-accent-ink">{eyebrow}</p>
       <h2 className="t-display mt-3.5 text-[32px] sm:text-[40px]">{title}</h2>
-      <p className="t-body mt-4 text-[15px] leading-[1.6] text-text-tertiary">{body}</p>
+      <p className="t-body mt-4 text-[14px] leading-[1.55] text-text-tertiary">{body}</p>
     </div>
   );
 }
@@ -132,13 +132,13 @@ function Hero() {
               See it learn a website
             </LinkButton>
           </div>
-          <p className="mt-4 text-[13.5px] text-text-tertiary">
+          <p className="mt-4 text-[13px] text-text-tertiary">
             No card needed · Live in under 10 minutes · Works on any website
           </p>
         </div>
 
         {/* The actual product, not a picture of it. */}
-        <div className="mt-14 lg:mt-20">
+        <div className="mt-11 lg:mt-20">
           <ProductFrame label="The Concierge overview dashboard" className="mx-auto max-w-[1000px]">
             <OverviewFrame />
           </ProductFrame>
@@ -152,7 +152,7 @@ function LogoStrip() {
   return (
     <section className="bg-surface px-5 py-14 lg:px-8">
       <div className="mx-auto w-full max-w-[1180px]">
-        <p className="text-center text-[13.5px] text-text-tertiary">
+        <p className="text-center text-[13px] text-text-tertiary">
           Works with the tools your business already runs on
         </p>
         <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
@@ -206,7 +206,7 @@ function Narrative() {
         body="Concierge is not a chatbot bolted to a page. It is a layer that understands, decides, acts and reports back."
         align="center"
       />
-      <ol className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+      <ol className="mt-11 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
         {STEPS.map(({ Icon, title, body }, i) => (
           <li key={title}>
             <div className="flex items-center gap-2.5">
@@ -216,7 +216,7 @@ function Narrative() {
               <span className="t-eyebrow text-text-muted">Step {i + 1}</span>
             </div>
             <h3 className="mt-4 text-[15px] font-semibold tracking-[-0.015em]">{title}</h3>
-            <p className="mt-2 text-[15px] leading-[1.6] text-text-tertiary">{body}</p>
+            <p className="mt-2 text-[14px] leading-[1.55] text-text-tertiary">{body}</p>
           </li>
         ))}
       </ol>
@@ -242,7 +242,7 @@ function Split({
       <div>
         {intro}
         {points && (
-          <ul className="mt-7 space-y-3">
+          <ul className="mt-5 space-y-3">
             {points.map((p) => (
               <li key={p} className="flex gap-3">
                 <CheckIcon size={15} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
@@ -321,7 +321,7 @@ function ActionsSection() {
         body="A chatbot describes your booking page. Concierge books the appointment, prepares the quote, and takes the number — then tells the right person it happened."
         align="center"
       />
-      <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-11 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[
           ["Book an appointment", "Offers real availability, collects what your team needs, creates the request."],
           ["Request a quote", "Captures scope and budget for work that needs a human price."],
@@ -340,13 +340,13 @@ function ActionsSection() {
         ))}
       </div>
 
-      <div className="mt-12 grid gap-12 lg:grid-cols-2 lg:items-center">
+      <div className="mt-9 grid gap-12 lg:grid-cols-2 lg:items-center">
         <ProductFrame label="A qualified lead captured by Concierge" chrome="plain">
           <LeadFrame />
         </ProductFrame>
         <div>
           <h3 className="t-section">Qualification happens while they talk.</h3>
-          <p className="t-body mt-3 text-[15px] leading-[1.6] text-text-tertiary">
+          <p className="t-body mt-3 text-[14px] leading-[1.55] text-text-tertiary">
             Concierge works out what someone wants, roughly what it is worth and how soon they need it — then scores
             them, so your team knows who to call first.
           </p>
@@ -424,7 +424,7 @@ function PagesSection() {
           Start with Pages
         </LinkButton>
       </div>
-      <div className="mt-12 grid gap-4 sm:grid-cols-3">
+      <div className="mt-9 grid gap-4 sm:grid-cols-3">
         {[
           ["A real website", "Hero, services, pricing, FAQs and contact — published on your own subdomain or domain."],
           ["The Agent included", "Answering from the same approved knowledge as any other Concierge site."],
@@ -449,7 +449,7 @@ function TrustSection() {
         body="The reason owners trust Concierge on a live website is that it is bounded by design. Approved knowledge in, grounded answers out, an honest handoff when it does not know."
         align="center"
       />
-      <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-11 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
           ["Approved knowledge only", "Nothing reaches a visitor until you have read it and said yes."],
           ["Never-promise rules", "Hard limits on price, coverage and anything you will not commit to."],
@@ -515,22 +515,22 @@ function Pricing() {
         body="Every plan includes Site Brain, the Agent and approved-knowledge answering. You pay for scale, not for the parts that make it trustworthy."
         align="center"
       />
-      <div className="mt-14 grid gap-4 lg:grid-cols-3">
+      <div className="mt-11 grid gap-4 lg:grid-cols-3">
         {PLANS.map((p) => (
           <Card
             key={p.name}
             className={cx("flex flex-col p-6", p.featured && "border-ink shadow-md ring-1 ring-ink")}
           >
             <div className="flex items-center gap-2">
-              <h3 className="text-[15px] font-semibold">{p.name}</h3>
+              <h3 className="text-[14px] font-semibold">{p.name}</h3>
               {p.featured && <Badge tone="accent">Most popular</Badge>}
             </div>
             <p className="mt-4 flex items-baseline gap-1.5">
-              <span className="t-num text-[32px] leading-none">{p.price}</span>
+              <span className="t-num text-[28px] leading-none">{p.price}</span>
               {p.cadence && <span className="text-[14px] text-text-tertiary">{p.cadence}</span>}
             </p>
             <p className="mt-3 text-[13px] leading-[1.6] text-text-tertiary">{p.body}</p>
-            <ul className="mt-7 space-y-4">
+            <ul className="mt-5 space-y-3">
               {p.features.map((f) => (
                 <li key={f} className="flex gap-2.5">
                   <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
@@ -543,7 +543,7 @@ function Pricing() {
               variant={p.featured ? "primary" : "secondary"}
               size="lg"
               block
-              className="mt-7"
+              className="mt-5"
             >
               {p.cta}
             </LinkButton>
@@ -572,7 +572,7 @@ function FinalCta() {
             Sign in
           </LinkButton>
         </div>
-        <p className="mt-4 text-[13.5px] text-text-tertiary">
+        <p className="mt-4 text-[13px] text-text-tertiary">
           Add a URL, approve what it learned, paste one line of script.
         </p>
       </div>

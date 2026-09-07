@@ -104,14 +104,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
               {PAGES.filter((p) => p.published).length} pages live
             </Badge>
             <Badge tone="review">{PAGES.filter((p) => !p.published).length} draft</Badge>
-            <span className="text-[13.5px] text-text-tertiary">
+            <span className="text-[13px] text-text-tertiary">
               Updated {relativeTime(site.updatedAt)}
             </span>
           </div>
         }
       />
 
-      <div className="grid gap-5 lg:grid-cols-[240px_1fr_360px]">
+      <div className="grid gap-4 lg:grid-cols-[240px_1fr_360px]">
         {/* Pages ---------------------------------------------------------- */}
         <div>
           <p className="t-eyebrow mb-2.5 text-text-muted">Pages</p>
@@ -133,8 +133,8 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                   >
                     <PagesIcon size={15} className="shrink-0 text-text-tertiary" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-medium">{p.title}</span>
-                      <span className="block truncate text-[13.5px] text-text-tertiary">/{p.slug}</span>
+                      <span className="block truncate text-[14px] font-medium">{p.title}</span>
+                      <span className="block truncate text-[13px] text-text-tertiary">/{p.slug}</span>
                     </span>
                     {!p.published && <Badge tone="review">Draft</Badge>}
                   </button>
@@ -144,7 +144,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
           </ul>
           <button
             type="button"
-            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-line-strong px-2.5 py-2 text-[13.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-line-strong px-2.5 py-2 text-[13px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={14} />
             New page
@@ -153,7 +153,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
 
         {/* Sections ------------------------------------------------------- */}
         <div className="space-y-5">
-          <Panel className="p-7">
+          <Panel className="p-6">
             <SectionHead
               title="Sections"
               hint="Drag to reorder. Anything switched off stays out of the published page."
@@ -193,14 +193,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             </ul>
             <button
               type="button"
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-strong py-3 text-[13.5px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line-strong py-3 text-[13px] text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
             >
               <PlusIcon size={14} />
               Add a section
             </button>
           </Panel>
 
-          <Panel className="p-7">
+          <Panel className="p-6">
             <SectionHead title="Page details" className="mb-4" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Page title" htmlFor="page-title">
@@ -265,7 +265,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             </div>
 
             <div className="border-t border-divider p-4">
-              <p className="flex items-center gap-2 text-[15px] font-medium">
+              <p className="flex items-center gap-2 text-[14px] font-medium">
                 <AgentIcon size={14} className="text-text-tertiary" />
                 Concierge is on every page
               </p>

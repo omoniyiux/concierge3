@@ -18,7 +18,7 @@ function MobileBar({ siteId }: { siteId: string }) {
       <IconButton label="Open navigation" size={38} onClick={() => setMobileNavOpen(true)}>
         <PanelIcon size={20} />
       </IconButton>
-      <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{site.name}</span>
+      <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{site.name}</span>
       <IconButton label="Search Concierge" size={38} onClick={() => setCommandOpen(true)}>
         <SearchIcon size={20} />
       </IconButton>
@@ -93,7 +93,7 @@ export function PageContainer({
   return (
     <div
       style={{ maxWidth: wide ? "1090px" : "var(--content-max)" }}
-      className={cx("mx-auto w-full px-5 pb-28 pt-16 sm:px-8 lg:px-10", className)}
+      className={cx("mx-auto w-full px-5 pb-24 pt-12 sm:px-7 lg:px-9", className)}
     >
       {children}
     </div>
@@ -116,16 +116,16 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <header className={cx("mb-10", className)}>
+    <header className={cx("mb-8", className)}>
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="min-w-0 max-w-[64ch]">
           <p className="t-eyebrow text-text-muted">{eyebrow}</p>
-          <h1 className="t-page mt-3">{title}</h1>
-          {description && <p className="t-body mt-4 max-w-[62ch] text-text-tertiary">{description}</p>}
+          <h1 className="t-page mt-2.5">{title}</h1>
+          {description && <p className="t-body mt-3 max-w-[62ch] text-text-tertiary">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {meta && <div className="mt-7">{meta}</div>}
+      {meta && <div className="mt-5">{meta}</div>}
     </header>
   );
 }

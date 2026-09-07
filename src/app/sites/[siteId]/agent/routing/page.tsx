@@ -84,7 +84,7 @@ export default function RoutingPage() {
   return (
     <PageContainer wide>
       <PageHeader
-        eyebrow="Routing"
+        eyebrow="Agent"
         title="Where visitors end up"
         description="When Concierge cannot finish the job itself, these rules decide which person hears about it — and how fast."
         actions={
@@ -125,7 +125,7 @@ export default function RoutingPage() {
       />
 
       {tab === "rules" && (
-        <div className="mt-7 space-y-4">
+        <div className="mt-5 space-y-3">
           {rules.map((rule, i) => (
             <RuleRow
               key={rule.id}
@@ -180,7 +180,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
   return (
     <Card className={cx("p-5", !rule.enabled && "bg-surface-subtle/60")}>
       <div className="flex items-start gap-4">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-[14.5px] font-semibold tabular-nums text-text-tertiary">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-[14px] font-semibold tabular-nums text-text-tertiary">
           {order}
         </span>
 

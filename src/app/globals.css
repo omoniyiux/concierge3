@@ -136,9 +136,9 @@ body {
   background: var(--color-canvas);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: 14.5px;
-  line-height: 1.5;
-  letter-spacing: -0.008em;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.004em;
   overscroll-behavior: none;
 }
 
@@ -148,72 +148,76 @@ body {
    small UI text gets none so it stays legible at 12–13px.
    ========================================================================== */
 @layer components {
-  /* Display sizes carry the page. Nothing here is timid. */
+  /* Headings are Archivo 500. Medium, never bold — the reference never
+     goes above 500 on display type. */
   .t-display {
     font-family: var(--font-display);
-    font-size: 52px;
-    font-weight: 700;
-    line-height: 1.03;
-    letter-spacing: -0.038em;
+    font-size: 44px;
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: -0.03em;
   }
   .t-page {
     font-family: var(--font-display);
-    font-size: 34px;
-    font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.032em;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 34px;
+    letter-spacing: -0.024em;
   }
   .t-greeting {
     font-family: var(--font-display);
-    font-size: 29px;
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 34px;
+    letter-spacing: -0.024em;
   }
   .t-feature {
     font-family: var(--font-display);
     font-size: 24px;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.028em;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: -0.02em;
   }
   .t-section {
-    font-size: 17px;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: -0.018em;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    letter-spacing: -0.014em;
   }
+  /* Interface text is Wix Madefor Text. */
   .t-card {
     font-size: 15px;
-    font-weight: 600;
-    line-height: 1.35;
-    letter-spacing: -0.013em;
-  }
-  .t-body {
-    font-size: 14.5px;
-    line-height: 1.55;
+    font-weight: 700;
+    line-height: 20px;
     letter-spacing: -0.008em;
   }
+  .t-body {
+    font-size: 14px;
+    line-height: 18px;
+    letter-spacing: -0.004em;
+  }
   .t-body-sm {
-    font-size: 13.5px;
-    line-height: 1.5;
-    letter-spacing: -0.005em;
+    font-size: 13px;
+    line-height: 17px;
+    letter-spacing: -0.002em;
   }
   .t-meta {
-    font-size: 12.5px;
-    line-height: 1.45;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 0;
   }
   .t-eyebrow {
     font-size: 11px;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 14px;
     letter-spacing: 0.09em;
     text-transform: uppercase;
   }
   .t-num {
-    font-weight: 700;
-    letter-spacing: -0.035em;
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
   }
   .t-serif {
@@ -223,7 +227,7 @@ body {
   }
   .t-mono {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12.5px;
     letter-spacing: -0.01em;
   }
 }

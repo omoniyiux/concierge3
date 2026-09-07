@@ -88,7 +88,7 @@ export default function SiteBrainPage() {
   return (
     <PageContainer wide>
       <PageHeader
-        eyebrow="Site Brain"
+        eyebrow="Agent"
         title="What Concierge knows"
         description="Everything Concierge is allowed to say about your business, where it learned it, and how sure it is. Nothing here reaches a visitor until you approve it."
         actions={
@@ -128,7 +128,7 @@ export default function SiteBrainPage() {
           ) : (
             <>
               <SafeApproveBanner items={items} onApprove={(ids) => ids.forEach((id) => setStatus(id, "approved"))} />
-              <div className="mt-5 space-y-4">
+              <div className="mt-4 space-y-3">
                 {needsAttention.map((item) => (
                   <KnowledgeCard
                     key={item.id}
@@ -289,7 +289,7 @@ const SOURCES = [
 
 function SourcesTab() {
   return (
-    <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_320px]">
+    <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_320px]">
       <Panel className="overflow-hidden">
         <SectionHead
           title="Where the knowledge came from"
@@ -298,7 +298,7 @@ function SourcesTab() {
         />
         <ul className="divide-y divide-divider border-t border-divider">
           {SOURCES.map((s) => (
-            <li key={s.label} className="flex items-center gap-3.5 px-6 py-3.5">
+            <li key={s.label} className="flex items-center gap-3.5 px-5 py-3">
               <SourceIcon size={16} className="shrink-0 text-text-muted" />
               <span className="min-w-0 flex-1">
                 <span className="block text-[14px] font-medium">{s.label}</span>

@@ -33,10 +33,10 @@ function Palette({ siteId }: { siteId: string }) {
     };
     return [
       ...ALL_NAV_ITEMS.map((n) => ({
-        id: `nav-${n.slug}`,
+        id: `nav-${n.path}`,
         label: n.label,
         group: "Go to",
-        run: go(`/sites/${siteId}/${n.slug}`),
+        run: go(`/sites/${siteId}/${n.path}`),
       })),
       { id: "nav-settings", label: "Settings", group: "Go to", run: go(`/sites/${siteId}/settings`) },
       { id: "nav-onboard", label: "Add a website", group: "Actions", run: go("/onboarding") },
@@ -66,7 +66,7 @@ function Palette({ siteId }: { siteId: string }) {
         label: i.name,
         sub: i.description,
         group: "Integrations",
-        run: go(`/sites/${siteId}/integrations`),
+        run: go(`/sites/${siteId}/settings?section=integrations`),
       })),
     ];
   }, [router, setCommandOpen, siteId]);
@@ -149,7 +149,7 @@ function Palette({ siteId }: { siteId: string }) {
                       )}
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[15px] font-medium">{e.label}</span>
+                        <span className="block truncate text-[14px] font-medium">{e.label}</span>
                         {e.sub && <span className="block truncate text-[14px] text-text-tertiary">{e.sub}</span>}
                       </span>
                       {active && <ArrowRight size={14} className="shrink-0 text-text-muted" />}

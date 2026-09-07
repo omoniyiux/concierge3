@@ -7,7 +7,7 @@ import { WorkspaceProvider } from "@/lib/workspace";
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 

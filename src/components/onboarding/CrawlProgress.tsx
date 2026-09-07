@@ -63,7 +63,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
       </p>
 
       {/* Phase rail ------------------------------------------------------ */}
-      <ol className="mt-7 space-y-0">
+      <ol className="mt-5 space-y-0">
         {PHASES.map((phase, i) => {
           const state = finished || i < phaseIndex ? "done" : i === phaseIndex ? "active" : "pending";
           return (
@@ -164,7 +164,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
           label="Crawl progress"
           tone="accent"
         />
-        <p className="mt-2.5 text-[13.5px] tabular-nums text-text-tertiary">
+        <p className="mt-2 text-[13px] tabular-nums text-text-tertiary">
           {itemsFound} knowledge items found
           {!finished && " so far"}
         </p>

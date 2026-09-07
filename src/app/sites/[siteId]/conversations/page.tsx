@@ -104,7 +104,7 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
 
           <ul className="cg-scroll min-h-0 flex-1 overflow-y-auto">
             {list.length === 0 ? (
-              <li className="p-7">
+              <li className="p-6">
                 <p className="text-[14px] text-text-tertiary">
                   Nothing matches that filter. Try widening it.
                 </p>
@@ -119,13 +119,13 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
                       onClick={() => setSelectedId(c.id)}
                       aria-current={active ? "true" : undefined}
                       className={cx(
-                        "relative w-full border-b border-divider px-4 py-3.5 text-left transition-colors",
+                        "relative w-full border-b border-divider px-3.5 py-2.5 text-left transition-colors",
                         active ? "bg-surface-hover" : "hover:bg-surface-subtle",
                       )}
                     >
                       {active && <span className="absolute inset-y-0 left-0 w-[3px] bg-accent" />}
                       <div className="flex items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{c.visitorName}</span>
+                        <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{c.visitorName}</span>
                         <span className="shrink-0 text-[13px] tabular-nums text-text-muted">
                           {relativeTime(c.lastMessageAt)}
                         </span>
@@ -185,7 +185,7 @@ function ConversationDetail({
   return (
     <div className="flex min-w-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-divider bg-surface px-4 py-3">
+        <header className="flex items-center gap-3 border-b border-divider bg-surface px-3.5 py-2.5">
           <IconButton label="Back to list" size={30} className="lg:hidden" onClick={onBack}>
             <ChevronLeft size={17} />
           </IconButton>
@@ -217,7 +217,7 @@ function ConversationDetail({
               return (
                 <div key={m.id} className="flex items-center gap-2.5">
                   <span className="h-px flex-1 bg-line" />
-                  <p className="flex items-center gap-1.5 text-[13.5px] text-text-tertiary">
+                  <p className="flex items-center gap-1.5 text-[13px] text-text-tertiary">
                     <RoutingIcon size={12} />
                     {m.body}
                   </p>
@@ -236,7 +236,7 @@ function ConversationDetail({
                       : "rounded-tr-sm bg-ink text-text-inverse",
                   )}
                 >
-                  <p className="text-[15px] leading-[1.6]">{m.body}</p>
+                  <p className="text-[14px] leading-[1.55]">{m.body}</p>
                 </div>
 
                 <div
@@ -273,11 +273,11 @@ function ConversationDetail({
                 <SparkIcon size={14} />
                 Concierge could not answer this
               </p>
-              <p className="mt-1.5 text-[13.5px] leading-[1.5] text-text-secondary">
+              <p className="mt-1.5 text-[13px] leading-[1.5] text-text-secondary">
                 &ldquo;{c.unanswered}&rdquo; is not in your approved knowledge. Adding it means the next visitor gets
                 an answer instead of a handoff.
               </p>
-              <LinkButton href={`/sites/${siteId}/brain`} size="sm" variant="secondary" className="mt-3">
+              <LinkButton href={`/sites/${siteId}/agent/brain`} size="sm" variant="secondary" className="mt-3">
                 Add to Site Brain
               </LinkButton>
             </div>
@@ -326,7 +326,7 @@ function ConversationDetail({
                     style={{ width: `${lead.score}%` }}
                   />
                 </div>
-                <dl className="mt-5 space-y-4">
+                <dl className="mt-4 space-y-3">
                   {lead.service && <Row label="Service" value={lead.service} />}
                   {lead.budget && <Row label="Budget" value={lead.budget} />}
                   {lead.urgency && <Row label="Urgency" value={lead.urgency.replace("-", " ")} caps />}
@@ -347,7 +347,7 @@ function ConversationDetail({
                   return (
                     <li key={id} className="flex items-center gap-2.5 rounded-xl bg-surface-subtle px-3.5 py-3">
                       <ActionsIcon size={14} className="shrink-0 text-text-tertiary" />
-                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{a.name}</span>
+                      <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{a.name}</span>
                     </li>
                   );
                 })}
@@ -369,7 +369,7 @@ function ConversationDetail({
             href={`https://northlanedental.com${c.pageUrl}`}
             target="_blank"
             rel="noreferrer"
-            className="mt-7 inline-flex items-center gap-1.5 text-[13.5px] text-text-tertiary transition-colors hover:text-text-primary"
+            className="mt-7 inline-flex items-center gap-1.5 text-[13px] text-text-tertiary transition-colors hover:text-text-primary"
           >
             Open the page they were on
             <ExternalIcon size={12} />

@@ -35,7 +35,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
   if (items.length === 0) {
     return (
       <div className="rounded-[18px] bg-surface px-5 py-6">
-        <p className="text-[15px] font-medium">Nothing needs you right now.</p>
+        <p className="text-[14px] font-medium">Nothing needs you right now.</p>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Concierge is answering from approved knowledge and every route is delivering.
         </p>
@@ -51,7 +51,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
           <li key={item.id}>
             <Link
               href={item.href}
-              className="group flex items-start gap-4 px-7 py-6 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle"
+              className="group flex items-start gap-4 px-6 py-4 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle"
             >
               <span
                 className={cx(
@@ -68,7 +68,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
 
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="text-[15px] font-semibold">{item.title}</span>
+                  <span className="text-[14px] font-semibold">{item.title}</span>
                   <Badge tone={tone}>{label}</Badge>
                 </span>
                 <span className="t-body mt-2 block max-w-[68ch] text-text-tertiary">{item.detail}</span>

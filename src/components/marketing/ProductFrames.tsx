@@ -48,7 +48,7 @@ export function ProductFrame({
       aria-label={label}
     >
       {chrome === "app" && (
-        <div className="flex items-center gap-2 bg-surface-subtle px-4 py-3">
+        <div className="flex items-center gap-2 bg-surface-subtle px-3.5 py-2.5">
           <span className="flex gap-1.5" aria-hidden>
             {["#E8E8E3", "#E8E8E3", "#E8E8E3"].map((c, i) => (
               <span key={i} className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />
@@ -83,7 +83,7 @@ export function SiteBrainFrame() {
           <RadialGauge value={86} label="Approved knowledge" tone="accent" size={46} />
           <div>
             <p className="text-[13px] font-semibold">Ready to answer</p>
-            <p className="text-[13.5px] text-text-tertiary">38 of 42 items approved</p>
+            <p className="text-[13px] text-text-tertiary">38 of 42 items approved</p>
           </div>
         </div>
         <dl className="flex gap-6">
@@ -112,7 +112,7 @@ export function SiteBrainFrame() {
           >
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-2">
-                <span className="truncate text-[15px] font-medium">{r.title}</span>
+                <span className="truncate text-[14px] font-medium">{r.title}</span>
                 <Badge
                   tone={r.status === "approved" ? "approved" : r.status === "review" ? "review" : "neutral"}
                   dot={r.status !== "missing"}
@@ -143,7 +143,7 @@ export function AgentFrame() {
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[9px] font-semibold text-text-inverse">
             C+
           </span>
-          <p className="text-[15px] font-medium">Northlane Concierge</p>
+          <p className="text-[14px] font-medium">Northlane Concierge</p>
           <Badge tone="approved" dot pulse className="ml-auto">
             Live
           </Badge>
@@ -191,7 +191,7 @@ function Bubble({ side, children }: { side: "visitor" | "agent"; children: React
   return (
     <div
       className={cx(
-        "w-fit max-w-[84%] rounded-xl px-3 py-2 text-[15px] leading-[1.6]",
+        "w-fit max-w-[84%] rounded-xl px-3 py-2 text-[14px] leading-[1.55]",
         side === "agent"
           ? "rounded-tl-sm bg-surface-subtle"
           : "ml-auto rounded-tr-sm bg-ink text-text-inverse",
@@ -207,14 +207,14 @@ function Bubble({ side, children }: { side: "visitor" | "agent"; children: React
 export function LeadFrame() {
   return (
     <div className="p-5">
-      <Card className="p-7">
+      <Card className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <p className="text-[15px] font-semibold">Maya Robinson</p>
+              <p className="text-[14px] font-semibold">Maya Robinson</p>
               <Badge tone="restricted">hot</Badge>
             </div>
-            <p className="mt-0.5 text-[13.5px] text-text-tertiary">maya.robinson@gmail.com · Austin, TX</p>
+            <p className="mt-0.5 text-[13px] text-text-tertiary">maya.robinson@gmail.com · Austin, TX</p>
           </div>
           <div className="text-right">
             <p className="t-num text-[24px] leading-none">92</p>
@@ -235,7 +235,7 @@ export function LeadFrame() {
           ].map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between gap-3 border-b border-divider pb-1.5">
               <dt className="text-[11px] text-text-tertiary">{k}</dt>
-              <dd className="truncate text-[15px] font-medium">{v}</dd>
+              <dd className="truncate text-[14px] font-medium">{v}</dd>
             </div>
           ))}
         </dl>
@@ -266,7 +266,7 @@ export function RoutingFrame() {
               {i + 1}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold">{r.name}</p>
+              <p className="text-[14px] font-semibold">{r.name}</p>
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 <span className="t-eyebrow text-text-muted">If</span>
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-surface-subtle px-2 py-1 text-[11px]">
@@ -313,7 +313,7 @@ export function InsightsFrame() {
         {gaps.map(([q, n]) => (
           <li key={q} className="flex items-center gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[15px] font-medium">&ldquo;{q}&rdquo;</span>
+              <span className="block truncate text-[14px] font-medium">&ldquo;{q}&rdquo;</span>
               <span className="mt-0.5 block text-[11px] text-text-tertiary">Asked {n} times</span>
             </span>
             <span className="shrink-0 rounded-md bg-ink px-2 py-1 text-[10.5px] font-medium text-text-inverse">

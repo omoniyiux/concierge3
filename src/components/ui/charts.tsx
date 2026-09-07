@@ -164,8 +164,8 @@ export function BarList({
               style={{ width: `${(item.value / max) * 100}%` }}
             />
             <span className="relative min-w-0 flex-1">
-              <span className="block truncate text-[15px] font-medium">{item.label}</span>
-              {item.sub && <span className="block truncate text-[13.5px] text-text-tertiary">{item.sub}</span>}
+              <span className="block truncate text-[14px] font-medium">{item.label}</span>
+              {item.sub && <span className="block truncate text-[13px] text-text-tertiary">{item.sub}</span>}
             </span>
             <span className="relative shrink-0 text-[13px] font-semibold tabular-nums">
               {item.value}

@@ -77,7 +77,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
             ].map((s) => (
               <div key={s.label} className="bg-surface p-4">
                 <p className="t-eyebrow text-text-muted">{s.label}</p>
-                <p className="t-num mt-2 text-[22px] leading-none">{s.value}</p>
+                <p className="t-num mt-2 text-[19px] leading-none">{s.value}</p>
                 <p className="mt-1.5 text-[14px] text-text-tertiary">{s.hint}</p>
               </div>
             ))}
@@ -137,11 +137,11 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
                   type="button"
                   onClick={() => setOpenId(openId === lead.id ? null : lead.id)}
                   aria-expanded={openId === lead.id}
-                  className="grid w-full grid-cols-1 items-center gap-x-4 gap-y-2 px-7 py-4.5 text-left transition-colors hover:bg-surface-subtle lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto]"
+                  className="grid w-full grid-cols-1 items-center gap-x-4 gap-y-2 px-6 py-3.5 text-left transition-colors hover:bg-surface-subtle lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto]"
                 >
                   <span className="min-w-0">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-[15px] font-medium">{lead.name}</span>
+                      <span className="truncate text-[14px] font-medium">{lead.name}</span>
                       <Badge tone={QUAL_TONE[lead.qualification]}>{lead.qualification}</Badge>
                     </span>
                     <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[14px] text-text-tertiary">
@@ -189,7 +189,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
 function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
   return (
     <div className="cg-enter border-t border-divider bg-surface-subtle px-5 py-5">
-      <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div>
           <h3 className="t-eyebrow text-text-muted">What Concierge worked out</h3>
           <dl className="mt-3 grid gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -216,7 +216,7 @@ function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
           )}
         </div>
 
-        <Card className="p-7">
+        <Card className="p-6">
           <h3 className="t-card">Follow up</h3>
           <div className="mt-3 space-y-3">
             {lead.email && (

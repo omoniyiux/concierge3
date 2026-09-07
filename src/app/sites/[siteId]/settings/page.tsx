@@ -1,7 +1,9 @@
 "use client";
 
-import { use, useState } from "react";
+import { Suspense, use, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
+import { IntegrationsSettings } from "@/components/integrations/IntegrationsSettings";
 import {
   Badge,
   Button,
@@ -23,6 +25,7 @@ import {
   CopyIcon,
   GlobeIcon,
   InstallIcon,
+  IntegrationsIcon,
   LockIcon,
   MailIcon,
   SettingsIcon,
@@ -38,6 +41,7 @@ const SECTIONS = [
   { key: "general", label: "General", Icon: SettingsIcon },
   { key: "appearance", label: "Appearance", Icon: AgentIcon },
   { key: "install", label: "Install", Icon: InstallIcon },
+  { key: "integrations", label: "Integrations", Icon: IntegrationsIcon },
   { key: "team", label: "Team", Icon: TeamIcon },
   { key: "notifications", label: "Notifications", Icon: MailIcon },
   { key: "security", label: "Security & data", Icon: ShieldIcon },
@@ -54,11 +58,31 @@ const ACCENTS = [
   { name: "Plum", hex: "#7A2F63" },
 ];
 
-/** Settings uses sub-navigation rather than one very long page. */
 export default function SettingsPage({ params }: { params: Promise<{ siteId: string }> }) {
+  return (
+    <Suspense>
+      <Settings params={params} />
+    </Suspense>
+  );
+}
+
+/** Settings uses sub-navigation rather than one very long page. */
+function Settings({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
   const site = getSite(siteId);
-  const [section, setSection] = useState<SectionKey>("general");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requested = searchParams.get("section");
+  const initial = SECTIONS.some((s) => s.key === requested) ? (requested as SectionKey) : "general";
+  const [section, setSection] = useState<SectionKey>(initial);
+
+  /** Keeps the section deep-linkable, so the command palette can jump into one. */
+  const openSection = (key: SectionKey) => {
+    setSection(key);
+    router.replace(key === "general" ? `/sites/${siteId}/settings` : `/sites/${siteId}/settings?section=${key}`, {
+      scroll: false,
+    });
+  };
   const [accent, setAccent] = useState("#FF7A00");
   const [copied, setCopied] = useState(false);
 
@@ -81,7 +105,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 <li key={key} className="shrink-0">
                   <button
                     type="button"
-                    onClick={() => setSection(key)}
+                    onClick={() => openSection(key)}
                     aria-current={active ? "true" : undefined}
                     className={cx(
                       "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
@@ -102,7 +126,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
         <div className="min-w-0 space-y-6">
           {section === "general" && (
             <>
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Site" hint="What this website is and where it lives." className="mb-5" />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Site name" htmlFor="s-name">
@@ -120,7 +144,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 </div>
               </Panel>
 
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead
                   title="Knowledge"
                   hint="How often Concierge re-reads your site to catch changes."
@@ -138,7 +162,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                     control={<Toggle checked={false} onChange={() => undefined} label="Answer from suggested knowledge" />}
                   />
                 </div>
-                <LinkButton href={`/sites/${siteId}/brain`} variant="secondary" size="sm" className="mt-4" leading={<BrainIcon size={13} />}>
+                <LinkButton href={`/sites/${siteId}/agent/brain`} variant="secondary" size="sm" className="mt-4" leading={<BrainIcon size={13} />}>
                   Open Site Brain
                 </LinkButton>
               </Panel>
@@ -158,7 +182,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
 
           {section === "appearance" && (
             <>
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Accent" hint="Colours the launcher, the active states and the Concierge mark." className="mb-5" />
                 <div className="flex flex-wrap gap-2">
                   {ACCENTS.map((a) => (
@@ -179,7 +203,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 </div>
               </Panel>
 
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Launcher" hint="What a visitor sees before they open the conversation." className="mb-5" />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Launcher label" htmlFor="s-launcher">
@@ -214,7 +238,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 <SectionHead
                   title="Your install snippet"
                   hint="One line, before the closing body tag. Everything else updates live."
-                  className="p-7 pb-5"
+                  className="p-6 pb-4"
                 />
                 <div className="flex items-center gap-2 border-y border-divider px-6 py-2.5">
                   <CodeIcon size={14} className="text-text-muted" />
@@ -260,7 +284,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 </Button>
               </Card>
 
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Platform guides" hint="Step-by-step for the usual suspects." className="mb-4" />
                 <div className="grid gap-2.5 sm:grid-cols-3">
                   {["WordPress", "Shopify", "Webflow", "Squarespace", "Wix", "Custom HTML"].map((p) => (
@@ -270,7 +294,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                       className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[13.5px] transition-colors hover:border-line-strong"
                     >
                       <span className="block font-medium">{p}</span>
-                      <span className="mt-0.5 block text-[13.5px] text-text-tertiary">2 minute guide</span>
+                      <span className="mt-0.5 block text-[13px] text-text-tertiary">2 minute guide</span>
                     </button>
                   ))}
                 </div>
@@ -284,11 +308,11 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 title="Who can see what"
                 hint={`${ORG.seatsUsed} of ${ORG.seatsIncluded} seats used on the ${ORG.plan} plan.`}
                 action={<Button size="sm">Invite someone</Button>}
-                className="p-7 pb-5"
+                className="p-6 pb-4"
               />
               <ul className="divide-y divide-divider border-t border-divider">
                 {TEAM.map((m) => (
-                  <li key={m.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-7 py-4.5">
+                  <li key={m.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-subtle text-[11px] font-semibold text-text-secondary">
                       {(m.name || m.email)
                         .split(/[\s@]/)
@@ -297,7 +321,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                         .join("")}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-medium">{m.name || m.email}</span>
+                      <span className="block truncate text-[14px] font-medium">{m.name || m.email}</span>
                       <span className="block truncate text-[14px] text-text-tertiary">
                         {m.name ? m.email : `Invited ${m.invitedAt ? relativeTime(m.invitedAt) : ""}`}
                       </span>
@@ -314,7 +338,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
           )}
 
           {section === "notifications" && (
-            <Panel className="p-7">
+            <Panel className="p-6">
               <SectionHead
                 title="What Concierge tells you about"
                 hint="Routing destinations handle visitor requests. These are about the product itself."
@@ -340,7 +364,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
 
           {section === "security" && (
             <>
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Data" hint="What Concierge keeps, and for how long." className="mb-5" />
                 <div className="space-y-3">
                   <SettingRow
@@ -362,7 +386,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 </div>
               </Panel>
 
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Access" className="mb-4" />
                 <div className="space-y-3">
                   <SettingRow
@@ -379,9 +403,11 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
             </>
           )}
 
+          {section === "integrations" && <IntegrationsSettings />}
+
           {section === "billing" && (
             <>
-              <Card className="p-7">
+              <Card className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="t-eyebrow text-text-muted">Current plan</p>
@@ -394,9 +420,9 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 </div>
               </Card>
 
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="This month" className="mb-5" />
-                <dl className="grid gap-5 sm:grid-cols-3">
+                <dl className="grid gap-4 sm:grid-cols-3">
                   {[
                     ["Conversations", "386", "Unlimited"],
                     ["SMS sent", "27", "of 250"],
@@ -404,7 +430,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                   ].map(([label, value, limit]) => (
                     <div key={label}>
                       <dt className="t-eyebrow text-text-muted">{label}</dt>
-                      <dd className="t-num mt-2 text-[24px] leading-none">
+                      <dd className="t-num mt-2 text-[20px] leading-none">
                         {value}
                         <span className="ml-1.5 text-[13px] font-normal text-text-tertiary">{limit}</span>
                       </dd>
@@ -413,7 +439,7 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
                 </dl>
               </Panel>
 
-              <Panel className="p-7">
+              <Panel className="p-6">
                 <SectionHead title="Invoices" className="mb-4" />
                 <ul className="divide-y divide-divider">
                   {["1 September 2026", "1 August 2026", "1 July 2026"].map((d) => (
@@ -446,9 +472,9 @@ function SettingRow({
   control: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-surface-subtle px-4 py-3.5">
+    <div className="flex items-center gap-4 rounded-xl bg-surface-subtle px-3.5 py-2.5">
       <div className="min-w-0 flex-1">
-        <p className="text-[15px] font-medium">{title}</p>
+        <p className="text-[14px] font-medium">{title}</p>
         {description && <p className="mt-0.5 text-[13.5px] leading-[1.45] text-text-tertiary">{description}</p>}
       </div>
       <div className="shrink-0">{control}</div>

@@ -98,13 +98,13 @@ export default function OnboardingPage() {
               );
             })}
           </ol>
-          <span className="ml-auto text-[13.5px] text-text-tertiary md:hidden">
+          <span className="ml-auto text-[13px] text-text-tertiary md:hidden">
             Step {index + 1} of {STEPS.length}
           </span>
           <button
             type="button"
             onClick={() => router.push(`/sites/${DEFAULT_SITE_ID}/overview`)}
-            className="ml-auto hidden text-[13.5px] text-text-tertiary transition-colors hover:text-text-primary md:block"
+            className="ml-auto hidden text-[13px] text-text-tertiary transition-colors hover:text-text-primary md:block"
           >
             Save and exit
           </button>
@@ -156,7 +156,7 @@ function StepShell({
       <p className="t-eyebrow text-accent-ink">{eyebrow}</p>
       <h1 className="t-page mt-2.5">{title}</h1>
       <p className="t-body mt-3 text-text-tertiary">{description}</p>
-      <div className="mt-10">{children}</div>
+      <div className="mt-8">{children}</div>
       {footer && <div className="mt-8 flex items-center gap-3 border-t border-divider pt-6">{footer}</div>}
     </div>
   );
@@ -217,11 +217,11 @@ function WebsiteStep({
       </div>
 
       <Card className="mt-6 border-line bg-surface-subtle p-4">
-        <p className="flex items-center gap-2 text-[15px] font-medium">
+        <p className="flex items-center gap-2 text-[14px] font-medium">
           <ShieldIcon size={14} className="text-success" />
           What Concierge will not do
         </p>
-        <ul className="mt-2.5 space-y-1.5 text-[13.5px] leading-[1.5] text-text-secondary">
+        <ul className="mt-2.5 space-y-1.5 text-[13px] leading-[1.5] text-text-secondary">
           <li>· It will not read anything behind a login.</li>
           <li>· It will not answer visitors until you approve what it learned.</li>
           <li>· It will not invent facts about your business.</li>
@@ -232,7 +232,7 @@ function WebsiteStep({
         <Button size="lg" disabled={!valid || !authorized} onClick={onNext} trailing={<ArrowRight size={16} />}>
           Start learning
         </Button>
-        <p className="text-[13.5px] text-text-tertiary">Takes about a minute.</p>
+        <p className="text-[13px] text-text-tertiary">Takes about a minute.</p>
       </div>
 
       <p className="mt-8 border-t border-divider pt-6 text-[14px] text-text-tertiary">
@@ -299,7 +299,7 @@ function ReviewStep({
         ].map((s) => (
           <div key={s.label} className="bg-surface p-4">
             <p className="t-eyebrow text-text-muted">{s.label}</p>
-            <p className={cx("t-num mt-2 text-[24px] leading-none", s.tone)}>{s.value}</p>
+            <p className={cx("t-num mt-2 text-[20px] leading-none", s.tone)}>{s.value}</p>
           </div>
         ))}
       </div>
@@ -317,24 +317,24 @@ function ReviewStep({
         </Card>
       )}
 
-      <section className="mt-10">
+      <section className="mt-8">
         <h2 className="t-section">Required</h2>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Concierge will not go live until these seven are approved.
         </p>
-        <div className="mt-5 space-y-4">
+        <div className="mt-4 space-y-3">
           {required.map((item) => (
             <KnowledgeCard key={item.id} item={item} onStatusChange={onStatus} onBodyChange={onBody} />
           ))}
         </div>
       </section>
 
-      <section className="mt-12">
+      <section className="mt-9">
         <h2 className="t-section">Everything else</h2>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Optional, but each one is a question Concierge can answer without a handoff.
         </p>
-        <div className="mt-5 space-y-4">
+        <div className="mt-4 space-y-3">
           {optional.map((item) => (
             <KnowledgeCard key={item.id} item={item} onStatusChange={onStatus} onBodyChange={onBody} />
           ))}
@@ -389,7 +389,7 @@ function AgentStep({ onNext, onBack }: { onNext: () => void; onBack: () => void 
         </div>
       </fieldset>
 
-      <div className="mt-7">
+      <div className="mt-5">
         <Field
           label="Opening line"
           htmlFor="greeting"
@@ -401,7 +401,7 @@ function AgentStep({ onNext, onBack }: { onNext: () => void; onBack: () => void 
 
       <Card className="mt-6 p-4">
         <p className="t-eyebrow text-text-muted">Carried over from your Site Brain</p>
-        <ul className="mt-3 space-y-2 text-[13.5px] leading-[1.5] text-text-secondary">
+        <ul className="mt-3 space-y-2 text-[13px] leading-[1.5] text-text-secondary">
           <li className="flex gap-2">
             <ShieldIcon size={13} className="mt-0.5 shrink-0 text-success" />
             Never diagnose a condition, quote a final price, or confirm insurance coverage.
@@ -453,14 +453,14 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
         </>
       }
     >
-      <Card className="p-7">
+      <Card className="p-6">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-subtle-subtle text-text-secondary">
             <MailIcon size={17} />
           </span>
           <div className="min-w-0 flex-1">
             <p className="t-card">Email</p>
-            <p className="text-[13.5px] text-text-tertiary">The inbox your team already checks.</p>
+            <p className="text-[13px] text-text-tertiary">The inbox your team already checks.</p>
           </div>
           {connected && (
             <Badge tone="approved" dot>
@@ -530,7 +530,7 @@ function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
           </button>
         ))}
       </div>
-      <p className="mt-3 text-[13.5px] text-text-tertiary">
+      <p className="mt-2.5 text-[13px] text-text-tertiary">
         You can add more destinations and build routing rules once you are live.
       </p>
     </StepShell>
@@ -564,7 +564,7 @@ function PreviewStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
         </>
       }
     >
-      <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
         <div>
           <p className="t-eyebrow mb-3 text-text-muted">Try these first</p>
           <ul className="space-y-3">
@@ -582,9 +582,9 @@ function PreviewStep({ onNext, onBack }: { onNext: () => void; onBack: () => voi
                   >
                     <span className="flex items-center gap-2">
                       {done && <CheckIcon size={13} className="shrink-0 text-success" strokeWidth={2.4} />}
-                      <span className="text-[15px] font-medium">{t.q}</span>
+                      <span className="text-[14px] font-medium">{t.q}</span>
                     </span>
-                    <span className="mt-1 block text-[13.5px] text-text-tertiary">Checks: {t.kind}</span>
+                    <span className="mt-1 block text-[13px] text-text-tertiary">Checks: {t.kind}</span>
                   </button>
                 </li>
               );
@@ -631,7 +631,7 @@ function PreviewPane({ run }: { run: string[] }) {
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[10px] font-semibold text-text-inverse">
           C+
         </span>
-        <p className="text-[15px] font-medium">Northlane Concierge</p>
+        <p className="text-[14px] font-medium">Northlane Concierge</p>
         <Badge tone="neutral" className="ml-auto">
           Simulation
         </Badge>
@@ -639,7 +639,7 @@ function PreviewPane({ run }: { run: string[] }) {
 
       <div className="min-h-[320px] space-y-4 p-4">
         <div className="max-w-[85%] rounded-xl rounded-tl-sm bg-surface-subtle px-3.5 py-2.5">
-          <p className="text-[15px] leading-[1.6]">
+          <p className="text-[14px] leading-[1.55]">
             Hi — I can help with appointments, treatments and pricing at Northlane Dental. What brings you in?
           </p>
         </div>
@@ -655,11 +655,11 @@ function PreviewPane({ run }: { run: string[] }) {
           return (
             <div key={q} className="space-y-3">
               <div className="ml-auto max-w-[85%] rounded-xl rounded-tr-sm bg-ink px-3.5 py-2.5">
-                <p className="text-[15px] leading-[1.6] text-text-inverse">{q}</p>
+                <p className="text-[14px] leading-[1.55] text-text-inverse">{q}</p>
               </div>
               <div className="max-w-[88%]">
                 <div className="rounded-xl rounded-tl-sm bg-surface-subtle px-3.5 py-2.5">
-                  <p className="text-[15px] leading-[1.6]">{r.body}</p>
+                  <p className="text-[14px] leading-[1.55]">{r.body}</p>
                 </div>
                 <p
                   className={cx(
@@ -731,7 +731,7 @@ function InstallStep({ onDone, onBack }: { onDone: () => void; onBack: () => voi
             className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[13.5px] transition-colors hover:border-line-strong"
           >
             <span className="block font-medium">{p}</span>
-            <span className="mt-0.5 block text-[13.5px] text-text-tertiary">Step-by-step guide</span>
+            <span className="mt-0.5 block text-[13px] text-text-tertiary">Step-by-step guide</span>
           </button>
         ))}
       </div>
