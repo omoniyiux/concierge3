@@ -180,7 +180,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
   return (
     <Card className={cx("p-7", !rule.enabled && "bg-surface-subtle/60")}>
       <div className="flex items-start gap-4">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-[15px] font-semibold tabular-nums text-text-tertiary">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-[14.5px] font-semibold tabular-nums text-text-tertiary">
           {order}
         </span>
 

@@ -10,7 +10,7 @@ export default function VerifyEmailPage() {
 
   return (
     <>
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-subtle text-text-secondary">
+      <span className="flex h-11 w-11 items-center justify-center rounded-[18px] bg-surface-subtle text-text-secondary">
         <MailIcon size={19} />
       </span>
       <h1 className="t-page mt-5">Check your email</h1>

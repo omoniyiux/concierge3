@@ -182,7 +182,7 @@ export function Card({
   return (
     <div
       className={cx(
-        "rounded-2xl bg-surface",
+        "rounded-[18px] bg-surface",
         interactive && "transition-colors duration-[var(--dur-micro)] hover:bg-[#fafafa]",
         className,
       )}
@@ -195,7 +195,7 @@ export function Card({
 
 export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cx("rounded-[20px] bg-surface", className)} {...rest}>
+    <div className={cx("rounded-[18px] bg-surface", className)} {...rest}>
       {children}
     </div>
   );
@@ -644,7 +644,7 @@ export function EmptyState({
   return (
     <div className={cx("flex flex-col items-center px-6 py-14 text-center", className)}>
       {icon && (
-        <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-subtle text-text-tertiary">
+        <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-[18px] bg-surface-subtle text-text-tertiary">
           {icon}
         </div>
       )}

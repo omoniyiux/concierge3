@@ -136,7 +136,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                 {c.live && <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-success cg-live-dot" />}
                 {c.value}
               </p>
-              <p className="mt-2.5 text-[14px] text-text-tertiary">{c.hint}</p>
+              <p className="mt-2.5 text-[13.5px] text-text-tertiary">{c.hint}</p>
             </Card>
           ))}
         </div>
@@ -169,7 +169,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
               <p className="t-eyebrow text-text-muted">{m.label}</p>
               <p className="t-num mt-4 text-[34px] leading-none">{formatMetric(m.value, m.format)}</p>
               <div className="mt-5 flex items-end justify-between gap-3">
-                <span className={`text-[14px] font-medium tabular-nums ${m.delta > 0 ? "text-success" : "text-danger"}`}>
+                <span className={`text-[13.5px] font-medium tabular-nums ${m.delta > 0 ? "text-success" : "text-danger"}`}>
                   {m.delta > 0 ? "↑" : "↓"} {Math.abs(m.delta)}%
                   <span className="ml-1.5 font-normal text-text-tertiary">vs. previous</span>
                 </span>
@@ -227,10 +227,10 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15px] font-medium">{event.title}</span>
                     {event.detail && (
-                      <span className="mt-1.5 block text-[14px] leading-[1.5] text-text-tertiary">{event.detail}</span>
+                      <span className="mt-1.5 block text-[13.5px] leading-[1.5] text-text-tertiary">{event.detail}</span>
                     )}
                   </span>
-                  <span className="shrink-0 text-[13.5px] tabular-nums text-text-muted">{relativeTime(event.at)}</span>
+                  <span className="shrink-0 text-[13px] tabular-nums text-text-muted">{relativeTime(event.at)}</span>
                 </Link>
               </li>
             ))}
@@ -255,8 +255,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                 { label: "Missing", value: BRAIN.missingCount, tone: "text-text-muted" },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between">
-                  <dt className="text-[14px] text-text-secondary">{row.label}</dt>
-                  <dd className={`text-[15px] font-semibold tabular-nums ${row.tone}`}>{row.value}</dd>
+                  <dt className="text-[13.5px] text-text-secondary">{row.label}</dt>
+                  <dd className={`text-[14.5px] font-semibold tabular-nums ${row.tone}`}>{row.value}</dd>
                 </div>
               ))}
             </dl>

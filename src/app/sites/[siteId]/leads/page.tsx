@@ -211,7 +211,7 @@ function LeadDetail({ lead, siteId }: { lead: Lead; siteId: string }) {
           {lead.notes && (
             <>
               <h3 className="t-eyebrow mt-6 text-text-muted">Notes</h3>
-              <p className="mt-2 text-[15px] leading-[1.6] text-text-secondary">{lead.notes}</p>
+              <p className="mt-2 text-[14px] leading-[1.6] text-text-secondary">{lead.notes}</p>
             </>
           )}
         </div>

@@ -246,7 +246,7 @@ function Split({
             {points.map((p) => (
               <li key={p} className="flex gap-3">
                 <CheckIcon size={15} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                <span className="text-[15px] leading-[1.6] text-text-secondary">{p}</span>
+                <span className="text-[14px] leading-[1.6] text-text-secondary">{p}</span>
               </li>
             ))}
           </ul>
@@ -534,7 +534,7 @@ function Pricing() {
               {p.features.map((f) => (
                 <li key={f} className="flex gap-2.5">
                   <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" strokeWidth={2.2} />
-                  <span className="text-[15px] leading-[1.6] text-text-secondary">{f}</span>
+                  <span className="text-[14px] leading-[1.6] text-text-secondary">{f}</span>
                 </li>
               ))}
             </ul>

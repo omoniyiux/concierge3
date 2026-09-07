@@ -78,7 +78,7 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
       {open && (
         <div
           role="listbox"
-          className="cg-enter absolute left-0 top-[calc(100%+6px)] z-50 w-[300px] overflow-hidden rounded-2xl bg-surface shadow-lg"
+          className="cg-enter absolute left-0 top-[calc(100%+6px)] z-50 w-[300px] overflow-hidden rounded-[18px] bg-surface shadow-lg"
         >
           <div className="flex items-center justify-between border-b border-divider px-3 py-2">
             <p className="t-eyebrow text-text-muted">{ORG.name}</p>

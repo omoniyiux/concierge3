@@ -626,7 +626,7 @@ function PreviewPane({ run }: { run: string[] }) {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-surface">
+    <div className="overflow-hidden rounded-[18px] bg-surface">
       <div className="flex items-center gap-2.5 border-b border-divider px-4 py-2.5">
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[10px] font-semibold text-text-inverse">
           C+
@@ -702,7 +702,7 @@ function InstallStep({ onDone, onBack }: { onDone: () => void; onBack: () => voi
         </>
       }
     >
-      <div className="overflow-hidden rounded-2xl bg-surface">
+      <div className="overflow-hidden rounded-[18px] bg-surface">
         <div className="flex items-center gap-2 border-b border-divider px-4 py-2.5">
           <CodeIcon size={14} className="text-text-muted" />
           <p className="t-eyebrow text-text-muted">Your install snippet</p>

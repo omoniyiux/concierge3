@@ -188,7 +188,7 @@ export default function SiteBrainPage() {
                 <section key={category}>
                   <div className="mb-3 flex items-baseline gap-2.5">
                     <h2 className="t-section">{CATEGORY_LABEL[category]}</h2>
-                    <span className="text-[13.5px] tabular-nums text-text-muted">{list.length}</span>
+                    <span className="text-[13px] tabular-nums text-text-muted">{list.length}</span>
                   </div>
                   <div className="space-y-4">
                     {list.map((item) => (

@@ -34,7 +34,7 @@ const SEVERITY: Record<
 export function AttentionList({ items }: { items: AttentionItem[] }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl bg-surface px-5 py-6">
+      <div className="rounded-[18px] bg-surface px-5 py-6">
         <p className="text-[15px] font-medium">Nothing needs you right now.</p>
         <p className="t-body-sm mt-1 text-text-tertiary">
           Concierge is answering from approved knowledge and every route is delivering.
@@ -44,7 +44,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
   }
 
   return (
-    <ul className="divide-y divide-divider overflow-hidden rounded-2xl bg-surface">
+    <ul className="divide-y divide-divider overflow-hidden rounded-[18px] bg-surface">
       {items.map((item) => {
         const { tone, label, Icon } = SEVERITY[item.severity];
         return (
@@ -68,7 +68,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
 
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="text-[16px] font-semibold">{item.title}</span>
+                  <span className="text-[15px] font-semibold">{item.title}</span>
                   <Badge tone={tone}>{label}</Badge>
                 </span>
                 <span className="t-body mt-2 block max-w-[68ch] text-text-tertiary">{item.detail}</span>

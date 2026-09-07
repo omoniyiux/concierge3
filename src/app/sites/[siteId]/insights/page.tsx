@@ -98,7 +98,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
               />
             </Panel>
           ) : (
-            <ul className="divide-y divide-divider overflow-hidden rounded-2xl bg-surface">
+            <ul className="divide-y divide-divider overflow-hidden rounded-[18px] bg-surface">
               {open.map((q) => (
                 <li key={q.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-7 py-5">
                   <div className="min-w-[240px] flex-1">

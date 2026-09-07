@@ -126,7 +126,7 @@ export default function ConversationsPage({ params }: { params: Promise<{ siteId
                       {active && <span className="absolute inset-y-0 left-0 w-[3px] bg-accent" />}
                       <div className="flex items-center gap-2">
                         <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{c.visitorName}</span>
-                        <span className="shrink-0 text-[13.5px] tabular-nums text-text-muted">
+                        <span className="shrink-0 text-[13px] tabular-nums text-text-muted">
                           {relativeTime(c.lastMessageAt)}
                         </span>
                       </div>

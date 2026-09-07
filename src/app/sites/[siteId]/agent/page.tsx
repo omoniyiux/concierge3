@@ -163,7 +163,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                     onChange={touch(setTone)}
                     options={TONES.map((t) => ({ value: t.key, label: t.label }))}
                   />
-                  <p className="mt-4 rounded-xl bg-surface-subtle-subtle p-3.5 text-[15px] leading-[1.6] text-text-secondary">
+                  <p className="mt-4 rounded-xl bg-surface-subtle-subtle p-3.5 text-[14px] leading-[1.6] text-text-secondary">
                     <span className="t-eyebrow mb-1.5 block text-text-muted">Sounds like</span>
                     {tone === "warm" && "Happy to help with that — the New Patient Exam is $89 and includes a cleaning."}
                     {tone === "professional" && "The New Patient Exam is $89 and includes X-rays and a cleaning."}

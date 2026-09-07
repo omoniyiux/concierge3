@@ -121,7 +121,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-surface">
+      <div className="overflow-hidden rounded-[18px] bg-surface">
         <div className="flex items-center gap-2.5 border-b border-divider px-4 py-2.5">
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[10px] font-semibold text-text-inverse">
             C+

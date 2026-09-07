@@ -30,7 +30,7 @@ export function AppShell({ siteId, children }: { siteId: string; children: React
   const { mobileNavOpen, setMobileNavOpen } = useWorkspace();
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden bg-canvas">
+    <div className="flex h-dvh max-h-dvh w-full overflow-hidden bg-canvas">
       {/* Desktop navigation --------------------------------------------- */}
       <div className="hidden lg:flex">
         <Sidebar siteId={siteId} />
@@ -61,7 +61,7 @@ export function AppShell({ siteId, children }: { siteId: string; children: React
 
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileBar siteId={siteId} />
-        <main id="workspace" className="cg-scroll min-h-0 flex-1 overflow-y-auto">
+        <main id="workspace" className="cg-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {children}
         </main>
       </div>
@@ -92,8 +92,8 @@ export function PageContainer({
   if (flush) return <div className={cx("h-full", className)}>{children}</div>;
   return (
     <div
-      style={{ maxWidth: wide ? "var(--content-max-wide)" : "var(--content-max)" }}
-      className={cx("mx-auto w-full px-5 pb-28 pt-[72px] sm:px-8 lg:px-12", className)}
+      style={{ maxWidth: wide ? "1090px" : "var(--content-max)" }}
+      className={cx("mx-auto w-full px-5 pb-28 pt-16 sm:px-8 lg:px-10", className)}
     >
       {children}
     </div>

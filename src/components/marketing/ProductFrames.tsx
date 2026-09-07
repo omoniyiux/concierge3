@@ -41,7 +41,7 @@ export function ProductFrame({
   return (
     <div
       className={cx(
-        "overflow-hidden rounded-2xl bg-surface shadow-lg",
+        "overflow-hidden rounded-[18px] bg-surface shadow-lg",
         className,
       )}
       role="img"
@@ -78,7 +78,7 @@ export function SiteBrainFrame() {
 
   return (
     <div className="p-5">
-      <div className="flex flex-wrap items-center gap-x-7 gap-y-4 rounded-2xl bg-surface p-4">
+      <div className="flex flex-wrap items-center gap-x-7 gap-y-4 rounded-[18px] bg-surface p-4">
         <div className="flex items-center gap-3.5">
           <RadialGauge value={86} label="Approved knowledge" tone="accent" size={46} />
           <div>
@@ -138,7 +138,7 @@ export function SiteBrainFrame() {
 export function AgentFrame() {
   return (
     <div className="p-5">
-      <div className="overflow-hidden rounded-2xl bg-surface">
+      <div className="overflow-hidden rounded-[18px] bg-surface">
         <div className="flex items-center gap-2.5 border-b border-divider px-4 py-2.5">
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-[9px] font-semibold text-text-inverse">
             C+
@@ -323,7 +323,7 @@ export function InsightsFrame() {
         ))}
       </ul>
 
-      <div className="mt-3 rounded-2xl bg-surface p-3.5">
+      <div className="mt-3 rounded-[18px] bg-surface p-3.5">
         <p className="t-eyebrow mb-2 text-text-muted">What visitors came for</p>
         <BarList
           items={INTENTS.slice(0, 4).map((i) => ({

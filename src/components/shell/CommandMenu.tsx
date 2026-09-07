@@ -96,7 +96,7 @@ function Palette({ siteId }: { siteId: string }) {
         role="dialog"
         aria-modal="true"
         aria-label="Search Concierge"
-        className="cg-enter relative w-full max-w-[560px] overflow-hidden rounded-2xl bg-surface shadow-xl"
+        className="cg-enter relative w-full max-w-[560px] overflow-hidden rounded-[18px] bg-surface shadow-xl"
       >
         <div className="flex h-12 items-center gap-2.5 border-b border-divider px-3.5">
           <SearchIcon size={17} className="shrink-0 text-text-muted" />

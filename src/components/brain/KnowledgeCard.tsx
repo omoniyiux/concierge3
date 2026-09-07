@@ -97,7 +97,7 @@ export function KnowledgeCard({
           </p>
 
           {!open && item.body && (
-            <p className="mt-2 line-clamp-2 text-[15px] leading-[1.6] text-text-secondary">{item.body}</p>
+            <p className="mt-2 line-clamp-2 text-[14px] leading-[1.6] text-text-secondary">{item.body}</p>
           )}
           {!open && missing && (
             <p className="mt-2 text-[14px] text-text-tertiary">

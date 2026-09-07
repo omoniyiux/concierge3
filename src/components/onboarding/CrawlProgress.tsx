@@ -106,7 +106,7 @@ export function CrawlProgress({ url, onComplete }: { url: string; onComplete: ()
       </ol>
 
       {/* Pages, named as they land -------------------------------------- */}
-      <div className="mt-2 overflow-hidden rounded-2xl bg-surface">
+      <div className="mt-2 overflow-hidden rounded-[18px] bg-surface">
         <div className="flex items-center justify-between border-b border-divider px-4 py-2.5">
           <p className="t-eyebrow text-text-muted">Pages read</p>
           <p className="text-[13px] tabular-nums text-text-tertiary">
