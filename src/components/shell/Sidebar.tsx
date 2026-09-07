@@ -90,7 +90,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
         )}
 
         {NAV.map((group, gi) => (
-          <div key={group.label ?? "root"} className={gi > 0 ? "mt-4" : ""}>
+          <div key={gi} className={gi > 0 ? "mt-5" : ""}>
             {group.label && !collapsed && (
               <p className="flex h-[30px] items-center px-2.5 text-[13.5px] text-text-tertiary">
                 {group.label}
@@ -98,7 +98,7 @@ export function Sidebar({ siteId }: { siteId: string }) {
             )}
             {group.label && collapsed && <div className="mx-auto my-2 h-px w-6 bg-line" />}
 
-            <ul className={cx("space-y-0.5", collapsed && "flex flex-col items-center")}>
+            <ul className={cx("space-y-1", collapsed && "flex flex-col items-center")}>
               {group.items.map(({ path, label, Icon }) => {
                 const href = `/sites/${siteId}/${path}`;
                 const active = pathname === href || pathname.startsWith(`${href}/`);

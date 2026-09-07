@@ -30,8 +30,11 @@ const VARIANT: Record<Variant, string> = {
     "bg-surface text-text-primary border border-line-strong hover:border-line-hover hover:bg-surface-subtle active:bg-surface-hover disabled:text-text-disabled disabled:border-line disabled:bg-surface",
   tertiary:
     "bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary active:bg-surface-sunken disabled:text-text-disabled",
+  // White text, so the accent surface is deepened to clear AA: white on
+  // #FF7A00 is only 2.6:1, white on #C85200 is 4.5:1. The brand orange is
+  // unchanged everywhere it carries no text.
   accent:
-    "bg-accent text-white hover:bg-accent-hover active:bg-accent-pressed disabled:bg-surface-sunken disabled:text-text-disabled",
+    "bg-accent-solid text-white hover:bg-accent-pressed active:bg-accent-deep disabled:bg-surface-sunken disabled:text-text-disabled",
   danger:
     "bg-danger text-white hover:brightness-110 active:brightness-95 disabled:bg-surface-sunken disabled:text-text-disabled",
 };
@@ -569,7 +572,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        "inline-flex h-[24px] shrink-0 items-center gap-1.5 px-2.5 text-[13px] font-medium",
+        "inline-flex h-[20px] shrink-0 items-center gap-1.5 rounded-full px-2 text-[11px] font-medium",
         TONES[tone],
         className,
       )}

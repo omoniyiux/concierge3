@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { AlertIcon, ArrowRight, BrainIcon, RoutingIcon, SparkIcon } from "@/components/icons";
-import { Badge } from "@/components/ui";
+import { ArrowRight, RoutingIcon } from "@/components/icons";
+import { AlertIcon, BrainIcon, CheckIcon, SparkIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
+import { Badge } from "@/components/ui";
 import type { Tone } from "@/components/ui";
 
 export type AttentionItem = {
@@ -18,10 +19,13 @@ export type AttentionItem = {
   severity: "urgent" | "review" | "opportunity";
 };
 
-const SEVERITY: Record<AttentionItem["severity"], { tone: Tone; label: string; Icon: typeof AlertIcon }> = {
-  urgent: { tone: "restricted", label: "Needs fixing", Icon: AlertIcon },
-  review: { tone: "review", label: "Needs review", Icon: BrainIcon },
-  opportunity: { tone: "accent", label: "Opportunity", Icon: SparkIcon },
+const SEVERITY: Record<
+  AttentionItem["severity"],
+  { tone: Tone; label: string; Icon: typeof AlertIcon; tile: string }
+> = {
+  urgent: { tone: "restricted", label: "Needs fixing", Icon: AlertIcon, tile: "bg-danger-soft text-danger" },
+  review: { tone: "review", label: "Needs review", Icon: BrainIcon, tile: "bg-warning-soft text-warning" },
+  opportunity: { tone: "accent", label: "Opportunity", Icon: SparkIcon, tile: "bg-accent-soft text-accent-ink" },
 };
 
 /**
@@ -31,11 +35,16 @@ const SEVERITY: Record<AttentionItem["severity"], { tone: Tone; label: string; I
 export function AttentionList({ items }: { items: AttentionItem[] }) {
   if (items.length === 0) {
     return (
-      <div className="border border-line-strong bg-surface px-5 py-6">
-        <p className="text-[12.5px] font-medium">Nothing needs you right now.</p>
-        <p className="t-body-sm mt-1 text-text-tertiary">
-          Concierge is answering from approved knowledge and every route is delivering.
-        </p>
+      <div className="flex items-start gap-4 border border-line-strong bg-surface px-5 py-6">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-approved-soft text-success">
+          <CheckIcon size={17} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[12.5px] font-medium">Nothing needs you right now.</p>
+          <p className="t-body-sm mt-1 text-text-tertiary">
+            Concierge is answering from approved knowledge and every route is delivering.
+          </p>
+        </div>
       </div>
     );
   }
@@ -43,7 +52,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
   return (
     <ul className="divide-y divide-line-strong overflow-hidden border border-line-strong bg-surface">
       {items.map((item) => {
-        const { tone, label, Icon } = SEVERITY[item.severity];
+        const { tone, label, Icon, tile } = SEVERITY[item.severity];
         return (
           <li key={item.id}>
             {/* No fill change on hover — repainting a whole row grey reads as a
@@ -54,12 +63,8 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
             >
               <span
                 className={cx(
-                  "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center",
-                  item.severity === "urgent"
-                    ? "bg-danger-soft text-danger"
-                    : item.severity === "review"
-                      ? "bg-warning-soft text-warning"
-                      : "bg-accent-soft text-accent-ink",
+                  "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                  tile,
                 )}
               >
                 <Icon size={17} />

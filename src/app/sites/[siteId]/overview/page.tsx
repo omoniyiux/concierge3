@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageContainer } from "@/components/shell/AppShell";
 import { AttentionList, type AttentionItem } from "@/components/overview/AttentionList";
+import { StatusStrip } from "@/components/overview/StatusStrip";
 import { AreaChart, BarList, RadialGauge, Sparkline } from "@/components/ui/charts";
 import { Badge, Card, LinkButton } from "@/components/ui";
 import { ArrowRight, EyeIcon, InstallIcon } from "@/components/icons";
@@ -105,7 +106,12 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
             Test the Agent
           </LinkButton>
           {site.installState === "detected" ? (
-            <LinkButton href={`/sites/${siteId}/insights`} size="lg" trailing={<ArrowRight size={17} />}>
+            <LinkButton
+              href={`/sites/${siteId}/insights`}
+              variant="accent"
+              size="lg"
+              trailing={<ArrowRight size={17} />}
+            >
               View insights
             </LinkButton>
           ) : (
@@ -117,46 +123,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
       </header>
 
       {/* Status ---------------------------------------------------------- */}
-      <section className="mt-9">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {[
-            {
-              label: "Status",
-              value: site.status === "live" ? "Live" : "Not live",
-              hint: site.status === "live" ? "Answering visitors now" : "Not yet answering",
-              live: site.status === "live",
-            },
-            {
-              label: "Site Brain",
-              value: BRAIN.ready ? "Ready" : "Learning",
-              hint: `${BRAIN.approvedCount} of ${BRAIN.itemCount} approved`,
-            },
-            {
-              label: "Install",
-              value: site.installState === "detected" ? "Detected" : "Missing",
-              hint: "Script found on the live site",
-            },
-            {
-              label: "Routing",
-              value: failing.length ? `${failing.length} failing` : "All delivering",
-              hint: failing.length ? "Your team is not being notified" : "Every destination is healthy",
-              alert: failing.length > 0,
-            },
-          ].map((c) => (
-            <Card key={c.label} className="p-6">
-              <p className="t-eyebrow text-text-muted">{c.label}</p>
-              <p
-                className={`mt-3.5 text-[14px] font-semibold tracking-[-0.02em] ${c.alert ? "text-danger" : ""}`}
-              >
-                {c.live && (
-                  <span className="mr-2 inline-block h-2 w-2 -translate-y-0.5 rounded-full bg-success cg-live-dot" />
-                )}
-                {c.value}
-              </p>
-              <p className="mt-2 text-[11.5px] text-text-tertiary">{c.hint}</p>
-            </Card>
-          ))}
-        </div>
+      <section className="mt-10">
+        <StatusStrip site={site} brain={BRAIN} destinations={DESTINATIONS} />
       </section>
 
       {/* Needs your attention -------------------------------------------- */}

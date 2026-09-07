@@ -22,15 +22,15 @@ export type NavItem = {
 export type NavGroup = { label: string | null; items: NavItem[] };
 
 /**
- * Nine destinations under four quiet headings, following the product's own
- * model: understand the business, engage the visitor, automate the work,
- * grow on what you learn.
+ * Nine destinations, grouped by spacing rather than headings. The grouping
+ * still follows the product's model -- understand, engage, automate, grow --
+ * but the gaps say it without four labels taking up the rail.
  */
 export const NAV: NavGroup[] = [
   { label: null, items: [{ path: "overview", label: "Overview", Icon: OverviewIcon }] },
-  { label: "Understand", items: [{ path: "brain", label: "Site Brain", Icon: BrainIcon }] },
+  { label: null, items: [{ path: "brain", label: "Site Brain", Icon: BrainIcon }] },
   {
-    label: "Engage",
+    label: null,
     items: [
       { path: "agent", label: "Agent", Icon: AgentIcon },
       { path: "conversations", label: "Conversations", Icon: ConversationsIcon },
@@ -38,14 +38,14 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
-    label: "Automate",
+    label: null,
     items: [
       { path: "actions", label: "Actions", Icon: ActionsIcon },
       { path: "routing", label: "Routing", Icon: RoutingIcon },
     ],
   },
   {
-    label: "Grow",
+    label: null,
     items: [
       { path: "insights", label: "Insights", Icon: InsightsIcon },
       { path: "pages", label: "Pages", Icon: PagesIcon },

@@ -7,21 +7,26 @@
    before shadows, restrained colour, one primary action per surface, type
    doing the work of hierarchy.
 
-   Identity is Concierge's own: warm paper neutrals (#FAFAF8) instead of cool
-   grey, near-black ink, and a single orange accent (#FF7A00) sampled from
-   poweredbyconcierge.com. Orange is a signal, never a decoration.
+   Identity is Concierge's own: warm paper neutrals instead of cool grey,
+   near-black ink, and a single saturated orange accent (#FF6200). Orange is a
+   signal, never a decoration — and it always carries ink, never white: white
+   on this orange is 2.6:1 and fails WCAG AA, while ink on it is 7.0:1.
    ========================================================================== */
 
 @theme {
   /* ---- Brand: Concierge's own orange, kept throughout -------------------- */
-  --color-accent: #ff7a00;
-  --color-accent-hover: #e06a00;
-  --color-accent-pressed: #c85a00;
-  --color-accent-light: #ffb347;
-  --color-accent-soft: #ffeedc;
-  --color-accent-subtle: #fff6ed;
-  --color-accent-line: #ffd7ab;
-  --color-accent-ink: #9f4700;
+  --color-accent: #ff6200;
+  --color-accent-hover: #e85400;
+  --color-accent-pressed: #cc4a00;
+  --color-accent-light: #ff9a4d;
+  --color-accent-soft: #ffe6d2;
+  --color-accent-subtle: #fff3e9;
+  --color-accent-line: #ffc79e;
+  /* Accent surfaces that carry white text sit deeper so they clear AA:
+     white on #FF7A00 is 2.6:1, white on #C85200 is 4.5:1. */
+  --color-accent-solid: #c85200;
+  --color-accent-deep: #a94500;
+  --color-accent-ink: #9a3a00;
 
   /* ---- Ink: the primary action colour ----------------------------------- */
   --color-ink: #000000;
@@ -32,7 +37,7 @@
   --color-text-primary: #000000;
   --color-text-secondary: #4a4a4a;
   --color-text-tertiary: #6b6b6b;
-  --color-text-muted: #8c8c8c;
+  --color-text-muted: #767676;
   --color-text-disabled: #b5b5b5;
   --color-text-inverse: #ffffff;
 
@@ -51,15 +56,15 @@
   --color-divider: #f0f0f0;
 
   /* ---- Semantic --------------------------------------------------------- */
-  --color-success: #1c7a4e;
+  --color-success: #0f7a4a;
   --color-success-soft: #e6f6ee;
   --color-success-line: #c2e0cd;
 
-  --color-warning: #a86a12;
+  --color-warning: #8d5600;
   --color-warning-soft: #fdf3e3;
   --color-warning-line: #edd6ad;
 
-  --color-danger: #b42318;
+  --color-danger: #c42a1d;
   --color-danger-soft: #fdecea;
   --color-danger-line: #f0c4c0;
 
@@ -68,11 +73,11 @@
   --color-info-line: #c5d5ee;
 
   /* ---- Knowledge status: Site Brain's own vocabulary -------------------- */
-  --color-approved: #1c7a4e;
+  --color-approved: #0f7a4a;
   --color-approved-soft: #e6f6ee;
-  --color-review: #a86a12;
+  --color-review: #8d5600;
   --color-review-soft: #fdf3e3;
-  --color-restricted: #b42318;
+  --color-restricted: #c42a1d;
   --color-restricted-soft: #fdecea;
   --color-suggested: #6b6a66;
   --color-suggested-soft: #f0f0f0;
