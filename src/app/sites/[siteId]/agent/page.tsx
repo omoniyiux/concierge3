@@ -17,19 +17,18 @@ import {
   Textarea,
   Toggle,
 } from "@/components/ui";
+import { CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import {
-  ActionsIcon,
-  AgentIcon,
-  BrainIcon,
-  CheckIcon,
-  LockIcon,
-  PlusIcon,
-  RoutingIcon,
-  ShieldIcon,
-  TrashIcon,
-} from "@/components/icons";
+  ApprovedSticker,
+  HandoffSticker,
+  PendingSticker,
+  RoutingSticker,
+  ShieldSticker,
+  SparkSticker,
+} from "@/components/stickers";
+import { ACTION_STICKER, MODE_STICKER } from "@/components/stickers/maps";
 import { ACTIONS, AGENT, BRAIN, DESTINATIONS } from "@/lib/demo-data";
-import type { AgentMode, AgentTone } from "@/lib/types";
+import type { AgentAutonomy, AgentMode, AgentTone } from "@/lib/types";
 
 const MODES: { key: AgentMode; label: string; description: string }[] = [
   { key: "receptionist", label: "Receptionist", description: "Answers, books and puts people through." },
@@ -64,6 +63,28 @@ function GroupLabel({ children }: { children: string }) {
  * Persona sits beside a live preview, so a change to tone or a rule can be
  * read back before anyone commits to it.
  */
+/** Ordered by how much rope the owner is handing over. */
+const AUTONOMY_LEVELS: { value: AgentAutonomy; label: string; description: string }[] = [
+  {
+    value: "suggest",
+    label: "Draft only",
+    description:
+      "Concierge writes what it would send and leaves it in the conversation. Nothing goes out until you send it yourself.",
+  },
+  {
+    value: "approve",
+    label: "Draft and wait for me",
+    description:
+      "It writes the follow-up, holds it until a sensible hour, and sends the moment you approve. Most owners start here.",
+  },
+  {
+    value: "send",
+    label: "Follow up on its own",
+    description:
+      "It sends without asking, within your rules and never more than once per visitor. You see every message afterwards.",
+  },
+];
+
 export default function AgentPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
   const [mode, setMode] = useState<AgentMode>(AGENT.mode);
@@ -72,6 +93,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
   const [greeting, setGreeting] = useState(AGENT.greeting);
   const [rules, setRules] = useState(AGENT.rules);
   const [voice, setVoice] = useState(AGENT.voiceEnabled);
+  const [autonomy, setAutonomy] = useState<AgentAutonomy>(AGENT.autonomy);
   const [dirty, setDirty] = useState(false);
 
   const touch =
@@ -144,16 +166,19 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               className="mb-4"
             />
             <div className="grid gap-2.5 sm:grid-cols-2">
-              {MODES.map((m) => (
-                <RadioCard
-                  key={m.key}
-                  selected={mode === m.key}
-                  onSelect={() => touch(setMode)(m.key)}
-                  label={m.label}
-                  description={m.description}
-                  icon={<AgentIcon size={16} />}
-                />
-              ))}
+              {MODES.map((m) => {
+                const Sticker = MODE_STICKER[m.key];
+                return (
+                  <RadioCard
+                    key={m.key}
+                    selected={mode === m.key}
+                    onSelect={() => touch(setMode)(m.key)}
+                    label={m.label}
+                    description={m.description}
+                    icon={<Sticker size={30} />}
+                  />
+                );
+              })}
             </div>
           </Panel>
 
@@ -172,7 +197,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               onChange={touch(setTone)}
               options={TONES.map((t) => ({ value: t.key, label: t.label }))}
             />
-            <p className="mt-4 bg-surface-subtle-subtle p-3.5 text-[12.5px] leading-[1.6] text-text-secondary">
+            <p className="mt-4 bg-surface-subtle p-3.5 text-[12.5px] leading-[1.6] text-text-secondary">
               <span className="t-eyebrow mb-1.5 block text-text-muted">Sounds like</span>
               {tone === "warm" &&
                 "Happy to help with that — the New Patient Exam is $89 and includes a cleaning."}
@@ -195,23 +220,55 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               }
               className="mb-4"
             />
-            <ul className="space-y-3">
-              {readyActions.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
-                  <ActionsIcon size={15} className="shrink-0 text-text-tertiary" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[12.5px] font-medium">{a.name}</span>
-                    <span className="block truncate text-[12.5px] text-text-tertiary">{a.outcome}</span>
-                  </span>
-                  <Toggle
-                    size="sm"
-                    checked={AGENT.quickActions.includes(a.id)}
-                    onChange={() => setDirty(true)}
-                    label={`Offer ${a.name}`}
-                  />
-                </li>
-              ))}
+            <ul className="space-y-2">
+              {readyActions.map((a) => {
+                const Sticker = ACTION_STICKER[a.kind];
+                return (
+                  <li
+                    key={a.id}
+                    className="flex items-center gap-3 border border-line bg-surface px-3.5 py-2.5 transition-colors duration-[var(--dur-micro)] hover:border-line-strong"
+                  >
+                    <Sticker size={26} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[12.5px] font-medium">{a.name}</span>
+                      <span className="block truncate text-[12.5px] text-text-tertiary">{a.outcome}</span>
+                    </span>
+                    <Toggle
+                      size="sm"
+                      checked={AGENT.quickActions.includes(a.id)}
+                      onChange={() => setDirty(true)}
+                      label={`Offer ${a.name}`}
+                    />
+                  </li>
+                );
+              })}
             </ul>
+          </Panel>
+
+          <Panel className="p-6">
+            <SectionHead
+              title="How far it may go on its own"
+              hint="A visitor who leaves the page is not gone. This decides what Concierge may do about it."
+              className="mb-4"
+            />
+            <div className="space-y-2.5">
+              {AUTONOMY_LEVELS.map((level) => (
+                <RadioCard
+                  key={level.value}
+                  selected={autonomy === level.value}
+                  onSelect={() => {
+                    setAutonomy(level.value);
+                    setDirty(true);
+                  }}
+                  label={level.label}
+                  description={level.description}
+                />
+              ))}
+            </div>
+            <p className="mt-4 border-t border-line pt-4 text-[11.5px] leading-[1.5] text-text-tertiary">
+              Whatever you pick, Concierge only writes to someone who gave you their details in the
+              conversation, never sends between 21:00 and 08:00, and stops the moment they ask it to.
+            </p>
           </Panel>
 
           <Panel className="p-6">
@@ -220,7 +277,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               hint="Lets a visitor talk instead of type. Answers stay grounded in Site Brain."
               className="mb-4"
             />
-            <div className="flex items-center gap-3 bg-surface-subtle-subtle px-3.5 py-2.5">
+            <div className="flex items-center gap-3 bg-surface-subtle px-3.5 py-2.5">
               <div className="min-w-0 flex-1">
                 <p className="text-[12.5px] font-medium">Talk to Concierge</p>
                 <p className="mt-0.5 text-[11.5px] text-text-tertiary">
@@ -283,7 +340,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                   key={r}
                   className="flex items-start gap-3 border border-danger-line bg-danger-soft px-3.5 py-3"
                 >
-                  <LockIcon size={14} className="mt-0.5 shrink-0 text-danger" />
+                  <ShieldSticker size={26} className="shrink-0" />
                   <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                 </li>
               ))}
@@ -295,10 +352,10 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
 
           <Panel className="p-6">
             <SectionHead title="Hand off to a person when" className="mb-4" />
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {AGENT.escalationTriggers.map((r) => (
-                <li key={r} className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3.5 py-2.5">
-                  <RoutingIcon size={14} className="mt-0.5 shrink-0 text-text-tertiary" />
+                <li key={r} className="flex items-center gap-3 border border-line bg-surface px-3.5 py-2.5">
+                  <HandoffSticker size={26} className="shrink-0" />
                   <span className="min-w-0 flex-1 text-[12.5px] leading-[1.55]">{r}</span>
                 </li>
               ))}
@@ -363,45 +420,42 @@ function AgentReadiness({
   ].filter(Boolean) as { label: string; href: string }[];
 
   return (
-    <Card className="flex flex-wrap items-center gap-x-8 gap-y-5 p-5">
-      <div className="flex items-center gap-4">
-        <RadialGauge
-          value={confidence}
-          label="Agent confidence"
-          tone={confidence >= 80 ? "success" : "accent"}
-          size={54}
-        />
-        <div className="max-w-[34ch]">
-          <p className="t-card">Autonomous when confident, human when it matters</p>
-          <p className="t-body-sm mt-0.5 text-text-tertiary">
-            Concierge answers on its own {confidence}% of the time and hands off the rest.
-          </p>
+    <Card className="p-5">
+      {/* Two halves that each take what is left over, so the three facts spread
+          across the right of the card instead of bunching beside the sentence
+          and leaving a third of the row empty. */}
+      <div className="flex flex-wrap items-center gap-x-10 gap-y-6">
+        <div className="flex min-w-[320px] flex-1 items-center gap-4">
+          <RadialGauge
+            value={confidence}
+            label="Agent confidence"
+            tone={confidence >= 80 ? "success" : "accent"}
+            size={58}
+          />
+          <div className="min-w-0">
+            <p className="t-card">Autonomous when confident, human when it matters</p>
+            <p className="t-body-sm mt-1 text-text-tertiary">
+              Concierge answers on its own {confidence}% of the time and hands off the rest.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <dl className="flex flex-wrap items-center gap-x-7 gap-y-3">
-        <div>
-          <dt className="t-eyebrow text-text-muted">Knowledge</dt>
-          <dd className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium">
-            <BrainIcon size={14} className="text-text-tertiary" />
-            {BRAIN.approvedCount} approved
-          </dd>
-        </div>
-        <div>
-          <dt className="t-eyebrow text-text-muted">Actions</dt>
-          <dd className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium">
-            <ActionsIcon size={14} className="text-text-tertiary" />
-            {readyActions} ready
-          </dd>
-        </div>
-        <div>
-          <dt className="t-eyebrow text-text-muted">Routing</dt>
-          <dd className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-medium">
-            <RoutingIcon size={14} className="text-text-tertiary" />
-            {connectedRoutes} connected
-          </dd>
-        </div>
-      </dl>
+        <dl className="grid min-w-[320px] flex-1 grid-cols-3 gap-x-6 gap-y-4">
+          {[
+            { Sticker: ApprovedSticker, label: "Knowledge", value: `${BRAIN.approvedCount} approved` },
+            { Sticker: SparkSticker, label: "Actions", value: `${readyActions} ready` },
+            { Sticker: RoutingSticker, label: "Routing", value: `${connectedRoutes} connected` },
+          ].map(({ Sticker, label, value }) => (
+            <div key={label} className="flex min-w-0 items-center gap-2.5">
+              <Sticker size={30} />
+              <div className="min-w-0">
+                <dt className="t-eyebrow text-text-muted">{label}</dt>
+                <dd className="mt-1 truncate text-[12.5px] font-semibold">{value}</dd>
+              </div>
+            </div>
+          ))}
+        </dl>
+      </div>
 
       {gaps.length > 0 && (
         <div className="w-full border-t border-divider pt-4">
@@ -409,7 +463,13 @@ function AgentReadiness({
           <ul className="flex flex-wrap gap-2">
             {gaps.map((g) => (
               <li key={g.label}>
-                <LinkButton href={g.href} variant="secondary" size="sm" leading={<ShieldIcon size={13} />}>
+                <LinkButton
+                  href={g.href}
+                  variant="secondary"
+                  size="md"
+                  className="gap-2 pl-2"
+                  leading={<PendingSticker size={20} />}
+                >
                   {g.label}
                 </LinkButton>
               </li>
