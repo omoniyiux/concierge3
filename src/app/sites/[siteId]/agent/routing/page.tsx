@@ -1,48 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-  IconButton,
-  Panel,
-  SectionHead,
-  Tabs,
-  Toggle,
-} from "@/components/ui";
-import {
-  ActionsIcon,
-  AlertIcon,
-  ArrowRight,
-  CheckIcon,
-  CodeIcon,
-  ConversationsIcon,
-  LeadsIcon,
-  MailIcon,
-  MoreIcon,
-  PhoneIcon,
-  PlusIcon,
-  RefreshIcon,
-  RoutingIcon,
-} from "@/components/icons";
+import { Badge, Button, Card, EmptyState, Panel, SectionHead, Tabs, Toggle } from "@/components/ui";
+import { ArrowRight, CheckIcon, PlusIcon, RefreshIcon, RoutingIcon, SendIcon } from "@/components/icons";
+import { AlertSticker, RoutingSticker } from "@/components/stickers";
+import { DESTINATION_STICKER } from "@/components/stickers/maps";
+import { DestinationEditor } from "@/components/routing/DestinationEditor";
+import { RuleEditor } from "@/components/routing/RuleEditor";
+import { RouteCheckPanel, type CheckOutcome } from "@/components/routing/RouteCheckPanel";
+import { RowMenu } from "@/components/routing/RowMenu";
+import { RoutingInbox } from "@/components/routing/RoutingInbox";
+import { RoutingReadiness } from "@/components/routing/RoutingReadiness";
+import { ChannelConnect } from "@/components/routing/ChannelConnect";
+import { FIELD_LABEL, MOMENT_LABEL, OP_LABEL } from "@/components/routing/MomentLabels";
 import { cx } from "@/lib/cx";
-import { DELIVERIES, DESTINATIONS, ROUTING_RULES } from "@/lib/demo-data";
+import { DELIVERIES, DESTINATIONS, INBOX, ROUTING_RULES } from "@/lib/demo-data";
 import { INTENT_LABEL, relativeTime } from "@/lib/format";
-import type { Destination, DestinationKind, RoutingRule } from "@/lib/types";
+import type { Destination, RoutingRule } from "@/lib/types";
 import type { Tone } from "@/components/ui";
-
-const KIND_ICON: Record<DestinationKind, typeof MailIcon> = {
-  email: MailIcon,
-  slack: ConversationsIcon,
-  sms: PhoneIcon,
-  webhook: CodeIcon,
-  taskologic: ActionsIcon,
-  telegram: ConversationsIcon,
-  inbox: LeadsIcon,
-};
 
 const STATUS: Record<Destination["status"], { tone: Tone; label: string }> = {
   connected: { tone: "approved", label: "Delivering" },
@@ -51,35 +27,56 @@ const STATUS: Record<Destination["status"], { tone: Tone; label: string }> = {
   paused: { tone: "neutral", label: "Paused" },
 };
 
-const FIELD_LABEL: Record<string, string> = {
-  intent: "Intent",
-  location: "Location",
-  "lead-value": "Lead value",
-  service: "Service",
-  urgency: "Urgency",
-  page: "Page",
-};
-
-const OP_LABEL: Record<string, string> = {
-  is: "is",
-  "is-not": "is not",
-  contains: "contains",
-  "greater-than": "is over",
-  "less-than": "is under",
-};
-
-type Tab = "rules" | "destinations" | "history";
+type Tab = "inbox" | "rules" | "destinations" | "history";
 
 /**
  * Routing reads as a sentence — IF this, THEN that — rather than a rule
  * engine. The visual flow is the point: an owner should see where a visitor
  * ends up without learning a syntax.
  */
-export default function RoutingPage() {
-  const [tab, setTab] = useState<Tab>("rules");
+export default function RoutingPage({ params }: { params: Promise<{ siteId: string }> }) {
+  const { siteId } = use(params);
+  const [tab, setTab] = useState<Tab>("inbox");
   const [rules, setRules] = useState(ROUTING_RULES);
+  const [destinations, setDestinations] = useState(DESTINATIONS);
 
-  const failing = DESTINATIONS.filter((d) => d.status === "failing");
+  // Only one panel is ever open: they all sit in the same slot under the
+  // header, and stacking them would bury the thing being edited.
+  const [checking, setChecking] = useState(false);
+  const [ruleEdit, setRuleEdit] = useState<RoutingRule | "new" | null>(null);
+  const [destEdit, setDestEdit] = useState<Destination | "new" | null>(null);
+
+  const failing = destinations.filter((d) => d.status === "failing");
+  const waiting = INBOX.filter((i) => i.state === "unread" || i.state === "open").length;
+
+  const closeAll = () => {
+    setChecking(false);
+    setRuleEdit(null);
+    setDestEdit(null);
+  };
+
+  function editDestination(d: Destination) {
+    closeAll();
+    setDestEdit(d);
+    setTab("destinations");
+  }
+
+  function saveDestination(next: Destination) {
+    setDestinations((prev) =>
+      prev.some((d) => d.id === next.id) ? prev.map((d) => (d.id === next.id ? next : d)) : [...prev, next],
+    );
+    setDestEdit(null);
+  }
+
+  function testDestination(id: string, ok: boolean) {
+    setDestinations((prev) =>
+      prev.map((d) =>
+        d.id === id
+          ? { ...d, status: ok ? "connected" : "failing", lastTestedAt: new Date().toISOString() }
+          : d,
+      ),
+    );
+  }
 
   return (
     <PageContainer wide>
@@ -89,57 +86,152 @@ export default function RoutingPage() {
         description="When Concierge cannot finish the job itself, these rules decide which person hears about it — and how fast."
         actions={
           <>
-            <Button variant="secondary" leading={<RefreshIcon size={15} />}>
-              Run a route check
+            <Button
+              variant="secondary"
+              leading={<RefreshIcon size={15} />}
+              disabled={checking}
+              onClick={() => {
+                closeAll();
+                setChecking(true);
+              }}
+            >
+              {checking ? "Checking…" : "Run a route check"}
             </Button>
-            <Button leading={<PlusIcon size={15} />}>New rule</Button>
+            <Button
+              leading={<PlusIcon size={15} />}
+              onClick={() => {
+                closeAll();
+                setRuleEdit("new");
+                setTab("rules");
+              }}
+            >
+              New rule
+            </Button>
           </>
         }
         meta={
-          failing.length > 0 ? (
+          <div className="space-y-3">
+            <RoutingReadiness
+              destinations={destinations}
+              siteId={siteId}
+              onFixCoverage={() => {
+                closeAll();
+                setTab("destinations");
+              }}
+            />
+            {failing.length > 0 ? (
             <Card className="flex flex-wrap items-center gap-3 border-danger-line bg-danger-soft p-4">
-              <AlertIcon size={17} className="shrink-0 text-danger" />
+              <AlertSticker size={28} className="shrink-0" />
               <p className="min-w-0 flex-1 text-[11.5px]">
-                <span className="font-medium">{failing[0].name} is not delivering.</span>
-                {""}
+                <span className="font-medium">{failing[0].name} is not delivering.</span>{" "}
                 <span className="text-text-secondary">
                   Visitor requests are still captured — your team just is not hearing about them.
                 </span>
               </p>
-              <Button size="sm" variant="secondary" onClick={() => setTab("destinations")}>
+              <Button size="sm" variant="secondary" onClick={() => editDestination(failing[0])}>
                 Inspect
               </Button>
-            </Card>
-          ) : undefined
+              </Card>
+            ) : null}
+          </div>
         }
       />
+
+      {checking && (
+        <RouteCheckPanel
+          destinations={destinations}
+          siteId={siteId}
+          onApply={(outcomes: CheckOutcome[]) => {
+            setDestinations((prev) =>
+              prev.map((d) => {
+                const o = outcomes.find((x) => x.id === d.id);
+                return o
+                  ? { ...d, status: o.ok ? "connected" : "failing", lastTestedAt: new Date().toISOString() }
+                  : d;
+              }),
+            );
+            setChecking(false);
+            setTab("destinations");
+          }}
+          onClose={() => setChecking(false)}
+        />
+      )}
+
+      {ruleEdit && (
+        <RuleEditor
+          rule={ruleEdit === "new" ? undefined : ruleEdit}
+          destinations={destinations}
+          onSave={(next) => {
+            setRules((prev) =>
+              prev.some((r) => r.id === next.id)
+                ? prev.map((r) => (r.id === next.id ? next : r))
+                : [...prev, next],
+            );
+            setRuleEdit(null);
+          }}
+          onClose={() => setRuleEdit(null)}
+        />
+      )}
+
+      {destEdit && (
+        <DestinationEditor
+          destination={destEdit === "new" ? undefined : destEdit}
+          onSave={saveDestination}
+          onClose={() => setDestEdit(null)}
+        />
+      )}
 
       <Tabs
         label="Routing sections"
         value={tab}
         onChange={setTab}
         tabs={[
+          { value: "inbox", label: "Inbox", count: waiting },
           { value: "rules", label: "Rules", count: rules.length },
-          { value: "destinations", label: "Destinations", count: DESTINATIONS.length },
+          { value: "destinations", label: "Destinations", count: destinations.length },
           { value: "history", label: "Delivery history" },
         ]}
       />
 
+      {tab === "inbox" && <RoutingInbox items={INBOX} destinations={destinations} siteId={siteId} />}
+
       {tab === "rules" && (
-        <div className="mt-5 space-y-3">
+        <div className="mt-7 space-y-4">
           {rules.map((rule, i) => (
             <RuleRow
               key={rule.id}
               rule={rule}
               order={i + 1}
+              destinations={destinations}
               onToggle={() =>
                 setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)))
               }
+              onEdit={() => {
+                closeAll();
+                setRuleEdit(rule);
+              }}
+              onDuplicate={() =>
+                setRules((prev) => {
+                  const copy = {
+                    ...rule,
+                    id: `rule_${Date.now()}`,
+                    name: `${rule.name} (copy)`,
+                    enabled: false,
+                    matches30d: 0,
+                  };
+                  return [...prev.slice(0, i + 1), copy, ...prev.slice(i + 1)];
+                })
+              }
+              onDelete={() => setRules((prev) => prev.filter((r) => r.id !== rule.id))}
             />
           ))}
 
           <button
             type="button"
+            onClick={() => {
+              closeAll();
+              setRuleEdit("new");
+            }}
             className="flex w-full items-center justify-center gap-2 border border-dashed border-line-strong py-5 text-[13px] font-medium text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={15} />
@@ -153,30 +245,66 @@ export default function RoutingPage() {
       )}
 
       {tab === "destinations" && (
+        <>
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {DESTINATIONS.map((d) => (
-            <DestinationCard key={d.id} destination={d} />
+          {destinations.map((d) => (
+            <DestinationCard
+              key={d.id}
+              destination={d}
+              onConfigure={() => editDestination(d)}
+              onTested={(ok) => testDestination(d.id, ok)}
+            />
           ))}
           <button
             type="button"
+            onClick={() => {
+              closeAll();
+              document.getElementById("connect-a-destination")?.scrollIntoView({ behavior: "smooth" });
+            }}
             className="flex min-h-[168px] flex-col items-center justify-center gap-2 border border-dashed border-line-strong p-5 text-[13px] font-medium text-text-tertiary transition-colors hover:border-line-hover hover:text-text-primary"
           >
             <PlusIcon size={17} />
             Add a destination
           </button>
         </div>
+
+        <div id="connect-a-destination" className="mt-10 scroll-mt-24">
+          <ChannelConnect
+            destinations={destinations}
+            onConnect={(d) =>
+              setDestinations((prev) => [...prev, { ...d, id: `dest_${Date.now()}`, siteId }])
+            }
+          />
+        </div>
+        </>
       )}
 
-      {tab === "history" && <DeliveryHistory />}
+      {tab === "history" && <DeliveryHistory destinations={destinations} />}
     </PageContainer>
   );
 }
 
 /* ---- A rule, read as a sentence ------------------------------------------ */
 
-function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; onToggle: () => void }) {
-  const destination = DESTINATIONS.find((d) => d.id === rule.destinationId);
-  const Icon = destination ? KIND_ICON[destination.kind] : RoutingIcon;
+function RuleRow({
+  rule,
+  order,
+  destinations,
+  onToggle,
+  onEdit,
+  onDuplicate,
+  onDelete,
+}: {
+  rule: RoutingRule;
+  order: number;
+  destinations: Destination[];
+  onToggle: () => void;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+}) {
+  const destination = destinations.find((d) => d.id === rule.destinationId);
+  const Sticker = destination ? DESTINATION_STICKER[destination.kind] : RoutingSticker;
 
   return (
     <Card className={cx("p-5", !rule.enabled && "bg-surface-subtle/60")}>
@@ -197,7 +325,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
             {rule.conditions.map((c, i) => (
               <span key={`${c.field}-${i}`} className="flex flex-wrap items-center gap-2">
                 {i > 0 && <span className="t-eyebrow text-text-muted">and</span>}
-                <span className="inline-flex items-center gap-1.5 bg-surface-subtle-subtle px-2.5 py-1.5 text-[12px]">
+                <span className="inline-flex items-center gap-1.5 bg-surface-subtle px-2.5 py-1.5 text-[12px]">
                   <span className="text-text-tertiary">{FIELD_LABEL[c.field]}</span>
                   <span className="text-text-muted">{OP_LABEL[c.operator]}</span>
                   <span className="font-medium">
@@ -211,7 +339,7 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
 
             <span className="t-eyebrow shrink-0 text-text-muted">Then</span>
             <span className="inline-flex items-center gap-2 rounded-xl bg-surface-subtle px-2.5 py-1.5 text-[12.5px] font-medium">
-              <Icon size={13} className="text-text-tertiary" />
+              <Sticker size={18} className="shrink-0" />
               {destination?.name ?? "No destination"}
             </span>
           </div>
@@ -226,9 +354,15 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
 
         <div className="flex shrink-0 items-center gap-1.5">
           <Toggle size="sm" checked={rule.enabled} onChange={onToggle} label={`Enable ${rule.name}`} />
-          <IconButton label={`More options for ${rule.name}`} size={28}>
-            <MoreIcon size={15} />
-          </IconButton>
+          <RowMenu
+            label={`More options for ${rule.name}`}
+            items={[
+              { label: "Edit rule", onSelect: onEdit },
+              { label: "Duplicate", onSelect: onDuplicate },
+              { label: rule.enabled ? "Pause rule" : "Enable rule", onSelect: onToggle },
+              { label: "Delete rule", onSelect: onDelete, danger: true },
+            ]}
+          />
         </div>
       </div>
     </Card>
@@ -237,22 +371,39 @@ function RuleRow({ rule, order, onToggle }: { rule: RoutingRule; order: number; 
 
 /* ---- Destinations -------------------------------------------------------- */
 
-function DestinationCard({ destination: d }: { destination: Destination }) {
-  const Icon = KIND_ICON[d.kind];
+function DestinationCard({
+  destination: d,
+  onConfigure,
+  onTested,
+}: {
+  destination: Destination;
+  onConfigure: () => void;
+  onTested: (ok: boolean) => void;
+}) {
+  const Sticker = DESTINATION_STICKER[d.kind];
   const s = STATUS[d.status];
   const failing = d.status === "failing";
+
+  // The test result lives on the card that ran it, so two cards can be
+  // mid-test without one overwriting the other's answer.
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; ms: number } | null>(null);
+
+  function sendTest() {
+    setTesting(true);
+    setResult(null);
+    window.setTimeout(() => {
+      const ok = d.status !== "failing";
+      setTesting(false);
+      setResult({ ok, ms: 120 + ((d.name.length * 37) % 300) });
+      onTested(ok);
+    }, 900);
+  }
 
   return (
     <Card className={cx("flex flex-col p-5", failing && "border-danger-line")}>
       <div className="flex items-start gap-3">
-        <span
-          className={cx(
-            "flex h-8 w-8 shrink-0 items-center justify-center",
-            failing ? "bg-danger-soft text-danger" : "bg-surface-subtle text-text-secondary",
-          )}
-        >
-          <Icon size={16} />
-        </span>
+        <Sticker size={34} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{d.name}</h3>
           <p className="mt-0.5 truncate text-[12.5px] text-text-tertiary">{d.target}</p>
@@ -292,11 +443,33 @@ function DestinationCard({ destination: d }: { destination: Destination }) {
         </p>
       )}
 
+      {result && (
+        <p
+          className={cx(
+            "mt-3 flex items-center gap-2 text-[11.5px]",
+            result.ok ? "text-success" : "text-danger",
+          )}
+          role="status"
+        >
+          {result.ok ? (
+            <>
+              <CheckIcon size={13} strokeWidth={2.4} />
+              Test delivered in {result.ms}ms
+            </>
+          ) : (
+            <>
+              <SendIcon size={13} />
+              Test did not arrive — the endpoint returned 503
+            </>
+          )}
+        </p>
+      )}
+
       <div className="mt-auto flex items-center gap-2 pt-4">
-        <Button size="sm" variant={failing ? "primary" : "secondary"}>
+        <Button size="sm" variant={failing ? "primary" : "secondary"} onClick={onConfigure}>
           {failing ? "Fix connection" : "Configure"}
         </Button>
-        <Button size="sm" variant="tertiary">
+        <Button size="sm" variant="tertiary" loading={testing} onClick={sendTest}>
           Send a test
         </Button>
       </div>
@@ -306,7 +479,7 @@ function DestinationCard({ destination: d }: { destination: Destination }) {
 
 /* ---- History ------------------------------------------------------------- */
 
-function DeliveryHistory() {
+function DeliveryHistory({ destinations }: { destinations: Destination[] }) {
   if (DELIVERIES.length === 0) {
     return (
       <Panel className="mt-6">
@@ -335,7 +508,7 @@ function DeliveryHistory() {
       </div>
       <ul className="divide-y divide-divider border-t border-divider lg:border-t-0">
         {DELIVERIES.map((rec) => {
-          const dest = DESTINATIONS.find((d) => d.id === rec.destinationId);
+          const dest = destinations.find((d) => d.id === rec.destinationId);
           const tone: Tone =
             rec.state === "delivered" ? "approved" : rec.state === "failed" ? "restricted" : "review";
           return (
@@ -346,7 +519,7 @@ function DeliveryHistory() {
               <span className="truncate text-[12.5px] font-medium">
                 {dest?.name ?? "Removed destination"}
               </span>
-              <span className="truncate text-[12px] text-text-secondary">{rec.moment.replace(/-/g, "")}</span>
+              <span className="truncate text-[12px] text-text-secondary">{MOMENT_LABEL[rec.moment]}</span>
               <span>
                 <Badge tone={tone}>{rec.state}</Badge>
                 {rec.error && <span className="ml-2 text-[11.5px] text-text-tertiary">{rec.error}</span>}
