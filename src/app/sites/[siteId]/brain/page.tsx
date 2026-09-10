@@ -1,8 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import { KnowledgeCard } from "@/components/brain/KnowledgeCard";
+import { KnowledgeComposer } from "@/components/brain/KnowledgeComposer";
+import { RelearnPanel } from "@/components/brain/RelearnPanel";
 import { RadialGauge } from "@/components/ui/charts";
 import {
   Badge,
@@ -25,8 +28,15 @@ import {
   SparkIcon,
   UploadIcon,
 } from "@/components/icons";
+import {
+  ApprovedSticker,
+  GapSticker,
+  PendingSticker,
+  RestrictedSticker,
+  SparkSticker,
+} from "@/components/stickers";
 import { cx } from "@/lib/cx";
-import { BRAIN, KNOWLEDGE } from "@/lib/demo-data";
+import { BRAIN, DEFAULT_SITE_ID, KNOWLEDGE, getSite } from "@/lib/demo-data";
 import { CATEGORY_LABEL, relativeTime } from "@/lib/format";
 import type { KnowledgeCategory, KnowledgeItem, KnowledgeStatus } from "@/lib/types";
 
@@ -38,7 +48,24 @@ type Filter = "all" | "needs-review" | "approved" | "restricted" | "missing";
  * what is it allowed to say?"This is the product's trust surface, so status
  * and evidence are visible on every row rather than hidden behind a click.
  */
+/**
+ * What a re-crawl of Northlane turns up. The changed pricing is the same stale
+ * figure Perplexity is quoting on the Assistants surface — one edit closes it
+ * in both places.
+ */
+const RELEARN_RESULT = {
+  changedIds: ["k_pricing", "k_hours"],
+  changedTitles: ["Treatment pricing", "Opening hours"],
+  newQuestion: "Do you offer sedation for nervous patients?",
+  unchanged: 14,
+};
+
 export default function SiteBrainPage() {
+  const siteId = String(useParams().siteId ?? DEFAULT_SITE_ID);
+  const site = getSite(siteId);
+  // null closed; a string opens it, prefilled with that title.
+  const [composing, setComposing] = useState<string | null>(null);
+  const [relearning, setRelearning] = useState(false);
   const [tab, setTab] = useState<Tab>("review");
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -93,14 +120,51 @@ export default function SiteBrainPage() {
         description="Everything Concierge is allowed to say about your business, where it learned it, and how sure it is. Nothing here reaches a visitor until you approve it."
         actions={
           <>
-            <Button variant="secondary" leading={<RefreshIcon size={15} />}>
-              Re-learn site
+            <Button
+              variant="secondary"
+              leading={<RefreshIcon size={15} />}
+              disabled={relearning}
+              onClick={() => {
+                setComposing(null);
+                setRelearning(true);
+              }}
+            >
+              {relearning ? "Re-learning…" : "Re-learn site"}
             </Button>
-            <Button leading={<PlusIcon size={15} />}>Add knowledge</Button>
+            <Button leading={<PlusIcon size={15} />} onClick={() => setComposing("")}>
+              Add knowledge
+            </Button>
           </>
         }
         meta={<BrainSummary counts={counts} requiredPending={requiredPending} />}
       />
+
+      {relearning && (
+        <RelearnPanel
+          url={site.url}
+          result={RELEARN_RESULT}
+          onDone={(ids) => {
+            // A changed source retracts its own approval. Concierge does not
+            // start saying something new on the owner's behalf unread.
+            setItems((prev) =>
+              prev.map((i) => (ids.includes(i.id) ? { ...i, status: "needs-review" as const } : i)),
+            );
+            setRelearning(false);
+            setTab("review");
+            setFilter("all");
+          }}
+          onClose={() => setRelearning(false)}
+        />
+      )}
+
+      {composing !== null && (
+        <KnowledgeComposer
+          siteId={siteId}
+          initialTitle={composing}
+          onAdd={(item) => setItems((prev) => [item, ...prev])}
+          onClose={() => setComposing(null)}
+        />
+      )}
 
       <Tabs
         label="Site Brain sections"
@@ -177,7 +241,11 @@ export default function SiteBrainPage() {
                 icon={<BrainIcon size={19} />}
                 title={`Nothing matches “${query}”`}
                 body="Try a different word, or add this as a new knowledge item so Concierge can answer it next time."
-                action={<Button leading={<PlusIcon size={15} />}>Add knowledge</Button>}
+                action={
+                  <Button leading={<PlusIcon size={15} />} onClick={() => setComposing(query)}>
+                    Add knowledge
+                  </Button>
+                }
                 secondaryAction={
                   <Button
                     variant="tertiary"
@@ -234,36 +302,64 @@ function BrainSummary({
   const total = counts.approved + counts.review + counts.missing + counts.restricted + counts.suggested;
   const coverage = Math.round((counts.approved / Math.max(total, 1)) * 100);
 
+  const ready = requiredPending === 0;
+
   return (
-    <Card className="flex flex-wrap items-center gap-x-8 gap-y-5 p-5">
-      <div className="flex items-center gap-4">
+    /* Told the way the Overview status strip tells it: the drawing, the
+       figure, then the sentence. A number on its own never explained what
+       "3" was supposed to mean to the person reading it. */
+    <Card className="grid grid-cols-1 lg:grid-cols-[320px_1fr]">
+      <div className="flex items-center gap-4 border-b border-divider px-6 py-6 lg:border-b-0 lg:border-r">
         <RadialGauge
           value={coverage}
           label="Approved knowledge"
           tone={coverage >= 80 ? "success" : "accent"}
-          size={54}
+          size={64}
         />
-        <div>
-          <p className="t-card">
-            {requiredPending === 0 ? "Ready to answer" : `${requiredPending} required items outstanding`}
+        <div className="min-w-0">
+          <p className="text-[16px] font-semibold leading-[1.25]">
+            <span className={ready ? "text-success" : "text-accent-ink"}>
+              {ready ? "Ready to answer" : `${requiredPending} required`}
+            </span>
+            <br />
+            {ready ? "across your site" : "still outstanding"}
           </p>
-          <p className="t-body-sm mt-0.5 text-text-tertiary">
-            Last learned {relativeTime(BRAIN.lastLearnedAt)} · {total} items
+          <p className="mt-2 text-[11.5px] leading-[1.45] text-text-tertiary">
+            Last learned {relativeTime(BRAIN.lastLearnedAt)} · {total} items in the brain
           </p>
         </div>
       </div>
 
-      <dl className="flex flex-wrap items-center gap-x-7 gap-y-3">
+      <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         {[
-          { label: "Approved", value: counts.approved, cls: "text-success" },
-          { label: "Needs review", value: counts.review, cls: "text-warning" },
-          { label: "Suggested", value: counts.suggested, cls: "text-text-secondary" },
-          { label: "Restricted", value: counts.restricted, cls: "text-danger" },
-          { label: "Missing", value: counts.missing, cls: "text-text-muted" },
-        ].map((s) => (
-          <div key={s.label}>
-            <dt className="t-eyebrow text-text-muted">{s.label}</dt>
-            <dd className={cx("t-num mt-1.5 text-[14px] leading-none", s.cls)}>{s.value}</dd>
+          {
+            Sticker: ApprovedSticker,
+            label: "Approved",
+            value: counts.approved,
+            cls: "text-success",
+          },
+          { Sticker: PendingSticker, label: "Needs review", value: counts.review, cls: "text-warning" },
+          { Sticker: SparkSticker, label: "Suggested", value: counts.suggested, cls: "" },
+          {
+            Sticker: RestrictedSticker,
+            label: "Restricted",
+            value: counts.restricted,
+            cls: "text-danger",
+          },
+          { Sticker: GapSticker, label: "Missing", value: counts.missing, cls: "text-text-muted" },
+        ].map((s, i) => (
+          <div
+            key={s.label}
+            className={cx(
+              "px-5 py-5",
+              i >= 2 && "border-t border-divider",
+              i === 2 && "sm:border-t-0",
+              i >= 3 && "lg:border-t-0",
+            )}
+          >
+            <s.Sticker size={26} />
+            <dd className={cx("t-num mt-3 text-[20px] leading-none", s.cls)}>{s.value}</dd>
+            <dt className="mt-1.5 text-[11.5px] font-medium text-text-secondary">{s.label}</dt>
           </div>
         ))}
       </dl>
