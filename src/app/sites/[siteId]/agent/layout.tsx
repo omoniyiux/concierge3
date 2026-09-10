@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { use } from "react";
 import { cx } from "@/lib/cx";
+import { tabClass, tabCountClass } from "@/components/ui";
 import { BRAIN, DESTINATIONS } from "@/lib/demo-data";
 
 /**
@@ -46,7 +47,7 @@ export default function AgentLayout({
         <nav
           aria-label="Agent"
           style={{ maxWidth: "1090px" }}
-          className="mx-auto flex w-full items-center gap-1 overflow-x-auto px-5 sm:px-8 lg:px-10"
+          className="cg-no-scrollbar mx-auto flex w-full items-center gap-1.5 overflow-x-auto px-5 pb-4 pt-4 sm:px-8 lg:px-10"
         >
           {tabs.map(({ href, label, badge }) => {
             const active = href === base ? pathname === base : pathname.startsWith(href);
@@ -55,26 +56,19 @@ export default function AgentLayout({
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={cx(
-                  "relative flex h-12 shrink-0 items-center gap-2 px-3 text-[13px] transition-colors duration-[var(--dur-micro)]",
-                  active
-                    ? "font-semibold text-text-primary"
-                    : "font-medium text-text-tertiary hover:text-text-primary",
-                )}
+                className={tabClass(active)}
               >
                 {label}
-                {badge === "dot" && <span className="h-1.5 w-1.5 rounded-full bg-danger" />}
-                {typeof badge === "number" && (
+                {badge === "dot" && (
                   <span
                     className={cx(
-                      "px-1.5 py-px text-[11px] font-semibold tabular-nums",
-                      active ? "bg-ink text-text-inverse" : "bg-surface-sunken text-text-tertiary",
+                      "h-1.5 w-1.5 rounded-full",
+                      active ? "bg-white" : "bg-danger",
+                      "cg-live-dot",
                     )}
-                  >
-                    {badge}
-                  </span>
+                  />
                 )}
-                {active && <span className="absolute inset-x-2 -bottom-px h-0.5 bg-ink" />}
+                {typeof badge === "number" && <span className={tabCountClass(active)}>{badge}</span>}
               </Link>
             );
           })}
