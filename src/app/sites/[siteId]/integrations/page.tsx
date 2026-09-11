@@ -2,7 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
-import { Badge, Button, Card, EmptyState, Panel, SearchInput, SegmentedControl } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  LinkButton,
+  Panel,
+  SearchInput,
+  SegmentedControl,
+} from "@/components/ui";
 import {
   AlertIcon,
   CodeIcon,
@@ -23,6 +32,14 @@ import {
   WhatsAppLogo,
   ZapierLogo,
 } from "@/components/integrations/BrandLogos";
+import {
+  CardFlash,
+  ConfigureModal,
+  ConnectModal,
+  CustomEndpointModal,
+  DisconnectModal,
+  ReconnectModal,
+} from "@/components/integrations/ConnectFlows";
 import { cx } from "@/lib/cx";
 import { INTEGRATIONS } from "@/lib/demo-data";
 import { relativeTime } from "@/lib/format";
@@ -67,22 +84,57 @@ const CATEGORY_LABEL: Record<IntegrationCategory, string> = {
 
 type Filter = "all" | "connected" | IntegrationCategory;
 
+/** Every button on this page ends somewhere. This is where the ending lives. */
+type FlowState = {
+  connect: Integration | null;
+  configure: Integration | null;
+  reconnect: Integration | null;
+  disconnect: Integration | null;
+  custom: boolean;
+};
+
+const NO_FLOW: FlowState = {
+  connect: null,
+  configure: null,
+  reconnect: null,
+  disconnect: null,
+  custom: false,
+};
+
 export default function IntegrationsPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
 
+  // The catalogue lives in state: connecting, disconnecting and adding an
+  // endpoint all change what is on the page, which is the only way a flow
+  // can be said to have completed.
+  const [catalogue, setCatalogue] = useState<Integration[]>(INTEGRATIONS);
+  const [flow, setFlow] = useState<FlowState>(NO_FLOW);
+  const [flash, setFlash] = useState<Record<string, string>>({});
+
+  const closeFlows = () => setFlow(NO_FLOW);
+
+  function note(id: string, message: string) {
+    setFlash((f) => ({ ...f, [id]: message }));
+    setTimeout(() => setFlash((f) => ({ ...f, [id]: "" })), 4000);
+  }
+
+  function patch(id: string, next: Partial<Integration>) {
+    setCatalogue((list) => list.map((i) => (i.id === id ? { ...i, ...next } : i)));
+  }
+
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return INTEGRATIONS.filter((i) => {
+    return catalogue.filter((i) => {
       if (filter === "connected" && i.status !== "connected") return false;
       if (filter !== "all" && filter !== "connected" && i.category !== filter) return false;
       if (q && !`${i.name} ${i.description}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [filter, query]);
+  }, [catalogue, filter, query]);
 
-  const connected = INTEGRATIONS.filter((i) => i.status === "connected");
-  const broken = INTEGRATIONS.filter((i) => i.status === "error");
+  const connected = catalogue.filter((i) => i.status === "connected");
+  const broken = catalogue.filter((i) => i.status === "error");
 
   return (
     <PageContainer wide>
@@ -90,32 +142,37 @@ export default function IntegrationsPage() {
         eyebrow="Integrations"
         title="The tools Concierge works through"
         description="Connect a tool once and every agent, action and routing rule on this site can use it."
-        actions={<Button leading={<PlusIcon size={15} />}>Connect a custom endpoint</Button>}
+        actions={
+          <Button leading={<PlusIcon size={15} />} onClick={() => setFlow({ ...NO_FLOW, custom: true })}>
+            Connect a custom endpoint
+          </Button>
+        }
         meta={
           broken.length > 0 ? (
             <Card className="flex flex-wrap items-center gap-3 border-danger-line bg-danger-soft p-4">
               <AlertIcon size={17} className="shrink-0 text-danger" />
-              <p className="min-w-0 flex-1 text-[11.5px]">
-                <span className="font-medium">{broken[0].name} stopped responding.</span>
-                {""}
+              <p className="min-w-0 flex-1 text-[12.5px] leading-[1.5]">
+                <span className="font-medium">{broken[0].name} stopped responding.</span>{" "}
                 <span className="text-text-secondary">
                   Anything that depends on it is queued rather than lost.
                 </span>
               </p>
-              <Button size="sm" variant="secondary">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setFlow({ ...NO_FLOW, reconnect: broken[0] })}
+              >
                 Reconnect
               </Button>
             </Card>
           ) : (
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-divider pt-5">
-              <span className="text-[11.5px]">
-                <span className="font-medium">{connected.length}</span>
-                {""}
+              <span className="text-[12.5px]">
+                <span className="font-medium">{connected.length}</span>{" "}
                 <span className="text-text-tertiary">connected</span>
               </span>
-              <span className="text-[11.5px]">
-                <span className="font-medium">{INTEGRATIONS.length - connected.length}</span>
-                {""}
+              <span className="text-[12.5px]">
+                <span className="font-medium">{catalogue.length - connected.length}</span>{" "}
                 <span className="text-text-tertiary">available</span>
               </span>
             </div>
@@ -150,21 +207,126 @@ export default function IntegrationsPage() {
             icon={<IntegrationsIcon size={19} />}
             title="Nothing matches"
             body="If the tool you need is not here, a webhook or the API will connect Concierge to almost anything."
-            action={<Button variant="secondary">Read the developer docs</Button>}
+            action={
+              <Button variant="secondary" onClick={() => setFlow({ ...NO_FLOW, custom: true })}>
+                Connect a custom endpoint
+              </Button>
+            }
+            secondaryAction={
+              <LinkButton href="/help/docs" variant="tertiary">
+                Read the developer docs
+              </LinkButton>
+            }
           />
         </Panel>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((integration) => (
-            <IntegrationCard key={integration.id} integration={integration} />
+            <IntegrationCard
+              key={integration.id}
+              integration={integration}
+              flash={flash[integration.id]}
+              onConnect={() => setFlow({ ...NO_FLOW, connect: integration })}
+              onConfigure={() => setFlow({ ...NO_FLOW, configure: integration })}
+              onReconnect={() => setFlow({ ...NO_FLOW, reconnect: integration })}
+              onDisconnect={() => setFlow({ ...NO_FLOW, disconnect: integration })}
+            />
           ))}
         </div>
       )}
+
+      {/* ---- Flows -------------------------------------------------------- */}
+      <ConnectModal
+        integration={flow.connect}
+        onClose={closeFlows}
+        onConnected={(id, accountLabel) => {
+          patch(id, {
+            status: "connected",
+            accountLabel,
+            connectedAt: new Date().toISOString(),
+            lastSyncAt: new Date().toISOString(),
+          });
+          note(id, "Connected just now");
+          closeFlows();
+        }}
+      />
+
+      <ConfigureModal
+        integration={flow.configure}
+        onClose={closeFlows}
+        onSave={(id) => {
+          patch(id, { lastSyncAt: new Date().toISOString() });
+          note(id, "Settings saved");
+          closeFlows();
+        }}
+      />
+
+      <ReconnectModal
+        integration={flow.reconnect}
+        onClose={closeFlows}
+        onReconnected={(id) => {
+          patch(id, { status: "connected", lastSyncAt: new Date().toISOString() });
+          note(id, "Reconnected · 7 queued events delivered");
+          closeFlows();
+        }}
+      />
+
+      <DisconnectModal
+        integration={flow.disconnect}
+        onClose={closeFlows}
+        onDisconnect={(id) => {
+          patch(id, {
+            status: "available",
+            accountLabel: undefined,
+            connectedAt: undefined,
+            lastSyncAt: undefined,
+          });
+          note(id, "Disconnected");
+          closeFlows();
+        }}
+      />
+
+      <CustomEndpointModal
+        open={flow.custom}
+        onClose={closeFlows}
+        onAdd={(name, url) => {
+          const id = `i_custom_${Date.now()}`;
+          setCatalogue((l) => [
+            {
+              id,
+              name,
+              description: "A custom endpoint you control. Concierge POSTs signed JSON events to it.",
+              category: "developer",
+              status: "connected",
+              accountLabel: url.replace(/^https?:\/\//, ""),
+              connectedAt: new Date().toISOString(),
+              lastSyncAt: new Date().toISOString(),
+            },
+            ...l,
+          ]);
+          note(id, "Endpoint added · test event accepted");
+          closeFlows();
+        }}
+      />
     </PageContainer>
   );
 }
 
-function IntegrationCard({ integration: i }: { integration: Integration }) {
+function IntegrationCard({
+  integration: i,
+  flash,
+  onConnect,
+  onConfigure,
+  onReconnect,
+  onDisconnect,
+}: {
+  integration: Integration;
+  flash?: string;
+  onConnect: () => void;
+  onConfigure: () => void;
+  onReconnect: () => void;
+  onDisconnect: () => void;
+}) {
   const Logo = LOGO[i.id];
   const Fallback = FALLBACK_ICON[i.id] ?? IntegrationsIcon;
   const s = STATUS[i.status];
@@ -189,7 +351,7 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="t-card">{i.name}</h3>
-          <p className="mt-1 text-[11.5px] leading-[1.5] text-text-tertiary">{i.description}</p>
+          <p className="mt-1 text-[12px] leading-[1.5] text-text-tertiary">{i.description}</p>
         </div>
       </div>
 
@@ -207,19 +369,29 @@ function IntegrationCard({ integration: i }: { integration: Integration }) {
         </p>
       )}
 
+      <CardFlash show={Boolean(flash)}>{flash}</CardFlash>
+
       <div className="mt-auto flex items-center gap-2 pt-4">
         {i.status === "connected" && (
           <>
-            <Button size="sm" variant="secondary">
+            <Button size="sm" variant="secondary" onClick={onConfigure}>
               Configure
             </Button>
-            <Button size="sm" variant="tertiary">
+            <Button size="sm" variant="tertiary" onClick={onDisconnect}>
               Disconnect
             </Button>
           </>
         )}
-        {i.status === "available" && <Button size="sm">Connect</Button>}
-        {i.status === "error" && <Button size="sm">Reconnect</Button>}
+        {i.status === "available" && (
+          <Button size="sm" onClick={onConnect}>
+            Connect
+          </Button>
+        )}
+        {i.status === "error" && (
+          <Button size="sm" onClick={onReconnect}>
+            Reconnect
+          </Button>
+        )}
         {soon && (
           <Button size="sm" variant="secondary" disabled>
             Coming soon
