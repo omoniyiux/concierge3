@@ -20,8 +20,12 @@ import {
   RoutingIcon,
   UploadIcon,
 } from "@/components/icons";
+import { StickerStats } from "@/components/ui/StickerStats";
+import { ContactSticker, FlameSticker, RoutingSticker, TargetSticker } from "@/components/stickers";
 import { cx } from "@/lib/cx";
-import { LEADS } from "@/lib/demo-data";
+import { brainFor, destinationsFor, getSite, leadsFor } from "@/lib/demo-data";
+import { launchChecklist } from "@/lib/health";
+import { NothingYet } from "@/components/shell/NothingYet";
 import { INTENT_LABEL, relativeTime } from "@/lib/format";
 import type { Lead, LeadQualification } from "@/lib/types";
 import type { Tone } from "@/components/ui";
@@ -41,20 +45,21 @@ type Filter = "all" | "hot" | "warm" | "cool";
  */
 export default function LeadsPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
+  const leads = leadsFor(siteId);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return LEADS.filter((l) => {
+    return leads.filter((l) => {
       if (filter !== "all" && l.qualification !== filter) return false;
       if (q && !`${l.name} ${l.service ?? ""} ${l.email ?? ""}`.toLowerCase().includes(q)) return false;
       return true;
     }).sort((a, b) => b.score - a.score);
   }, [filter, query]);
 
-  const hot = LEADS.filter((l) => l.qualification === "hot").length;
+  const hot = leads.filter((l) => l.qualification === "hot").length;
 
   return (
     <PageContainer wide>
@@ -68,24 +73,36 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
           </Button>
         }
         meta={
-          <div className="grid grid-cols-2 gap-3 overflow-hidden bg-transparent sm:grid-cols-4">
-            {[
-              { label: "Total leads", value: LEADS.length, hint: "Last 30 days" },
-              { label: "High intent", value: hot, hint: "Score 80 or above" },
+          <StickerStats
+            items={[
               {
-                label: "Average score",
-                value: Math.round(LEADS.reduce((n, l) => n + l.score, 0) / LEADS.length),
-                hint: "Out of 100",
+                Sticker: ContactSticker,
+                value: leads.length,
+                label: "Total leads",
+                detail: "Captured in the last 30 days",
               },
-              { label: "Routed", value: LEADS.filter((l) => l.routedTo).length, hint: "Reached a person" },
-            ].map((s) => (
-              <div key={s.label} className="bg-surface p-4">
-                <p className="t-eyebrow text-text-muted">{s.label}</p>
-                <p className="t-num mt-2 text-[15px] leading-none">{s.value}</p>
-                <p className="mt-1.5 text-[12.5px] text-text-tertiary">{s.hint}</p>
-              </div>
-            ))}
-          </div>
+              {
+                Sticker: FlameSticker,
+                value: hot,
+                label: "High intent",
+                detail: "Scored 80 or above — call these first",
+                tone: "text-accent-ink",
+              },
+              {
+                Sticker: TargetSticker,
+                value: Math.round(leads.reduce((n, l) => n + l.score, 0) / leads.length),
+                label: "Average score",
+                detail: "Out of 100, across every lead",
+              },
+              {
+                Sticker: RoutingSticker,
+                value: leads.filter((l) => l.routedTo).length,
+                label: "Routed",
+                detail: "Reached a person on your team",
+                tone: "text-success",
+              },
+            ]}
+          />
         }
       />
 
