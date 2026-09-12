@@ -10,6 +10,7 @@ import {
   Field,
   IconButton,
   Input,
+  LinkButton,
   Panel,
   SectionHead,
   SegmentedControl,
@@ -18,6 +19,7 @@ import {
 import {
   AgentIcon,
   CheckIcon,
+  EditIcon,
   ExternalIcon,
   EyeIcon,
   GlobeIcon,
@@ -26,22 +28,12 @@ import {
   PlusIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { PAGES, getSite } from "@/lib/demo-data";
+import { PAGES, SITES, getSite } from "@/lib/demo-data";
+import { sectionHint, sectionSummary } from "@/lib/pages-builder";
 import { relativeTime } from "@/lib/format";
 import type { ConciergePage } from "@/lib/types";
 
 type Device = "desktop" | "tablet" | "mobile";
-
-const SECTION_HINT: Record<string, string> = {
-  hero: "The first thing a visitor reads",
-  services: "What you offer, and roughly what it costs",
-  about: "Who you are and why you are trusted",
-  testimonials: "Proof from customers",
-  pricing: "Plans or price bands",
-  faq: "The questions you answer most",
-  contact: "How to reach a person",
-  gallery: "Work you have done",
-};
 
 /**
  * Concierge Pages for owners with no website. It is a site builder, so it
@@ -53,6 +45,10 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
   const [selected, setSelected] = useState<ConciergePage>(PAGES[0]);
   const [device, setDevice] = useState<Device>("desktop");
   const [sections, setSections] = useState(PAGES[0].sections);
+
+  /* Creation is not real until Phase 4 persists a document, so the demo
+     path opens the editor on the Pages site that already exists. */
+  const pagesSite = SITES.find((x) => x.product === "pages") ?? site;
 
   /* Agent sites do not have Pages; say so rather than showing an empty shell. */
   if (site.product !== "pages") {
@@ -68,7 +64,14 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             icon={<PagesIcon size={19} />}
             title={`${site.name} already has a website`}
             body="Pages is for businesses starting from nothing. Since Concierge is installed on your existing site, there is nothing to build here — but you can add a Pages site to your organisation at any time."
-            action={<Button leading={<PlusIcon size={15} />}>Create a Pages site</Button>}
+            action={
+              <LinkButton
+                href={`/sites/${pagesSite.id}/pages/${PAGES[0].id}/edit`}
+                leading={<PlusIcon size={15} />}
+              >
+                Create a Pages site
+              </LinkButton>
+            }
             secondaryAction={
               <Button variant="secondary" onClick={() => undefined}>
                 Learn how Pages works
@@ -91,7 +94,12 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             <Button variant="secondary" leading={<ExternalIcon size={14} />}>
               Open site
             </Button>
-            <Button>Publish changes</Button>
+            <LinkButton
+              href={`/sites/${siteId}/pages/${selected.id}/edit`}
+              leading={<EditIcon size={14} />}
+            >
+              Open editor
+            </LinkButton>
           </>
         }
         meta={
@@ -109,9 +117,13 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[240px_1fr_360px]">
+      {/* `1fr` is `minmax(auto, 1fr)`, so the middle track refuses to shrink
+          below its content's min-content width and shoves the preview off the
+          right edge. `minmax(0, ...)` lets it shrink; the `min-w-0` below lets
+          the text inside it actually truncate rather than setting a new floor. */}
+      <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)_360px]">
         {/* Pages ---------------------------------------------------------- */}
-        <div>
+        <div className="min-w-0">
           <p className="t-eyebrow mb-2.5 text-text-muted">Pages</p>
           <ul className="space-y-1">
             {PAGES.map((p) => {
@@ -150,7 +162,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
         </div>
 
         {/* Sections ------------------------------------------------------- */}
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <Panel className="p-6">
             <SectionHead
               title="Sections"
@@ -174,7 +186,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                       {s.title}
                     </span>
                     <span className="block truncate text-[12.5px] text-text-tertiary">
-                      {s.summary} · {SECTION_HINT[s.kind]}
+                      {sectionSummary(s)} · {sectionHint(s.kind)}
                     </span>
                   </span>
                   <Toggle
