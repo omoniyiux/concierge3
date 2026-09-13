@@ -11,6 +11,8 @@ import {
   SourceIcon,
 } from "@/components/icons";
 import { Badge, Button, IconButton, Textarea } from "@/components/ui";
+import { HistorySheet } from "@/components/audit/HistorySheet";
+import { ClockIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { CATEGORY_LABEL, KNOWLEDGE_STATUS_LABEL, relativeTime } from "@/lib/format";
 import type { KnowledgeItem, KnowledgeStatus } from "@/lib/types";
@@ -52,6 +54,7 @@ export function KnowledgeCard({
   const [open, setOpen] = useState(defaultOpen);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.body);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const missing = item.status === "missing";
   const restricted = item.status === "restricted";
@@ -233,6 +236,16 @@ export function KnowledgeCard({
                       Never use this
                     </Button>
                   )}
+                  {/* What this said before, and who changed it. */}
+                  <Button
+                    size="sm"
+                    variant="tertiary"
+                    className="ml-auto"
+                    leading={<ClockIcon size={13} />}
+                    onClick={() => setHistoryOpen(true)}
+                  >
+                    History
+                  </Button>
                 </div>
               )}
               {restricted && (
@@ -245,6 +258,18 @@ export function KnowledgeCard({
           )}
         </div>
       )}
+
+      <HistorySheet
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        subjectId={item.id}
+        subjectTitle={item.title}
+        currentBody={item.body}
+        onRestore={(body) => {
+          onBodyChange?.(item.id, body);
+          setHistoryOpen(false);
+        }}
+      />
     </article>
   );
 }
