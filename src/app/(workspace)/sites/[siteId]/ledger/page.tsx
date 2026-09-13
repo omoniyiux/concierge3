@@ -13,17 +13,17 @@ import {
   ShieldIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
+import { ACTIONS, reportsFor } from "@/lib/demo-data";
 import {
-  ACTIONS,
-  brainFor,
-  conversationsFor,
-  destinationsFor,
-  gapsFor,
-  getSite,
-  ledgerFor,
-  outcomesFor,
-  reportsFor,
-} from "@/lib/demo-data";
+  useBrain,
+  useConversations,
+  useDestinations,
+  useGaps,
+  useLedger,
+  useOutcomes,
+  useSimActions,
+  useSite,
+} from "@/lib/sim/store";
 import { launchChecklist } from "@/lib/health";
 import { ReportSchedule } from "@/components/ledger/ReportSchedule";
 import { NothingYet } from "@/components/shell/NothingYet";
@@ -57,28 +57,25 @@ const BASIS_TONE = { confirmed: "approved", estimated: "neutral", none: "neutral
 
 export default function LedgerPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
-  const site = getSite(siteId);
-  const ledger = ledgerFor(siteId);
-  const outcomes = outcomesFor(siteId);
+  const site = useSite(siteId);
+  const ledger = useLedger(siteId);
+  const outcomes = useOutcomes(siteId);
   const reports = reportsFor(siteId);
-  const conversations = conversationsFor(siteId);
+  const conversations = useConversations(siteId);
+  const brain = useBrain(siteId);
+  const destinations = useDestinations(siteId);
+  const gaps = useGaps();
+  const { settleOutcome } = useSimActions();
   const [filter, setFilter] = useState<Filter>("all");
   /** Estimates an owner has since settled, one way or the other. */
   const [settled, setSettled] = useState<Record<string, "happened" | "did-not">>({});
 
-  const setupComplete = launchChecklist(site, brainFor(siteId), destinationsFor(siteId), siteId).every(
-    (s) => s.done,
-  );
+  const setupComplete = launchChecklist(site, brain, destinations, siteId).every((s) => s.done);
   const envelope = openingEnvelope(site.openingHours.days);
-  // Settling an estimate moves the money across in front of the owner.
-  const settledIn = outcomes
-    .filter((o) => settled[o.id] === "happened")
-    .reduce((n, o) => n + o.value, 0);
-  const settledOut = outcomes
-    .filter((o) => settled[o.id] !== undefined)
-    .reduce((n, o) => n + o.value, 0);
-  const confirmedValue = ledger.confirmedValue + settledIn;
-  const estimatedValue = Math.max(0, ledger.estimatedValue - settledOut);
+  // The world recomputes both totals the moment an estimate is settled, so
+  // the headline and the row can never disagree.
+  const confirmedValue = ledger.confirmedValue;
+  const estimatedValue = ledger.estimatedValue;
 
   const confirmedDelta = pctChange(confirmedValue, ledger.previousConfirmedValue);
   const estimatedDelta = pctChange(estimatedValue, ledger.previousEstimatedValue);
@@ -102,9 +99,9 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
   const weekSeries = ledger.hourHistogram
     .slice(8, 20)
     .map((v, i) => ({ date: `h${i}`, value: v }));
-  const openGaps = gapsFor(siteId).filter((g) => g.status === "open");
+  const openGaps = gaps;
   const topGap = openGaps[0];
-  const needsYou = destinationsFor(siteId)
+  const needsYou = destinations
     .filter((d) => d.status === "failing")
     .map((d) => ({
       title: `${d.name} stopped delivering`,
@@ -346,14 +343,20 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
                             size="sm"
                             variant="secondary"
                             leading={<CheckIcon size={13} />}
-                            onClick={() => setSettled((m) => ({ ...m, [o.id]: "happened" }))}
+                            onClick={() => {
+                              setSettled((m) => ({ ...m, [o.id]: "happened" }));
+                              settleOutcome(o.id, true);
+                            }}
                           >
                             It happened
                           </Button>
                           <Button
                             size="sm"
                             variant="tertiary"
-                            onClick={() => setSettled((m) => ({ ...m, [o.id]: "did-not" }))}
+                            onClick={() => {
+                              setSettled((m) => ({ ...m, [o.id]: "did-not" }));
+                              settleOutcome(o.id, false);
+                            }}
                           >
                             It did not
                           </Button>

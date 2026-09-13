@@ -2,6 +2,7 @@
 
 import { useState, type ComponentType } from "react";
 import { Badge, Button, Card, Field, Input, Panel, SectionHead, Textarea } from "@/components/ui";
+import { useSimActions } from "@/lib/sim/store";
 import { Modal, ModalSection, StepList } from "@/components/ui/Modal";
 import {
   CustomHtmlLogo,
@@ -113,6 +114,7 @@ const PLATFORM: Record<
 
 export function InstallHub({ site, snippet }: { site: Site; snippet: string }) {
   const platform = PLATFORM[site.platform ?? "custom"];
+  const { setInstalled } = useSimActions();
   const [route, setRoute] = useState<"app" | "snippet" | "handoff" | null>(null);
   const [checking, setChecking] = useState(false);
   const [checked, setChecked] = useState<null | "found" | "missing">(null);
@@ -166,9 +168,14 @@ export function InstallHub({ site, snippet }: { site: Site; snippet: string }) {
             onClick={() => {
               setChecking(true);
               setChecked(null);
+              // The check is the only thing that can turn the install on. It
+              // used to report back whatever was already true, so a site that
+              // was not installed stayed "still not finding it" forever, no
+              // matter how many times the owner pasted the tag.
               setTimeout(() => {
                 setChecking(false);
-                setChecked(detected ? "found" : "missing");
+                setChecked("found");
+                setInstalled(true);
               }, 1100);
             }}
           >
@@ -235,7 +242,8 @@ export function InstallHub({ site, snippet }: { site: Site; snippet: string }) {
                   setChecking(true);
                   setTimeout(() => {
                     setChecking(false);
-                    setChecked(detected ? "found" : "missing");
+                    setChecked("found");
+                    setInstalled(true);
                   }, 1200);
                 }}
               >

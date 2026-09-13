@@ -4,11 +4,19 @@ import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { ArrowRight, SearchIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { ALL_NAV_ITEMS } from "@/lib/nav";
+import { AGENT_FACETS, ALL_NAV_ITEMS } from "@/lib/nav";
 import { CONVERSATIONS, INTEGRATIONS, LEADS, SITES } from "@/lib/demo-data";
 import { useWorkspace } from "@/lib/workspace";
 
-type Entry = { id: string; label: string; sub?: string; group: string; run: () => void };
+type Entry = {
+  id: string;
+  label: string;
+  sub?: string;
+  group: string;
+  /** Matched alongside label and sub, but never shown. */
+  keywords?: string[];
+  run: () => void;
+};
 
 export function CommandMenu({ siteId }: { siteId: string }) {
   const { commandOpen } = useWorkspace();
@@ -36,6 +44,17 @@ function Palette({ siteId }: { siteId: string }) {
         id: `nav-${n.path}`,
         label: n.label,
         group: "Go to",
+        keywords: n.keywords,
+        run: go(`/sites/${siteId}/${n.path}`),
+      })),
+      // The Agent's tabs left the rail; they must not leave the search box
+      // with it, or "routing" stops being a thing you can type.
+      ...AGENT_FACETS.map((n) => ({
+        id: `nav-${n.path}`,
+        label: n.label,
+        sub: "Agent",
+        group: "Go to",
+        keywords: n.keywords,
         run: go(`/sites/${siteId}/${n.path}`),
       })),
       { id: "nav-settings", label: "Settings", group: "Go to", run: go(`/sites/${siteId}/settings`) },
@@ -75,7 +94,12 @@ function Palette({ siteId }: { siteId: string }) {
     const needle = q.trim().toLowerCase();
     if (!needle) return entries.filter((e) => e.group === "Go to" || e.group === "Actions").slice(0, 9);
     return entries
-      .filter((e) => e.label.toLowerCase().includes(needle) || e.sub?.toLowerCase().includes(needle))
+      .filter(
+        (e) =>
+          e.label.toLowerCase().includes(needle) ||
+          e.sub?.toLowerCase().includes(needle) ||
+          e.keywords?.some((k) => k.includes(needle)),
+      )
       .slice(0, 12);
   }, [entries, q]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { Suspense, use, useState } from "react";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import { Badge, Button, Card, EmptyState, Panel, SectionHead, Tabs, Toggle } from "@/components/ui";
 import { ArrowRight, CheckIcon, PlusIcon, RefreshIcon, RoutingIcon, SendIcon } from "@/components/icons";
@@ -16,7 +16,9 @@ import { ChannelConnect } from "@/components/routing/ChannelConnect";
 import { FIELD_LABEL, MOMENT_LABEL, OP_LABEL } from "@/components/routing/MomentLabels";
 import { EscalationLadder } from "@/components/routing/EscalationLadder";
 import { cx } from "@/lib/cx";
-import { DELIVERIES, DESTINATIONS, INBOX, ROUTING_RULES } from "@/lib/demo-data";
+import { useUrlState } from "@/lib/url-state";
+import { DELIVERIES, INBOX, ROUTING_RULES } from "@/lib/demo-data";
+import { useDestinations, useSimActions } from "@/lib/sim/store";
 import { INTENT_LABEL, relativeTime } from "@/lib/format";
 import type { Destination, RoutingRule } from "@/lib/types";
 import type { Tone } from "@/components/ui";
@@ -29,6 +31,7 @@ const STATUS: Record<Destination["status"], { tone: Tone; label: string }> = {
 };
 
 type Tab = "inbox" | "rules" | "destinations" | "history";
+const TABS = ["inbox", "rules", "destinations", "history"] as const;
 
 /**
  * Routing reads as a sentence — IF this, THEN that — rather than a rule
@@ -37,9 +40,22 @@ type Tab = "inbox" | "rules" | "destinations" | "history";
  */
 export default function RoutingPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
-  const [tab, setTab] = useState<Tab>("inbox");
+  return (
+    <Suspense fallback={null}>
+      <Routing siteId={siteId} />
+    </Suspense>
+  );
+}
+
+function Routing({ siteId }: { siteId: string }) {
+  // "Destinations, the failing one" has to survive a reload and a paste into
+  // chat — it is the tab someone is sent to when delivery breaks.
+  const [tab, setTab] = useUrlState<Tab>("tab", "inbox", TABS);
   const [rules, setRules] = useState(ROUTING_RULES);
-  const [destinations, setDestinations] = useState(DESTINATIONS);
+  // Destinations live in the world. They used to be local state, so connecting
+  // one here never reached the launch checklist asking for exactly that.
+  const destinations = useDestinations(siteId);
+  const { addDestination, setDestination, testDestination } = useSimActions();
 
   // Only one panel is ever open: they all sit in the same slot under the
   // header, and stacking them would bury the thing being edited.
@@ -63,20 +79,9 @@ export default function RoutingPage({ params }: { params: Promise<{ siteId: stri
   }
 
   function saveDestination(next: Destination) {
-    setDestinations((prev) =>
-      prev.some((d) => d.id === next.id) ? prev.map((d) => (d.id === next.id ? next : d)) : [...prev, next],
-    );
+    if (destinations.some((d) => d.id === next.id)) setDestination(next.id, next);
+    else addDestination(next);
     setDestEdit(null);
-  }
-
-  function testDestination(id: string, ok: boolean) {
-    setDestinations((prev) =>
-      prev.map((d) =>
-        d.id === id
-          ? { ...d, status: ok ? "connected" : "failing", lastTestedAt: new Date().toISOString() }
-          : d,
-      ),
-    );
   }
 
   return (
@@ -143,14 +148,7 @@ export default function RoutingPage({ params }: { params: Promise<{ siteId: stri
           destinations={destinations}
           siteId={siteId}
           onApply={(outcomes: CheckOutcome[]) => {
-            setDestinations((prev) =>
-              prev.map((d) => {
-                const o = outcomes.find((x) => x.id === d.id);
-                return o
-                  ? { ...d, status: o.ok ? "connected" : "failing", lastTestedAt: new Date().toISOString() }
-                  : d;
-              }),
-            );
+            outcomes.forEach((o) => testDestination(o.id, o.ok));
             setChecking(false);
             setTab("destinations");
           }}
@@ -277,9 +275,7 @@ export default function RoutingPage({ params }: { params: Promise<{ siteId: stri
         <div id="connect-a-destination" className="mt-10 scroll-mt-24">
           <ChannelConnect
             destinations={destinations}
-            onConnect={(d) =>
-              setDestinations((prev) => [...prev, { ...d, id: `dest_${Date.now()}`, siteId }])
-            }
+            onConnect={(d) => addDestination({ ...d, id: `dest_${Date.now()}`, siteId })}
           />
         </div>
         </>

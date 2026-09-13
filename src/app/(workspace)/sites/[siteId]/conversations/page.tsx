@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, use, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useUrlSelection, useUrlState } from "@/lib/url-state";
 import Link from "next/link";
 import { PageContainer } from "@/components/shell/AppShell";
 import { Composer } from "@/components/conversations/Composer";
@@ -33,17 +33,16 @@ import {
   SparkIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
+import { ACTIONS, AGENT, getFollowUps } from "@/lib/demo-data";
 import {
-  ACTIONS,
-  AGENT,
-  LEADS,
-  brainFor,
-  conversationsFor,
-  destinationsFor,
-  getFollowUps,
-  getOutcomes,
-  getSite,
-} from "@/lib/demo-data";
+  useBrain,
+  useConversations,
+  useDestinations,
+  useLeads,
+  useOutcomes,
+  useSimActions,
+  useSite,
+} from "@/lib/sim/store";
 import { launchChecklist } from "@/lib/health";
 import { NothingYet } from "@/components/shell/NothingYet";
 import {
@@ -70,6 +69,7 @@ const STATUS_TONE: Record<ConversationStatus, Tone> = {
 };
 
 type Filter = "all" | "needs-reply" | "qualified" | "handed-off";
+const FILTERS = ["all", "needs-reply", "qualified", "handed-off"] as const;
 
 /**
  * A three-pane inbox: what came in, the conversation itself, and everything
@@ -98,16 +98,18 @@ function InboxFallback() {
 
 function Inbox({ siteId }: { siteId: string }) {
   // The ledger links straight at a conversation, so a figure an owner is
-  // querying opens the evidence rather than the top of the list.
-  const deepLinked = useSearchParams().get("c");
+  // querying opens the evidence rather than the top of the list. `?c=` used to
+  // be read once, on mount, and never written again — so that deep link worked
+  // exactly once and the URL then lied about what was on screen.
+  const [selectedId, selectId] = useUrlSelection("c");
+  const site = useSite(siteId);
+  const brain = useBrain(siteId);
+  const destinations = useDestinations(siteId);
   // Only this site's inbox. A new workspace opens empty rather than onto
   // somebody else's visitors.
-  const all = conversationsFor(siteId);
-  const [filter, setFilter] = useState<Filter>("all");
+  const all = useConversations(siteId);
+  const [filter, setFilter] = useUrlState<Filter>("filter", "all", FILTERS);
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(
-    deepLinked && all.some((c) => c.id === deepLinked) ? deepLinked : (all[0]?.id ?? null),
-  );
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -120,15 +122,14 @@ function Inbox({ siteId }: { siteId: string }) {
     });
   }, [all, filter, query]);
 
-  const selected = all.find((c) => c.id === selectedId) ?? null;
+  // An absent or stale `?c=` opens the top of the list rather than an empty
+  // pane, which is what the old mount-time initialiser did.
+  const selected = all.find((c) => c.id === selectedId) ?? all[0] ?? null;
 
   // A site with no conversations at all is a different page to a filter that
   // matched nothing.
   if (all.length === 0) {
-    const site = getSite(siteId);
-    const setupComplete = launchChecklist(site, brainFor(siteId), destinationsFor(siteId), siteId).every(
-      (s) => s.done,
-    );
+    const setupComplete = launchChecklist(site, brain, destinations, siteId).every((s) => s.done);
     return (
       <PageContainer>
         <div className="pt-14">
@@ -192,7 +193,7 @@ function Inbox({ siteId }: { siteId: string }) {
                   <li key={c.id}>
                     <button
                       type="button"
-                      onClick={() => setSelectedId(c.id)}
+                      onClick={() => selectId(c.id)}
                       aria-current={active ? "true" : undefined}
                       className={cx(
                         "relative w-full border-b border-divider px-5 py-4 text-left transition-colors",
@@ -243,7 +244,7 @@ function Inbox({ siteId }: { siteId: string }) {
             key={selected.id}
             conversation={selected}
             siteId={siteId}
-            onBack={() => setSelectedId(null)}
+            onBack={() => selectId(null)}
           />
         ) : (
           <div className="hidden flex-1 items-center justify-center lg:flex">
@@ -270,7 +271,8 @@ function ConversationDetail({
   siteId: string;
   onBack: () => void;
 }) {
-  const lead = LEADS.find((l) => l.id === c.leadId);
+  const lead = useLeads(siteId).find((l) => l.id === c.leadId);
+  const { updateConversation } = useSimActions();
 
   // A person taking the thread, and anything they send, lives here until
   // there is an API behind it. Remounting on conversation change keeps one
@@ -293,6 +295,7 @@ function ConversationDetail({
   function takeOver() {
     const at = new Date().toISOString();
     setTakenOverBy({ name: "Olaifa", at });
+    updateConversation(c.id, { takenOverBy: { name: "Olaifa", at }, status: "active" });
     setSent((prev) => [
       ...prev,
       {
@@ -569,9 +572,9 @@ function VisitorPanel({
   messageCount: number;
   siteId: string;
 }) {
-  const lead = LEADS.find((l) => l.id === c.leadId);
-  const outcomes = getOutcomes(c.id);
-  const site = getSite(siteId);
+  const lead = useLeads(siteId).find((l) => l.id === c.leadId);
+  const outcomes = useOutcomes(siteId).filter((o) => o.conversationId === c.id);
+  const site = useSite(siteId);
 
   return (
     <>

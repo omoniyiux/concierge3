@@ -32,7 +32,7 @@ export function TryItSheet({
   seedQuestion,
   extraAnswers,
   title = "Try it as a visitor",
-  description = "A real run against your approved knowledge. Nothing here reaches a visitor or counts as a conversation.",
+  description = "A real run against your approved knowledge. Nothing here is sent.",
 }: {
   open: boolean;
   onClose: () => void;
@@ -42,7 +42,7 @@ export function TryItSheet({
   description?: string;
 }) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" eyebrow="Preview" title={title} description={description}>
+    <Modal open={open} onClose={onClose} size="xl" flush eyebrow="Preview" title={title} description={description}>
       <AgentPreview
         greeting={AGENT.greeting}
         compact

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { Modal, ModalSection } from "@/components/ui/Modal";
-import { CheckIcon, ClockIcon, CopyIcon } from "@/components/icons";
+import { CheckIcon, ClockIcon, CopyIcon, RefreshIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { installSnippet } from "@/lib/install";
+import { useSimActions } from "@/lib/sim/store";
 import { GUIDES } from "./InstallGuides";
 
 /* ============================================================================
@@ -33,8 +34,19 @@ export function InstallModal({
   siteName: string;
 }) {
   const snippet = installSnippet(siteId);
+  const { setInstalled } = useSimActions();
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  /** idle → looking → found. The last step of the install, which was missing. */
+  const [check, setCheck] = useState<"idle" | "looking" | "found">("idle");
+
+  const verify = () => {
+    setCheck("looking");
+    window.setTimeout(() => {
+      setCheck("found");
+      setInstalled(true);
+    }, 1800);
+  };
 
   const copy = () => {
     navigator.clipboard?.writeText(snippet).catch(() => {});
@@ -53,11 +65,13 @@ export function InstallModal({
       footer={
         <>
           <Button variant="secondary" onClick={onClose} data-modal-close>
-            Close
+            {check === "found" ? "Done" : "Close"}
           </Button>
-          <Button variant="accent" leading={<CopyIcon size={13} />} onClick={copy}>
-            {copied ? "Copied" : "Copy the snippet"}
-          </Button>
+          {check === "found" ? null : (
+            <Button variant="accent" leading={<CopyIcon size={13} />} onClick={copy}>
+              {copied ? "Copied" : "Copy the snippet"}
+            </Button>
+          )}
         </>
       }
     >
@@ -136,6 +150,38 @@ export function InstallModal({
             );
           })}
         </ul>
+      </ModalSection>
+
+      {/* Pasting a tag and being told nothing is the point at which most
+          owners stop. The install is not finished until Concierge has
+          actually seen itself on the page, so that check lives here. */}
+      <ModalSection title="Check it landed" hint="Concierge looks for its own tag on your site.">
+        {check === "found" ? (
+          <div className="flex items-start gap-3 border border-success-line bg-success-soft p-4">
+            <CheckIcon size={16} strokeWidth={2.4} className="mt-px shrink-0 text-success" />
+            <p className="text-[12.5px] leading-[1.55]">
+              <span className="font-medium">Concierge is on {siteName}.</span>{" "}
+              <span className="text-text-secondary">
+                It will answer the next visitor from the knowledge you have approved, and nothing else.
+              </span>
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3 border border-line-strong p-4">
+            <p className="min-w-[220px] flex-1 text-[12.5px] leading-[1.55] text-text-secondary">
+              Pasted it already? Check now and the workspace will switch over the moment it is found.
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={check === "looking"}
+              leading={<RefreshIcon size={13} />}
+              onClick={verify}
+            >
+              {check === "looking" ? "Looking…" : "Check my site"}
+            </Button>
+          </div>
+        )}
       </ModalSection>
 
       <p className="mt-5 bg-surface-subtle p-3.5 text-[12px] leading-[1.5] text-text-secondary">

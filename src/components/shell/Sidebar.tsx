@@ -11,22 +11,35 @@ import { IconButton, Tooltip } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { NAV } from "@/lib/nav";
 import { useWorkspace } from "@/lib/workspace";
-import { brainFor, conversationsFor, destinationsFor } from "@/lib/demo-data";
+import { useBrain, useConversations, useDestinations } from "@/lib/sim/store";
+
+type Attention = number | "dot" | null;
 
 /**
  * Only surfaces that actually need the owner earn a mark in the nav — and
  * only for the site being looked at. A badge counting another site's queue is
  * worse than no badge at all.
+ *
+ * Read from the world, not from the fixtures. Off the fixtures these numbers
+ * were frozen: approving the last knowledge item left "4" sitting on the rail,
+ * disagreeing with the bell two rows below it, which was already live.
+ *
+ * Site Brain and Routing are tabs on the Agent now, so their counts roll up
+ * onto that one row — nothing that wanted the owner stopped asking for them.
  */
-function attentionFor(path: string, siteId: string): number | "dot" | null {
-  if (path === "brain") {
-    const brain = brainFor(siteId);
-    return brain.needsReviewCount + brain.missingCount || null;
-  }
-  if (path === "conversations")
-    return conversationsFor(siteId).filter((c) => c.status === "new").length || null;
-  if (path === "routing") return destinationsFor(siteId).some((d) => d.status === "failing") ? "dot" : null;
-  return null;
+function useAttention(siteId: string): Record<string, Attention> {
+  const brain = useBrain(siteId);
+  const conversations = useConversations(siteId);
+  const destinations = useDestinations(siteId);
+
+  const brainQueue = brain.needsReviewCount + brain.missingCount;
+  const routingFailing = destinations.some((d) => d.status === "failing");
+
+  return {
+    // A failing destination is louder than a review queue, so it wins the row.
+    agent: routingFailing ? "dot" : brainQueue || null,
+    conversations: conversations.filter((c) => c.status === "new").length || null,
+  };
 }
 
 /**
@@ -37,6 +50,7 @@ function attentionFor(path: string, siteId: string): number | "dot" | null {
 export function Sidebar({ siteId, onClose }: { siteId: string; onClose?: () => void }) {
   const pathname = usePathname();
   const { sidebarCollapsed: collapsed, toggleSidebar, setMobileNavOpen, setCommandOpen } = useWorkspace();
+  const attention = useAttention(siteId);
 
   const rowBase = collapsed
     ? "flex h-9 w-9 items-center justify-center transition-colors duration-[var(--dur-micro)]"
@@ -123,7 +137,7 @@ export function Sidebar({ siteId, onClose }: { siteId: string; onClose?: () => v
               {group.items.map(({ path, label, Icon }) => {
                 const href = `/sites/${siteId}/${path}`;
                 const active = pathname === href || pathname.startsWith(`${href}/`);
-                const attention = attentionFor(path, siteId);
+                const mark = attention[path] ?? null;
 
                 const link = (
                   <Link
@@ -135,21 +149,21 @@ export function Sidebar({ siteId, onClose }: { siteId: string; onClose?: () => v
                     <Icon size={19} className="shrink-0" strokeWidth={1.7} />
                     {!collapsed && <span className="truncate text-[14px] leading-none">{label}</span>}
 
-                    {!collapsed && attention !== null && (
+                    {!collapsed && mark !== null && (
                       <span className="ml-auto shrink-0">
-                        {attention === "dot" ? (
+                        {mark === "dot" ? (
                           <span
                             className="block h-1.5 w-1.5 rounded-full bg-danger"
                             aria-label="Needs attention"
                           />
                         ) : (
                           <span className="bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-semibold tabular-nums text-accent-ink">
-                            {attention}
+                            {mark}
                           </span>
                         )}
                       </span>
                     )}
-                    {collapsed && attention !== null && (
+                    {collapsed && mark !== null && (
                       <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />
                     )}
                   </Link>

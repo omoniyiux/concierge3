@@ -1,4 +1,11 @@
-import type { Conversation, Destination, Site, SiteBrain, UnansweredQuestion } from "@/lib/types";
+import type {
+  Conversation,
+  Destination,
+  KnowledgeItem,
+  Site,
+  SiteBrain,
+  UnansweredQuestion,
+} from "@/lib/types";
 
 /* ============================================================================
    LAUNCH AND HEALTH
@@ -24,6 +31,68 @@ const DAY = 86_400_000;
 
 function daysSince(iso: string, now: Date = NOW) {
   return Math.floor((now.getTime() - new Date(iso).getTime()) / DAY);
+}
+
+/* ---- Brain readiness ------------------------------------------------------- */
+
+export type BrainReadiness = {
+  /** 0–100, and it can actually reach 100. */
+  percent: number;
+  ready: boolean;
+  /** Approved, and therefore answerable. */
+  approved: number;
+  /** Everything that is *supposed* to end up answerable. The denominator. */
+  answerable: number;
+  /** Read and waiting on a decision. One click each. */
+  pending: KnowledgeItem[];
+  /** Asked for but never found. These need writing, not approving. */
+  missing: KnowledgeItem[];
+  /** Of the pending, the ones nothing can launch without. */
+  blocking: KnowledgeItem[];
+  /** The one sentence that says what is between here and 100%. */
+  nextStep: string;
+};
+
+/**
+ * What "ready to answer" is worth as a number.
+ *
+ * The denominator is deliberately not "everything in the brain". Two statuses
+ * are not debts and must never be counted as one:
+ *
+ *   restricted — withheld on purpose. Counting it as a shortfall punishes the
+ *                owner for the safest thing they can do, and puts 100% out of
+ *                reach forever no matter what they click.
+ *   suggested  — Concierge's idea, not yet anyone's obligation.
+ *
+ * What is left is what the owner actually owes an answer on: approved, waiting
+ * for a decision, or asked for and never found. Every point of the gap has a
+ * named item and one action behind it, so the figure is always explainable and
+ * always closable.
+ */
+export function brainReadiness(items: KnowledgeItem[]): BrainReadiness {
+  const approvedItems = items.filter((i) => i.status === "approved");
+  const pending = items.filter((i) => i.status === "needs-review");
+  const missing = items.filter((i) => i.status === "missing");
+  const answerable = approvedItems.length + pending.length + missing.length;
+  const blocking = [...pending, ...missing].filter((i) => i.required);
+
+  const percent = answerable === 0 ? 0 : Math.round((approvedItems.length / answerable) * 100);
+  const ready = blocking.length === 0 && approvedItems.length > 0;
+
+  let nextStep: string;
+  if (answerable === 0) {
+    nextStep = "Concierge has not read your site yet.";
+  } else if (blocking.length) {
+    nextStep = `${blocking.length} required ${blocking.length === 1 ? "item" : "items"} still to settle.`;
+  } else if (pending.length) {
+    nextStep = `Approve ${pending.length} more ${pending.length === 1 ? "item" : "items"} to reach 100%.`;
+  } else if (missing.length) {
+    nextStep = `Write ${missing.length} ${missing.length === 1 ? "answer" : "answers"} Concierge could not find to reach 100%.`;
+  } else {
+    nextStep = "Everything Concierge found is approved.";
+  }
+
+  return { percent, ready, approved: approvedItems.length, answerable, pending, missing, blocking, nextStep };
 }
 
 /* ---- Launch --------------------------------------------------------------- */
@@ -78,7 +147,7 @@ export function launchChecklist(
       label: "Site read",
       blurb: "Concierge reads every page it is allowed to and writes down what it finds.",
       done: learned,
-      href: `${base}/brain`,
+      href: `${base}/agent/brain`,
       cta: "Start reading",
     },
     {
@@ -86,14 +155,18 @@ export function launchChecklist(
       label: "Knowledge approved",
       blurb: "Nothing reaches a visitor until you have approved it.",
       done: reviewed,
-      href: `${base}/brain`,
+      href: `${base}/agent/brain`,
       cta: `Review ${brain.needsReviewCount || ""}`.trim(),
     },
     {
       key: "agent",
       label: "Agent set up",
       blurb: "Its job, its tone, and the things it must never say.",
-      done: site.launchProgress >= 60,
+      // A fact the owner creates by confirming the Agent, not a number that
+      // happens to be past a threshold. The old test read `launchProgress`,
+      // which no screen in the product could move — so this step could never
+      // be completed by using the product.
+      done: Boolean(site.agentConfiguredAt),
       href: `${base}/agent`,
       cta: "Set up the Agent",
     },
@@ -102,7 +175,7 @@ export function launchChecklist(
       label: "Somewhere to send people",
       blurb: "When Concierge cannot finish the job, a person has to hear about it.",
       done: routed,
-      href: `${base}/routing`,
+      href: `${base}/agent/routing`,
       cta: "Add a destination",
     },
     {
@@ -209,7 +282,7 @@ export function siteHealth({
       detail:
         "Requests are still captured, but nobody is being told about them. Anything queued is replayed once it reconnects.",
       actionLabel: "Fix routing",
-      href: `${base}/routing`,
+      href: `${base}/agent/routing`,
     });
   }
 
@@ -221,7 +294,7 @@ export function siteHealth({
       title: `${untested.length} destination${untested.length === 1 ? "" : "s"} never tested`,
       detail: "A destination that has never delivered anything is a promise nobody has checked.",
       actionLabel: "Send a test",
-      href: `${base}/routing`,
+      href: `${base}/agent/routing`,
     });
   }
 
@@ -234,7 +307,7 @@ export function siteHealth({
       detail:
         "Prices, hours and services move. Knowledge that has not been re-read is the most common cause of a confidently wrong answer.",
       actionLabel: "Re-learn the site",
-      href: `${base}/brain`,
+      href: `${base}/agent/brain`,
     });
   }
 
@@ -246,7 +319,7 @@ export function siteHealth({
       detail:
         "Concierge will not use any of them until someone decides. Until then it says less than it could.",
       actionLabel: "Review them",
-      href: `${base}/brain`,
+      href: `${base}/agent/brain`,
     });
   }
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getBreakpoint } from "@/lib/pages-builder";
 import { dispatch, handleEditorShortcut, useEditor } from "@/lib/pages-editor";
-import type { ConciergePage, ID, PageBreakpoint, PageDocument, Site } from "@/lib/types";
+import type { ConciergePage, ID, PageBreakpoint, PageDocument, PublishedSiteFacts } from "@/lib/types";
 import { PageFrame } from "./PageFrame";
 import { PageRenderer } from "./PageRenderer";
 import { pageStylesheet } from "./page-css";
@@ -54,7 +54,7 @@ export function EditorCanvas({
 }: {
   document: PageDocument;
   page: ConciergePage;
-  site: Site;
+  site: PublishedSiteFacts;
   breakpoint: PageBreakpoint;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);

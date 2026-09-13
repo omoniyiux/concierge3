@@ -27,6 +27,7 @@ export function Modal({
   children,
   footer,
   size = "md",
+  flush,
 }: {
   open: boolean;
   onClose: () => void;
@@ -35,7 +36,10 @@ export function Modal({
   description?: string;
   children?: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
+  /** The body owns its own scrolling. For panelled contents whose columns each
+      scroll independently, so the dialog itself never grows a second scrollbar. */
+  flush?: boolean;
 }) {
   const panel = useRef<HTMLDivElement>(null);
 
@@ -61,7 +65,14 @@ export function Modal({
 
   if (!open || typeof document === "undefined") return null;
 
-  const width = size === "sm" ? "sm:max-w-[420px]" : size === "lg" ? "sm:max-w-[720px]" : "sm:max-w-[560px]";
+  const width =
+    size === "sm"
+      ? "sm:max-w-[420px]"
+      : size === "lg"
+        ? "sm:max-w-[720px]"
+        : size === "xl"
+          ? "sm:max-w-[980px]"
+          : "sm:max-w-[560px]";
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6">
@@ -83,7 +94,7 @@ export function Modal({
           width,
         )}
       >
-        <header className="flex items-start gap-4 px-6 pb-5 pt-6">
+        <header className={cx("flex items-start gap-4 px-6 pt-6", flush ? "pb-4" : "pb-5")}>
           <div className="min-w-0 flex-1">
             {eyebrow && <p className="t-eyebrow mb-2 text-text-muted">{eyebrow}</p>}
             <h2 className="t-feature">{title}</h2>
@@ -94,7 +105,16 @@ export function Modal({
           </IconButton>
         </header>
 
-        {children && <div className="cg-scroll min-h-0 flex-1 overflow-y-auto px-6 pb-6">{children}</div>}
+        {children && (
+          <div
+            className={cx(
+              "min-h-0 flex-1",
+              flush ? "overflow-hidden" : "cg-scroll overflow-y-auto px-6 pb-6",
+            )}
+          >
+            {children}
+          </div>
+        )}
 
         {footer && (
           <footer className="flex flex-wrap items-center justify-end gap-2.5 border-t border-divider px-6 py-4">

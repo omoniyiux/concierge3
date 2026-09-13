@@ -45,7 +45,7 @@ export function NothingYet({
               <LinkButton href={`/sites/${siteId}/agent/preview`} trailing={<ArrowRight size={13} />}>
                 Try it as a visitor
               </LinkButton>
-              <LinkButton href={`/sites/${siteId}/brain`} variant="secondary">
+              <LinkButton href={`/sites/${siteId}/agent/brain`} variant="secondary">
                 Review what it knows
               </LinkButton>
             </>

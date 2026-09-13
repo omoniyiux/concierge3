@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import { TryItButton } from "@/components/agent/TryItSheet";
@@ -37,12 +37,18 @@ import {
   SparkSticker,
 } from "@/components/stickers";
 import { cx } from "@/lib/cx";
-import { BRAIN, DEFAULT_SITE_ID, KNOWLEDGE, getSite } from "@/lib/demo-data";
+import { useUrlState } from "@/lib/url-state";
+import { DEFAULT_SITE_ID, KNOWLEDGE } from "@/lib/demo-data";
+import { useBrain, useKnowledge, useSimActions, useSite } from "@/lib/sim/store";
+import { brainReadiness, type BrainReadiness } from "@/lib/health";
+import { CrawlProgress } from "@/components/onboarding/CrawlProgress";
 import { CATEGORY_LABEL, relativeTime } from "@/lib/format";
 import type { KnowledgeCategory, KnowledgeItem, KnowledgeStatus } from "@/lib/types";
 
 type Tab = "review" | "library" | "sources";
 type Filter = "all" | "needs-review" | "approved" | "restricted" | "missing";
+const TABS = ["review", "library", "sources"] as const;
+const FILTERS = ["all", "needs-review", "approved", "restricted", "missing"] as const;
 
 /**
  * Site Brain — the answer to"what does Concierge know about my business, and
@@ -62,20 +68,47 @@ const RELEARN_RESULT = {
 };
 
 export default function SiteBrainPage() {
+  // The tabs read the query string, so this needs its own boundary.
+  return (
+    <Suspense fallback={null}>
+      <SiteBrain />
+    </Suspense>
+  );
+}
+
+function SiteBrain() {
   const siteId = String(useParams().siteId ?? DEFAULT_SITE_ID);
-  const site = getSite(siteId);
+  const site = useSite(siteId);
+  const brain = useBrain(siteId);
+  // The knowledge lives in the world, not in this component. It used to live
+  // in local state, which is why approving something here never reached the
+  // launch checklist and the site could never finish setting up.
+  const items = useKnowledge(siteId);
+  const { setKnowledgeStatus, setKnowledgeBody, addKnowledge, learnSite } = useSimActions();
+
   // null closed; a string opens it, prefilled with that title.
   const [composing, setComposing] = useState<string | null>(null);
   const [relearning, setRelearning] = useState(false);
-  const [tab, setTab] = useState<Tab>("review");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [reading, setReading] = useState(false);
+  // Which tab and which slice you are looking at belong in the URL: "the four
+  // items blocking me" is a thing you send someone, not a thing you describe.
+  const [tab, setTab] = useUrlState<Tab>("tab", "review", TABS);
+  const [filter, setFilter] = useUrlState<Filter>("filter", "all", FILTERS);
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<KnowledgeItem[]>(KNOWLEDGE);
 
-  const setStatus = (id: string, status: KnowledgeStatus) =>
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
-  const setBody = (id: string, body: string) =>
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, body } : i)));
+  const setStatus = (id: string, status: KnowledgeStatus) => setKnowledgeStatus(id, status);
+  const setBody = (id: string, body: string) => setKnowledgeBody(id, body);
+
+  /** What a first read of this site turns up. Nothing arrives pre-approved. */
+  const readSite = () =>
+    learnSite(
+      KNOWLEDGE.map((k) => ({
+        ...k,
+        siteId,
+        id: siteId === k.siteId ? k.id : `${k.id}_${siteId}`,
+        status: k.status === "approved" ? ("needs-review" as const) : k.status,
+      })),
+    );
 
   const counts = useMemo(
     () => ({
@@ -89,7 +122,14 @@ export default function SiteBrainPage() {
   );
 
   const needsAttention = items.filter((i) => i.status === "needs-review" || i.status === "missing");
-  const requiredPending = items.filter((i) => i.required && i.status !== "approved").length;
+  const readiness = brainReadiness(items);
+  // The summary card can send the owner straight at one kind of problem, so
+  // this queue narrows with it. Required first: those are what the Agent
+  // speaks from in every conversation.
+  const queue = needsAttention
+    .filter((i) => (filter === "missing" ? i.status === "missing" : true))
+    .filter((i) => (filter === "needs-review" ? i.status === "needs-review" : true))
+    .sort((a, b) => Number(b.required) - Number(a.required));
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -123,24 +163,81 @@ export default function SiteBrainPage() {
           <>
             {/* Knowledge changes here; the proof it worked is one click away. */}
             <TryItButton size="md" />
-            <Button
-              variant="secondary"
-              leading={<RefreshIcon size={15} />}
-              disabled={relearning}
-              onClick={() => {
-                setComposing(null);
-                setRelearning(true);
-              }}
-            >
-              {relearning ? "Re-learning…" : "Re-learn site"}
-            </Button>
+            {/* There is nothing to re-learn before the first read. */}
+            {items.length > 0 && (
+              <Button
+                variant="secondary"
+                leading={<RefreshIcon size={15} />}
+                disabled={relearning}
+                onClick={() => {
+                  setComposing(null);
+                  setRelearning(true);
+                }}
+              >
+                {relearning ? "Re-learning…" : "Re-learn site"}
+              </Button>
+            )}
             <Button leading={<PlusIcon size={15} />} onClick={() => setComposing("")}>
               Add knowledge
             </Button>
           </>
         }
-        meta={<BrainSummary counts={counts} requiredPending={requiredPending} />}
+        meta={
+          <BrainSummary
+            counts={counts}
+            readiness={readiness}
+            lastLearnedAt={brain.lastLearnedAt}
+            onApproveAll={() => setKnowledgeStatus(readiness.pending.map((i) => i.id), "approved")}
+            onReviewRequired={() => {
+              setTab("review");
+              setFilter("all");
+            }}
+            onWriteMissing={() => {
+              // The gap is already a row in the brain. Filling it in place
+              // closes it; a blank composer would leave the "missing" row
+              // sitting there beside the new answer, and the gauge would
+              // never reach 100% however many answers were written.
+              setTab("review");
+              setFilter("missing");
+            }}
+          />
+        }
       />
+
+      {/* ---- Nothing read yet -------------------------------------------
+          The launch checklist asks for "Site read" and sent the owner here,
+          where the only thing on offer used to be a library of knowledge
+          that did not exist yet. The read starts here instead. */}
+      {items.length === 0 ? (
+        <Panel className="mt-6 p-8">
+          {reading ? (
+            <CrawlProgress
+              url={site.url}
+              onComplete={() => {
+                readSite();
+                setReading(false);
+                setTab("review");
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={<BrainIcon size={19} />}
+              title="Concierge has not read your site yet"
+              body={`It will read every page on ${site.url} it is allowed to, write down what it finds, and bring it back here for you to approve. Nothing reaches a visitor until you do. It takes about a minute.`}
+              action={
+                <Button leading={<RefreshIcon size={15} />} onClick={() => setReading(true)}>
+                  Read my site
+                </Button>
+              }
+              secondaryAction={
+                <Button variant="tertiary" onClick={() => setComposing("")}>
+                  Write the first answer myself
+                </Button>
+              }
+            />
+          )}
+        </Panel>
+      ) : null}
 
       {relearning && (
         <RelearnPanel
@@ -149,9 +246,7 @@ export default function SiteBrainPage() {
           onDone={(ids) => {
             // A changed source retracts its own approval. Concierge does not
             // start saying something new on the owner's behalf unread.
-            setItems((prev) =>
-              prev.map((i) => (ids.includes(i.id) ? { ...i, status: "needs-review" as const } : i)),
-            );
+            setKnowledgeStatus(ids, "needs-review");
             setRelearning(false);
             setTab("review");
             setFilter("all");
@@ -164,11 +259,13 @@ export default function SiteBrainPage() {
         <KnowledgeComposer
           siteId={siteId}
           initialTitle={composing}
-          onAdd={(item) => setItems((prev) => [item, ...prev])}
+          onAdd={(item) => addKnowledge(item)}
           onClose={() => setComposing(null)}
         />
       )}
 
+      {items.length > 0 && (
+        <>
       <Tabs
         label="Site Brain sections"
         value={tab}
@@ -183,13 +280,27 @@ export default function SiteBrainPage() {
       {/* ---- Needs you ------------------------------------------------- */}
       {tab === "review" && (
         <div className="mt-6">
-          {needsAttention.length === 0 ? (
+          {queue.length === 0 ? (
             <Panel>
               <EmptyState
                 icon={<CheckIcon size={19} />}
-                title="Everything is approved"
-                body="Concierge is answering from knowledge you have vetted. When it learns something new, or a visitor asks something it cannot answer, it will show up here."
-                action={<Button variant="secondary">View the full library</Button>}
+                title={needsAttention.length ? "Nothing left of that kind" : "Everything is approved"}
+                body={
+                  needsAttention.length
+                    ? `You have cleared these. ${needsAttention.length} other ${needsAttention.length === 1 ? "item" : "items"} still want a decision.`
+                    : "Concierge is answering from knowledge you have vetted. When it learns something new, or a visitor asks something it cannot answer, it will show up here."
+                }
+                action={
+                  needsAttention.length ? (
+                    <Button variant="secondary" onClick={() => setFilter("all")}>
+                      Show everything waiting
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" onClick={() => setTab("library")}>
+                      View the full library
+                    </Button>
+                  )
+                }
               />
             </Panel>
           ) : (
@@ -198,8 +309,8 @@ export default function SiteBrainPage() {
                 items={items}
                 onApprove={(ids) => ids.forEach((id) => setStatus(id, "approved"))}
               />
-              <div className="mt-4 space-y-3">
-                {needsAttention.map((item) => (
+              <div className="mt-5 space-y-4">
+                {queue.map((item) => (
                   <KnowledgeCard
                     key={item.id}
                     item={item}
@@ -289,6 +400,8 @@ export default function SiteBrainPage() {
 
       {/* ---- Sources --------------------------------------------------- */}
       {tab === "sources" && <SourcesTab />}
+        </>
+      )}
     </PageContainer>
   );
 }
@@ -297,15 +410,40 @@ export default function SiteBrainPage() {
 
 function BrainSummary({
   counts,
-  requiredPending,
+  readiness,
+  lastLearnedAt,
+  onApproveAll,
+  onReviewRequired,
+  onWriteMissing,
 }: {
   counts: { approved: number; review: number; missing: number; restricted: number; suggested: number };
-  requiredPending: number;
+  readiness: BrainReadiness;
+  lastLearnedAt: string;
+  onApproveAll: () => void;
+  onReviewRequired: () => void;
+  onWriteMissing: () => void;
 }) {
   const total = counts.approved + counts.review + counts.missing + counts.restricted + counts.suggested;
-  const coverage = Math.round((counts.approved / Math.max(total, 1)) * 100);
+  const { percent, ready } = readiness;
 
-  const ready = requiredPending === 0;
+  // One action, and only ever one: the thing between this site and 100%
+  // should never be something the owner has to go and find.
+  //
+  // While anything required is outstanding the action reads rather than
+  // approves. Required knowledge is what the Agent speaks from in every
+  // conversation — offering to wave it all through unread is the one
+  // shortcut this surface should not sell.
+  const action = readiness.blocking.length
+    ? { label: `Review the ${readiness.blocking.length} required`, run: onReviewRequired, quiet: true }
+    : readiness.pending.length
+      ? { label: `Approve the last ${readiness.pending.length}`, run: onApproveAll, quiet: false }
+      : readiness.missing.length
+        ? {
+            label: `Write ${readiness.missing.length === 1 ? "the answer" : "the answers"}`,
+            run: onWriteMissing,
+            quiet: false,
+          }
+        : null;
 
   return (
     /* Told the way the Overview status strip tells it: the drawing, the
@@ -314,22 +452,38 @@ function BrainSummary({
     <Card className="grid grid-cols-1 lg:grid-cols-[320px_1fr]">
       <div className="flex items-center gap-4 border-b border-divider px-6 py-6 lg:border-b-0 lg:border-r">
         <RadialGauge
-          value={coverage}
+          value={percent}
           label="Approved knowledge"
-          tone={coverage >= 80 ? "success" : "accent"}
+          tone={percent === 100 ? "success" : "accent"}
           size={64}
         />
         <div className="min-w-0">
           <p className="text-[16px] font-semibold leading-[1.25]">
             <span className={ready ? "text-success" : "text-accent-ink"}>
-              {ready ? "Ready to answer" : `${requiredPending} required`}
+              {ready ? "Ready to answer" : `${readiness.blocking.length} required`}
             </span>
             <br />
             {ready ? "across your site" : "still outstanding"}
           </p>
-          <p className="mt-2 text-[11.5px] leading-[1.45] text-text-tertiary">
-            Last learned {relativeTime(BRAIN.lastLearnedAt)} · {total} items in the brain
+          {/* The figure used to be left to explain itself, and could not:
+              it counted restricted knowledge as a shortfall, so it sat at
+              75% whatever the owner did. It now says what the gap is. */}
+          <p className="mt-1.5 text-[12px] font-medium leading-[1.4] text-text-secondary">
+            {readiness.nextStep}
           </p>
+          <p className="mt-1.5 text-[11.5px] leading-[1.45] text-text-tertiary">
+            Last learned {relativeTime(lastLearnedAt)} · {total} items in the brain
+          </p>
+          {action && (
+            <Button
+              size="sm"
+              variant={action.quiet ? "secondary" : "primary"}
+              className="mt-3"
+              onClick={action.run}
+            >
+              {action.label}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -408,7 +562,7 @@ const SOURCES = [
 
 function SourcesTab() {
   return (
-    <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_320px]">
+    <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_320px]">
       <Panel className="overflow-hidden">
         <SectionHead
           title="Where the knowledge came from"
@@ -417,7 +571,7 @@ function SourcesTab() {
         />
         <ul className="divide-y divide-divider border-t border-divider">
           {SOURCES.map((s) => (
-            <li key={s.label} className="flex items-center gap-3.5 px-5 py-3">
+            <li key={s.label} className="flex items-center gap-3.5 px-6 py-3.5">
               <SourceIcon size={16} className="shrink-0 text-text-muted" />
               <span className="min-w-0 flex-1">
                 <span className="block text-[12.5px] font-medium">{s.label}</span>

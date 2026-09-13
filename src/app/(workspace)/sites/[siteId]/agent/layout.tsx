@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { use } from "react";
 import { cx } from "@/lib/cx";
 import { tabClass, tabCountClass } from "@/components/ui";
-import { BRAIN, DESTINATIONS } from "@/lib/demo-data";
+import { useBrain, useDestinations } from "@/lib/sim/store";
 
 /**
  * The Agent is one object with several facets — who it is, what it knows,
@@ -25,18 +25,24 @@ export default function AgentLayout({
   const pathname = usePathname();
   const base = `/sites/${siteId}/agent`;
 
+  // These used to read the module-level fixtures, which are not scoped to a
+  // site at all: every site showed Northlane's queue, and neither number moved
+  // when the owner actually cleared it.
+  const brain = useBrain(siteId);
+  const destinations = useDestinations(siteId);
+
   const tabs: { href: string; label: string; badge?: number | "dot" }[] = [
     { href: base, label: "Persona" },
     {
       href: `${base}/brain`,
       label: "Site Brain",
-      badge: BRAIN.needsReviewCount + BRAIN.missingCount || undefined,
+      badge: brain.needsReviewCount + brain.missingCount || undefined,
     },
     { href: `${base}/actions`, label: "Actions" },
     {
       href: `${base}/routing`,
       label: "Routing",
-      badge: DESTINATIONS.some((d) => d.status === "failing") ? "dot" : undefined,
+      badge: destinations.some((d) => d.status === "failing") ? "dot" : undefined,
     },
     { href: `${base}/preview`, label: "Preview" },
   ];

@@ -82,13 +82,22 @@ function pick<T>(list: T[], rng: () => number): T {
   return list[Math.floor(rng() * list.length)];
 }
 
-/** Deterministic enough to be repeatable, random enough to feel alive. */
+/**
+ * Deterministic enough to be repeatable, random enough to feel alive.
+ *
+ * Hashed rather than seeded straight into a linear generator: consecutive
+ * ticks carry consecutive seeds, and a plain LCG turns those into correlated
+ * first draws — which showed up as arrivals clustering after hours, quietly
+ * overstating the one number this product is judged on.
+ */
 function rngFrom(seed: number) {
-  let x = seed % 2147483647;
-  if (x <= 0) x += 2147483646;
+  let a = Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) >>> 0;
   return () => {
-    x = (x * 16807) % 2147483647;
-    return (x - 1) / 2147483646;
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 

@@ -28,7 +28,7 @@ import {
   PlusIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { PAGES, SITES, getSite } from "@/lib/demo-data";
+import { PAGES, getSite } from "@/lib/demo-data";
 import { sectionHint, sectionSummary } from "@/lib/pages-builder";
 import { relativeTime } from "@/lib/format";
 import type { ConciergePage } from "@/lib/types";
@@ -46,10 +46,6 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
   const [device, setDevice] = useState<Device>("desktop");
   const [sections, setSections] = useState(PAGES[0].sections);
 
-  /* Creation is not real until Phase 4 persists a document, so the demo
-     path opens the editor on the Pages site that already exists. */
-  const pagesSite = SITES.find((x) => x.product === "pages") ?? site;
-
   /* Agent sites do not have Pages; say so rather than showing an empty shell. */
   if (site.product !== "pages") {
     return (
@@ -65,10 +61,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             title={`${site.name} already has a website`}
             body="Pages is for businesses starting from nothing. Since Concierge is installed on your existing site, there is nothing to build here — but you can add a Pages site to your organisation at any time."
             action={
-              <LinkButton
-                href={`/sites/${pagesSite.id}/pages/${PAGES[0].id}/edit`}
-                leading={<PlusIcon size={15} />}
-              >
+              <LinkButton href="/onboarding/pages" leading={<PlusIcon size={15} />}>
                 Create a Pages site
               </LinkButton>
             }

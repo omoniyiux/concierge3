@@ -29,7 +29,8 @@ import {
   TrashIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { ORG, getSite } from "@/lib/demo-data";
+import { ORG } from "@/lib/demo-data";
+import { useSite } from "@/lib/sim/store";
 
 const SECTIONS = [
   { key: "general", label: "General", Icon: SettingsIcon },
@@ -65,7 +66,9 @@ export default function SettingsPage({ params }: { params: Promise<{ siteId: str
 /** Settings uses sub-navigation rather than one very long page. */
 function Settings({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
-  const site = getSite(siteId);
+  // The live site, not the seed constant: the install check writes to the
+  // world, and this page has to show the result of the button it just ran.
+  const site = useSite(siteId);
   const router = useRouter();
   const searchParams = useSearchParams();
   const requested = searchParams.get("section");

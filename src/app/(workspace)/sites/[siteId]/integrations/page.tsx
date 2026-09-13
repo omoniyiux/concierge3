@@ -41,7 +41,7 @@ import {
   ReconnectModal,
 } from "@/components/integrations/ConnectFlows";
 import { cx } from "@/lib/cx";
-import { INTEGRATIONS } from "@/lib/demo-data";
+import { useIntegrations, useSimActions } from "@/lib/sim/store";
 import { relativeTime } from "@/lib/format";
 import type { Integration, IntegrationCategory } from "@/lib/types";
 import type { Tone } from "@/components/ui";
@@ -108,7 +108,10 @@ export default function IntegrationsPage() {
   // The catalogue lives in state: connecting, disconnecting and adding an
   // endpoint all change what is on the page, which is the only way a flow
   // can be said to have completed.
-  const [catalogue, setCatalogue] = useState<Integration[]>(INTEGRATIONS);
+  // The catalogue lives in the simulated backend, so a tool you connect is
+  // still connected after a reload and on every other surface.
+  const catalogue = useIntegrations();
+  const { setIntegration, addIntegration } = useSimActions();
   const [flow, setFlow] = useState<FlowState>(NO_FLOW);
   const [flash, setFlash] = useState<Record<string, string>>({});
 
@@ -119,9 +122,7 @@ export default function IntegrationsPage() {
     setTimeout(() => setFlash((f) => ({ ...f, [id]: "" })), 4000);
   }
 
-  function patch(id: string, next: Partial<Integration>) {
-    setCatalogue((list) => list.map((i) => (i.id === id ? { ...i, ...next } : i)));
-  }
+  const patch = setIntegration;
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -291,19 +292,16 @@ export default function IntegrationsPage() {
         onClose={closeFlows}
         onAdd={(name, url) => {
           const id = `i_custom_${Date.now()}`;
-          setCatalogue((l) => [
-            {
+          addIntegration({
               id,
               name,
               description: "A custom endpoint you control. Concierge POSTs signed JSON events to it.",
               category: "developer",
               status: "connected",
               accountLabel: url.replace(/^https?:\/\//, ""),
-              connectedAt: new Date().toISOString(),
-              lastSyncAt: new Date().toISOString(),
-            },
-            ...l,
-          ]);
+            connectedAt: new Date().toISOString(),
+            lastSyncAt: new Date().toISOString(),
+          });
           note(id, "Endpoint added · test event accepted");
           closeFlows();
         }}

@@ -37,7 +37,6 @@ export default function PageEditor({
   params: Promise<{ siteId: string; pageId: string }>;
 }) {
   const { siteId, pageId } = use(params);
-  const site = getSite(siteId);
   const [breakpoint, setBreakpoint] = useState<PageBreakpoint>("desktop");
   const [publishing, setPublishing] = useState(false);
   const editor = useEditor();
@@ -51,12 +50,20 @@ export default function PageEditor({
   }, []);
 
   const doc = editor.doc;
+  /* A site the setup flow just created is not in the fixtures, so the store is
+     the authority whenever it holds the site this URL names. */
+  const fixture = getSite(siteId);
+  const site =
+    editor.site.id === siteId
+      ? editor.site
+      : { id: fixture.id, name: fixture.name, url: fixture.url, openingHours: fixture.openingHours };
+  const isPagesSite = editor.site.id === siteId || fixture.product === "pages";
   const page = findPage(doc, pageId);
   /* Scoped to this page, so switching pages never leaves the inspector
      pointing at a section that is no longer on screen. */
   const selected = page?.sections.find((s) => s.id === editor.selectedId);
 
-  if (site.product !== "pages" || page === undefined) {
+  if (isPagesSite === false || page === undefined) {
     return (
       <PageContainer>
         <Panel className="mt-16">
@@ -210,9 +217,8 @@ export default function PageEditor({
       <PublishDialog
         open={publishing}
         onClose={() => setPublishing(false)}
-        siteId={siteId}
-        siteName={site.name}
-        suggestion={suggestSubdomain(site.name)}
+        site={site}
+        suggestion={site.subdomain ?? suggestSubdomain(site.name)}
         document={doc}
         draftPageCount={doc.pages.filter((p) => !p.published).length}
       />

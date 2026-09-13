@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, LinkButton } from "@/components/ui";
-import { AlertSticker, ApprovedSticker, GapSticker, PendingSticker, TargetSticker } from "@/components/stickers";
+import { AlertSticker, ApprovedSticker, PendingSticker, TargetSticker } from "@/components/stickers";
 import { MOMENT_CHIP, MOMENT_LABEL, VISITOR_MOMENTS } from "@/components/routing/MomentLabels";
 import { cx } from "@/lib/cx";
 import type { Destination, RoutingMoment } from "@/lib/types";
@@ -9,187 +9,194 @@ import type { Destination, RoutingMoment } from "@/lib/types";
 /* ============================================================================
    ROUTING READINESS
    ----------------------------------------------------------------------------
-   One verdict, then the four numbers behind it.
+   One verdict, and the single next thing to do about it.
 
-   Coverage is the number that did not exist before: a visitor moment with no
-   destination is a request that is captured and then never mentioned to
-   anybody. Counting connections told you how much you had set up; counting
-   moments tells you what is still falling on the floor, so the uncovered ones
-   are named rather than left as arithmetic.
+   This used to be four numbers — connected, tested, needs work, coverage —
+   which an owner could read in full and still not know what to touch. Worse,
+   they were counted on different axes: "tested" meant a destination had ever
+   been tested, "needs work" meant its status was bad right now, so a run of
+   six destinations could report 5 tested and 6 needing work and look broken
+   when it was not.
+
+   So it says one thing. Whatever is most in the way of launching, named, with
+   the button that fixes it. The counts that are still worth having live as a
+   quiet line underneath, where they inform rather than instruct.
+
+   The Concierge Inbox is excluded from all of it. It ships with the product,
+   cannot be disconnected, and cannot meaningfully be tested — counting it as
+   an untested destination told owners to go and fix something that was never
+   broken.
    ========================================================================== */
 
 export type Readiness = {
-  connected: number;
-  tested: number;
-  needsWork: number;
+  /** Destinations the owner set up. Never the built-in inbox. */
+  configured: Destination[];
+  delivering: number;
+  failing: Destination[];
+  untested: Destination[];
   covered: RoutingMoment[];
   uncovered: RoutingMoment[];
-  verdict: "ready" | "gaps" | "broken" | "empty";
+  verdict: "ready" | "failing" | "uncovered" | "untested" | "empty";
 };
 
 /** Derived in one place so the strip, the tabs and the check all agree. */
 export function readRouting(destinations: Destination[]): Readiness {
+  const configured = destinations.filter((d) => d.kind !== "inbox");
   const live = destinations.filter((d) => d.status !== "paused");
-  const connected = destinations.filter((d) => d.status === "connected").length;
-  const tested = destinations.filter((d) => d.lastTestedAt && d.status !== "failing").length;
-  const needsWork = destinations.filter((d) => d.status === "failing" || d.status === "untested").length;
 
+  const delivering = configured.filter((d) => d.status === "connected").length;
+  const failing = configured.filter((d) => d.status === "failing");
+  const untested = configured.filter((d) => d.status === "untested");
+
+  // A moment is covered if some live, non-failing destination listens for it.
+  // The built-in inbox counts here — it genuinely does catch these.
   const covered = VISITOR_MOMENTS.filter((m) =>
     live.some((d) => d.status !== "failing" && d.moments.includes(m)),
   );
   const uncovered = VISITOR_MOMENTS.filter((m) => !covered.includes(m));
 
+  // Ordered by what actually hurts: a broken path loses messages, an uncovered
+  // moment means nobody is told, an untested one is merely unproven.
   const verdict =
-    destinations.length === 0
+    configured.length === 0
       ? "empty"
-      : destinations.some((d) => d.status === "failing")
-        ? "broken"
-        : uncovered.length > 0 || needsWork > 0
-          ? "gaps"
-          : "ready";
+      : failing.length > 0
+        ? "failing"
+        : uncovered.length > 0
+          ? "uncovered"
+          : untested.length > 0
+            ? "untested"
+            : "ready";
 
-  return { connected, tested, needsWork, covered, uncovered, verdict };
+  return { configured, delivering, failing, untested, covered, uncovered, verdict };
 }
-
-const VERDICT = {
-  ready: {
-    Sticker: ApprovedSticker,
-    title: "Launch ready",
-    body: "Every visitor moment reaches a person, and each path has been tested.",
-    tone: "text-success",
-    surface: "bg-approved-soft",
-  },
-  gaps: {
-    Sticker: PendingSticker,
-    title: "Nearly there",
-    body: "Concierge is routing, but some paths are untested or have nowhere to go.",
-    tone: "text-warning",
-    surface: "bg-review-soft",
-  },
-  broken: {
-    Sticker: AlertSticker,
-    title: "A path is failing",
-    body: "Requests are still captured. Your team is not being told about them.",
-    tone: "text-danger",
-    surface: "bg-restricted-soft",
-  },
-  empty: {
-    Sticker: GapSticker,
-    title: "Nothing connected",
-    body: "Handoffs are landing in the Concierge Inbox and nowhere else.",
-    tone: "text-text-muted",
-    surface: "bg-surface-subtle",
-  },
-} as const;
 
 export function RoutingReadiness({
   destinations,
   siteId,
   onFixCoverage,
+  onFixDestination,
 }: {
   destinations: Destination[];
   siteId: string;
   /** Takes the owner to the place a missing moment can be given a home. */
   onFixCoverage?: () => void;
+  /** Takes the owner to one destination that needs attention. */
+  onFixDestination?: (d: Destination) => void;
 }) {
   const r = readRouting(destinations);
-  const v = VERDICT[r.verdict];
-  const total = VISITOR_MOMENTS.length;
-  const pct = Math.round((r.covered.length / total) * 100);
 
-  const cells = [
-    {
-      value: r.connected,
-      label: "Connected",
-      detail: r.connected === 1 ? "1 place saved" : `${r.connected} places saved`,
-      tone: "",
-    },
-    {
-      value: r.tested,
-      label: "Tested",
-      detail: r.tested === 0 ? "Nothing proven yet" : "Paths proven to deliver",
-      tone: r.tested > 0 ? "text-success" : "text-text-muted",
-    },
-    {
-      value: r.needsWork,
-      label: "Needs work",
-      detail: "Failing or never tested",
-      tone: r.needsWork > 0 ? "text-warning" : "",
-    },
-    {
-      value: `${pct}%`,
-      label: "Coverage",
-      detail: `${r.covered.length} of ${total} visitor moments`,
-      tone: r.uncovered.length === 0 ? "text-success" : "text-warning",
-    },
-  ];
+  const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
+  /** The verdict, the sentence under it, and the one button. */
+  const view = (() => {
+    switch (r.verdict) {
+      case "failing":
+        return {
+          Sticker: AlertSticker,
+          tone: "text-danger",
+          surface: "border-danger-line bg-danger-soft",
+          title: `${r.failing[0].name} is not delivering`,
+          body: "Visitor requests are still captured — your team just is not hearing about them.",
+          action: onFixDestination
+            ? { label: "Inspect it", run: () => onFixDestination(r.failing[0]) }
+            : undefined,
+        };
+      case "uncovered":
+        return {
+          Sticker: TargetSticker,
+          tone: "text-warning",
+          surface: "border-review-line bg-review-soft",
+          title: plural(
+            r.uncovered.length,
+            "One moment has nowhere to go",
+            `${r.uncovered.length} moments have nowhere to go`,
+          ),
+          body: "Concierge captures these and nobody hears about them.",
+          chips: r.uncovered,
+          action: onFixCoverage ? { label: "Give them a home", run: onFixCoverage } : undefined,
+        };
+      case "untested":
+        return {
+          Sticker: PendingSticker,
+          tone: "text-warning",
+          surface: "border-review-line bg-review-soft",
+          title: plural(
+            r.untested.length,
+            "One path has never been tested",
+            `${r.untested.length} paths have never been tested`,
+          ),
+          body: "Every visitor moment reaches somebody. Send a test to prove the path works.",
+          action: onFixCoverage ? { label: "Test them", run: onFixCoverage } : undefined,
+        };
+      case "empty":
+        return {
+          Sticker: PendingSticker,
+          tone: "text-text-secondary",
+          surface: "border-line bg-surface-subtle",
+          title: "Everything is landing in your Concierge Inbox",
+          body: "That works, but somebody has to be looking at it. Add a destination to reach your team where they already are.",
+          action: onFixCoverage ? { label: "Add a destination", run: onFixCoverage } : undefined,
+        };
+      default:
+        return {
+          Sticker: ApprovedSticker,
+          tone: "text-success",
+          surface: "border-success-line bg-approved-soft",
+          title: "Routing is ready",
+          body: `Every visitor moment reaches a person, and all ${r.configured.length} paths have been tested.`,
+        };
+    }
+  })();
 
   return (
-    <Card className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]">
-      <div className={cx("border-b border-divider px-6 py-6 lg:border-b-0 lg:border-r", v.surface)}>
-        <v.Sticker size={34} />
-        <p className="t-eyebrow mt-4 text-text-muted">Routing readiness</p>
-        <p className={cx("mt-2 text-[19px] font-semibold leading-[1.2]", v.tone)}>{v.title}</p>
-        <p className="mt-2 text-[11.5px] leading-[1.5] text-text-secondary">{v.body}</p>
-      </div>
+    <Card className={cx("flex flex-wrap items-start gap-4 border p-5", view.surface)}>
+      <view.Sticker size={30} className="shrink-0" />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4">
-        {cells.map((c, i) => (
-          <div
-            key={c.label}
-            className={cx("px-5 py-5", i > 1 && "border-t border-divider lg:border-t-0", i % 2 === 1 && "border-l border-divider", i === 2 && "lg:border-l")}
-          >
-            <p className={cx("t-num text-[22px] leading-none", c.tone)}>{c.value}</p>
-            <p className="mt-2 text-[12.5px] font-semibold leading-[1.3]">{c.label}</p>
-            <p className="mt-1 text-[11.5px] leading-[1.45] text-text-tertiary">{c.detail}</p>
-          </div>
-        ))}
+      <div className="min-w-0 flex-1">
+        <p className={cx("text-[15px] font-semibold leading-[1.3]", view.tone)}>{view.title}</p>
+        <p className="mt-1 text-[12.5px] leading-[1.5] text-text-secondary">{view.body}</p>
 
-        {r.uncovered.length > 0 && (
-          <div className="col-span-2 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-divider px-5 py-4 lg:col-span-4">
-            <TargetSticker size={24} className="shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[11.5px] leading-[1.5]">
-                <span className="font-semibold">
-                  {r.uncovered.length === 1
-                    ? "One moment has nowhere to go."
-                    : `${r.uncovered.length} moments have nowhere to go.`}
-                </span>{" "}
-                <span className="text-text-secondary">
-                  Concierge captures these and nobody hears about them.
-                </span>
-              </p>
-              {/* Named as chips rather than folded into the sentence: an owner
-                  scanning this needs to recognise the moment, not parse a list
-                  that has been lowercased to fit the grammar. */}
-              <ul className="mt-2 flex flex-wrap gap-1.5">
-                {r.uncovered.map((m) => (
-                  <li
-                    key={m}
-                    title={MOMENT_LABEL[m]}
-                    className="border border-line-strong bg-surface px-2 py-0.5 text-[11px] font-medium text-text-secondary"
-                  >
-                    {MOMENT_CHIP[m]}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {onFixCoverage ? (
-              <button
-                type="button"
-                onClick={onFixCoverage}
-                className="shrink-0 border border-line-strong bg-surface px-3 py-1.5 text-[11.5px] font-medium transition-colors hover:border-ink"
+        {/* Named as chips rather than folded into the sentence: an owner
+            scanning this needs to recognise the moment, not parse a list that
+            has been lowercased to fit the grammar. */}
+        {view.chips && (
+          <ul className="mt-2.5 flex flex-wrap gap-1.5">
+            {view.chips.map((m) => (
+              <li
+                key={m}
+                title={MOMENT_LABEL[m]}
+                className="border border-line-strong bg-surface px-2 py-0.5 text-[11px] font-medium text-text-secondary"
               >
-                Give them a home
-              </button>
-            ) : (
-              <LinkButton href={`/sites/${siteId}/routing`} variant="secondary" size="sm">
-                Give them a home
-              </LinkButton>
-            )}
-          </div>
+                {MOMENT_CHIP[m]}
+              </li>
+            ))}
+          </ul>
         )}
+
+        {/* The counts still exist — as background, not as instructions. */}
+        <p className="mt-3 text-[11.5px] text-text-tertiary">
+          {r.configured.length === 0
+            ? "No destinations of your own yet"
+            : `${r.delivering} of ${r.configured.length} ${plural(r.configured.length, "destination", "destinations")} delivering`}
+          {" · "}
+          {r.covered.length} of {VISITOR_MOMENTS.length} visitor moments covered
+        </p>
       </div>
+
+      {view.action ? (
+        <button
+          type="button"
+          onClick={view.action.run}
+          className="shrink-0 border border-line-strong bg-surface px-3.5 py-2 text-[12.5px] font-medium transition-colors hover:border-ink"
+        >
+          {view.action.label}
+        </button>
+      ) : r.verdict !== "ready" ? (
+        <LinkButton href={`/sites/${siteId}/agent/routing`} variant="secondary" size="sm">
+          Open routing
+        </LinkButton>
+      ) : null}
     </Card>
   );
 }

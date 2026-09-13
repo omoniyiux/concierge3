@@ -69,6 +69,7 @@ export const SITES: Site[] = [
     createdAt: "2026-07-02T09:00:00Z",
     updatedAt: "2026-09-07T06:40:00Z",
     launchProgress: 100,
+    agentConfiguredAt: "2026-07-04T11:20:00Z",
     currency: "USD",
     // Mon–Thu 8–5, Fri 8–1, closed weekends.
     openingHours: {
@@ -89,6 +90,7 @@ export const SITES: Site[] = [
     createdAt: "2026-08-19T11:20:00Z",
     updatedAt: "2026-09-06T18:05:00Z",
     launchProgress: 67,
+    agentConfiguredAt: "2026-08-21T09:40:00Z",
     currency: "USD",
     // Mon–Fri 9–6, Sat 10–4.
     openingHours: {
@@ -108,6 +110,7 @@ export const SITES: Site[] = [
     createdAt: "2026-09-09T10:15:00Z",
     updatedAt: "2026-09-11T14:30:00Z",
     launchProgress: 82,
+    agentConfiguredAt: "2026-09-10T16:05:00Z",
     currency: "GBP",
     // Approved and waiting on the one paste that switches it on.
     openingHours: {
@@ -140,6 +143,15 @@ export const DEFAULT_SITE_ID = "site_northlane";
 
 export function getSite(siteId: string): Site {
   return SITES.find((s) => s.id === siteId) ?? SITES[0];
+}
+
+/**
+ * `getSite` falls back to the first site so no surface has to null-check, but
+ * that fallback also made `/sites/garbage/overview` render Northlane's numbers
+ * under a bogus URL. Routes ask this first and 404 instead.
+ */
+export function siteExists(siteId: string): boolean {
+  return SITES.some((s) => s.id === siteId);
 }
 
 /* ---- Scoping -------------------------------------------------------------

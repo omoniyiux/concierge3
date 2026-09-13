@@ -32,21 +32,22 @@ import { AnswerQualityPanel } from "@/components/quality/AnswerQuality";
 import { peerSetFor } from "@/lib/benchmarks";
 import { ArrowRight, BrainIcon, CheckIcon, PlusIcon, SparkIcon, UploadIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
+import { INTENTS } from "@/lib/demo-data";
 import {
-  INTENTS,
-  brainFor,
-  conversationsFor,
-  destinationsFor,
-  gapsFor,
-  getSite,
-  metricsFor,
-} from "@/lib/demo-data";
+  useBrain,
+  useConversations,
+  useDestinations,
+  useGaps,
+  useMetrics,
+  useSimActions,
+  useSite,
+} from "@/lib/sim/store";
 import { launchChecklist } from "@/lib/health";
 import { NothingYet } from "@/components/shell/NothingYet";
 import { CATEGORY_LABEL, INTENT_LABEL, formatMetric, relativeTime } from "@/lib/format";
 import { printElement } from "@/lib/print";
 import { downloadFile, toCsv } from "@/lib/download";
-import type { Metric, UnansweredQuestion } from "@/lib/types";
+import type { Metric, Site, UnansweredQuestion } from "@/lib/types";
 
 /** One drawing per metric, so the row reads as six facts rather than six boxes. */
 const METRIC_STICKER: Record<string, typeof TargetSticker> = {
@@ -84,9 +85,12 @@ type Range = "7d" | "14d" | "30d";
  */
 export default function InsightsPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
-  const site = getSite(siteId);
-  const METRICS = metricsFor(siteId);
-  const UNANSWERED = gapsFor(siteId);
+  const site = useSite(siteId);
+  const METRICS = useMetrics(siteId);
+  const UNANSWERED = useGaps();
+  const brain = useBrain(siteId);
+  const destinations = useDestinations(siteId);
+  const { answerGap, dismissGap } = useSimActions();
   const [range, setRange] = useState<Range>("14d");
   const [answered, setAnswered] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
@@ -95,17 +99,15 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
   /** The answer just written, so the preview can be asked to prove it works. */
   const [justAnswered, setJustAnswered] = useState<{ question: string; body: string } | null>(null);
 
-  const hasHistory = conversationsFor(siteId).length > 0;
+  const hasHistory = useConversations(siteId).length > 0;
   const peers = peerSetFor(siteId);
   const handled = [...answered, ...dismissed];
-  const open = UNANSWERED.filter((u) => u.status === "open" && !handled.includes(u.id));
+  const open = UNANSWERED.filter((u) => !handled.includes(u.id));
   const conversations = METRICS.find((m) => m.key === "conversations")!;
   const missedDemand = open.reduce((n, u) => n + u.askCount, 0);
 
   if (!hasHistory) {
-    const setupComplete = launchChecklist(site, brainFor(siteId), destinationsFor(siteId), siteId).every(
-      (s) => s.done,
-    );
+    const setupComplete = launchChecklist(site, brain, destinations, siteId).every((s) => s.done);
     return (
       <PageContainer wide>
         <PageHeader
@@ -238,7 +240,14 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
                     <Button size="sm" leading={<PlusIcon size={13} />} onClick={() => setAnswering(q)}>
                       Answer it
                     </Button>
-                    <Button size="sm" variant="tertiary" onClick={() => setDismissed((d) => [...d, q.id])}>
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      onClick={() => {
+                        setDismissed((d) => [...d, q.id]);
+                        dismissGap(q.id);
+                      }}
+                    >
                       Dismiss
                     </Button>
                   </div>
@@ -380,6 +389,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
         onClose={() => setAnswering(null)}
         onSave={(id, body) => {
           setAnswered((a) => [...a, id]);
+          answerGap(id);
           const asked = UNANSWERED.find((q) => q.id === id);
           setAnswering(null);
           if (asked) setJustAnswered({ question: asked.question, body });
@@ -541,7 +551,7 @@ function ExportModal({
 }: {
   open: boolean;
   onClose: () => void;
-  site: ReturnType<typeof getSite>;
+  site: Site;
   range: Range;
   openQuestions: UnansweredQuestion[];
   siteName: string;

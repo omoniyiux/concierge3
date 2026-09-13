@@ -17,7 +17,8 @@ import {
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { relativeTime } from "@/lib/format";
-import { conversationsFor, leadsFor, brainFor, destinationsFor } from "@/lib/demo-data";
+import { useBrain, useConversations, useDestinations, useLeads } from "@/lib/sim/store";
+import type { Conversation, Destination, Lead, SiteBrain } from "@/lib/types";
 
 /* ============================================================================
    THE BELL, KEPT
@@ -62,11 +63,19 @@ const KIND_TINT: Record<Kind, string> = {
 };
 
 /** Built from the site's own records, newest first. */
-function notificationsFor(siteId: string): Note[] {
+function buildNotifications(
+  siteId: string,
+  { leads, conversations, destinations, brain }: {
+    leads: Lead[];
+    conversations: Conversation[];
+    destinations: Destination[];
+    brain: SiteBrain;
+  },
+): Note[] {
   const base = `/sites/${siteId}`;
   const notes: Note[] = [];
 
-  for (const lead of leadsFor(siteId).filter((l) => l.qualification === "hot").slice(0, 2)) {
+  for (const lead of leads.filter((l) => l.qualification === "hot").slice(0, 3)) {
     notes.push({
       id: `n_lead_${lead.id}`,
       kind: "lead",
@@ -78,9 +87,7 @@ function notificationsFor(siteId: string): Note[] {
     });
   }
 
-  for (const c of conversationsFor(siteId)
-    .filter((c) => c.status === "new" || c.afterHours)
-    .slice(0, 3)) {
+  for (const c of conversations.filter((c) => c.status === "new" || c.afterHours).slice(0, 4)) {
     notes.push({
       id: `n_conv_${c.id}`,
       kind: "conversation",
@@ -93,19 +100,18 @@ function notificationsFor(siteId: string): Note[] {
     });
   }
 
-  for (const d of destinationsFor(siteId).filter((d) => d.status === "failing")) {
+  for (const d of destinations.filter((d) => d.status === "failing")) {
     notes.push({
       id: `n_dest_${d.id}`,
       kind: "routing",
       title: `${d.name} stopped delivering`,
       detail: "Requests are being queued rather than lost. Reconnect to replay them.",
       at: d.lastDeliveryAt ?? new Date().toISOString(),
-      href: `${base}/routing`,
+      href: `${base}/agent/routing`,
       urgent: true,
     });
   }
 
-  const brain = brainFor(siteId);
   if (brain.needsReviewCount > 0) {
     notes.push({
       id: "n_brain",
@@ -113,7 +119,7 @@ function notificationsFor(siteId: string): Note[] {
       title: `${brain.needsReviewCount} knowledge items need your approval`,
       detail: "Concierge will not use any of them until someone decides.",
       at: brain.lastLearnedAt,
-      href: `${base}/brain`,
+      href: `${base}/agent/brain`,
     });
   }
 
@@ -125,7 +131,11 @@ export function NotificationBell({ siteId }: { siteId: string }) {
   const [read, setRead] = useState<string[]>([]);
   const wrap = useRef<HTMLDivElement>(null);
 
-  const notes = notificationsFor(siteId);
+  const leads = useLeads(siteId);
+  const conversations = useConversations(siteId);
+  const destinations = useDestinations(siteId);
+  const brain = useBrain(siteId);
+  const notes = buildNotifications(siteId, { leads, conversations, destinations, brain });
   const unread = notes.filter((n) => !read.includes(n.id));
 
   // Clicking anywhere else closes it, the way a menu should behave.

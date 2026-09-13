@@ -19,54 +19,65 @@ export type NavItem = {
   path: string;
   label: string;
   Icon: ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+  /** Extra words the command menu should match on. The label is matched already. */
+  keywords?: string[];
 };
 
 export type NavGroup = { label: string | null; items: NavItem[] };
 
 /**
- * Eleven destinations in five groups, separated by spacing rather than
- * headings. Every group is two or three rows, so the rail has one rhythm
- * instead of a pair of lonely singles above a block of five: the site
- * itself, the front desk, what it does, what it returns, what it runs on.
+ * Eight destinations in four groups, separated by spacing rather than
+ * headings: the site itself, the front desk, what it returns, what it runs on.
+ *
+ * Site Brain, Actions and Routing are deliberately absent. They are facets of
+ * one object — the Agent — and they live as tabs on it (see
+ * `sites/[siteId]/agent/layout.tsx`). Having them in both places meant two
+ * URLs for every one of those surfaces, so the rail lit up "Agent" while the
+ * page said "Site Brain" and Back had two ways to mean the same thing. They
+ * are still one keystroke away through the command menu, via AGENT_FACETS.
  */
 export const NAV: NavGroup[] = [
   {
     label: null,
     items: [
-      { path: "overview", label: "Overview", Icon: OverviewIcon },
-      { path: "brain", label: "Site Brain", Icon: BrainIcon },
+      { path: "overview", label: "Overview", Icon: OverviewIcon, keywords: ["home", "health", "launch"] },
+      { path: "agent", label: "Agent", Icon: AgentIcon, keywords: ["persona", "brain", "routing", "actions"] },
     ],
   },
   {
     label: null,
     items: [
-      { path: "agent", label: "Agent", Icon: AgentIcon },
-      { path: "conversations", label: "Conversations", Icon: ConversationsIcon },
-      { path: "leads", label: "Leads", Icon: LeadsIcon },
+      { path: "conversations", label: "Conversations", Icon: ConversationsIcon, keywords: ["inbox", "chats"] },
+      { path: "leads", label: "Leads", Icon: LeadsIcon, keywords: ["contacts", "enquiries"] },
     ],
   },
   {
     label: null,
     items: [
-      { path: "actions", label: "Actions", Icon: ActionsIcon },
-      { path: "routing", label: "Routing", Icon: RoutingIcon },
+      { path: "ledger", label: "Return", Icon: ReturnIcon, keywords: ["ledger", "roi", "value", "outcomes"] },
+      { path: "assistants", label: "Assistants", Icon: AssistantsIcon, keywords: ["chatgpt", "perplexity"] },
+      { path: "insights", label: "Insights", Icon: InsightsIcon, keywords: ["analytics", "gaps", "reports"] },
     ],
   },
   {
     label: null,
     items: [
-      { path: "ledger", label: "Return", Icon: ReturnIcon },
-      { path: "assistants", label: "Assistants", Icon: AssistantsIcon },
-      { path: "insights", label: "Insights", Icon: InsightsIcon },
-    ],
-  },
-  {
-    label: null,
-    items: [
-      { path: "pages", label: "Pages", Icon: PagesIcon },
-      { path: "integrations", label: "Integrations", Icon: IntegrationsIcon },
+      { path: "pages", label: "Pages", Icon: PagesIcon, keywords: ["site", "editor", "publish"] },
+      { path: "integrations", label: "Integrations", Icon: IntegrationsIcon, keywords: ["connect", "apps"] },
     ],
   },
 ];
 
 export const ALL_NAV_ITEMS = NAV.flatMap((g) => g.items);
+
+/**
+ * The Agent's tabs. Not in the rail, but every one of them is a place an owner
+ * thinks of by name — shortening the rail should not make "Routing" unfindable
+ * — so the command menu lists them alongside the rail's own destinations.
+ */
+export const AGENT_FACETS: NavItem[] = [
+  { path: "agent/brain", label: "Site Brain", Icon: BrainIcon, keywords: ["knowledge", "learn", "sources"] },
+  { path: "agent/actions", label: "Actions", Icon: ActionsIcon, keywords: ["book", "quote", "capture"] },
+  { path: "agent/routing", label: "Routing", Icon: RoutingIcon, keywords: ["destinations", "rules", "escalation"] },
+  { path: "agent/preview", label: "Preview the agent", Icon: AgentIcon, keywords: ["test", "try", "run"] },
+];

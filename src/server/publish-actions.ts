@@ -1,6 +1,5 @@
 "use server";
 
-import { getSite } from "@/lib/demo-data";
 import {
   getPublishedForSite,
   isSubdomainAvailable,
@@ -8,7 +7,7 @@ import {
   publishedUrl,
   unpublish,
 } from "@/lib/publishing";
-import type { PageDocument } from "@/lib/types";
+import type { PageDocument, PublishedSiteFacts } from "@/lib/types";
 
 /* ============================================================================
    PUBLISH
@@ -21,6 +20,13 @@ import type { PageDocument } from "@/lib/types";
    Every action returns a result rather than throwing across the boundary, so
    the editor can put the reason in front of the owner instead of showing them
    a stack trace.
+
+   The site's own details travel with the request for the same reason as the
+   document: a site created by the setup flow does not exist in the fixtures
+   yet, so there is nothing on the server to look it up in. That also means
+   nothing here proves the caller owns the site they are publishing. It cannot,
+   until there are accounts — this is the first thing that must be revisited
+   when authentication lands, not something to leave as it is.
    ========================================================================== */
 
 export type PublishResult =
@@ -30,19 +36,18 @@ export type PublishResult =
 export async function publishSite(input: {
   siteId: string;
   subdomain: string;
+  site: PublishedSiteFacts;
   document: PageDocument;
 }): Promise<PublishResult> {
-  const site = getSite(input.siteId);
-
-  if (site.product !== "pages") {
-    return { ok: false, reason: "Only a Concierge Pages site can be published here." };
+  if (input.site.name.trim().length === 0) {
+    return { ok: false, reason: "The site needs a name before it can go live." };
   }
 
   try {
     const published = await publish({
       subdomain: input.subdomain,
-      siteId: site.id,
-      site: { name: site.name, url: site.url, openingHours: site.openingHours },
+      siteId: input.siteId,
+      site: input.site,
       document: input.document,
     });
     return {

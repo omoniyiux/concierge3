@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { Suspense, use, useMemo, useState } from "react";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import {
   Badge,
@@ -23,7 +23,8 @@ import {
 import { StickerStats } from "@/components/ui/StickerStats";
 import { ContactSticker, FlameSticker, RoutingSticker, TargetSticker } from "@/components/stickers";
 import { cx } from "@/lib/cx";
-import { brainFor, destinationsFor, getSite, leadsFor } from "@/lib/demo-data";
+import { useUrlSelection, useUrlState } from "@/lib/url-state";
+import { useBrain, useDestinations, useLeads, useSite } from "@/lib/sim/store";
 import { launchChecklist } from "@/lib/health";
 import { NothingYet } from "@/components/shell/NothingYet";
 import { INTENT_LABEL, relativeTime } from "@/lib/format";
@@ -38,6 +39,7 @@ const QUAL_TONE: Record<LeadQualification, Tone> = {
 };
 
 type Filter = "all" | "hot" | "warm" | "cool";
+const FILTERS = ["all", "hot", "warm", "cool"] as const;
 
 /**
  * Leads are ranked by what Concierge worked out, not by when they arrived.
@@ -45,10 +47,25 @@ type Filter = "all" | "hot" | "warm" | "cool";
  */
 export default function LeadsPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
-  const leads = leadsFor(siteId);
-  const [filter, setFilter] = useState<Filter>("all");
+  // Reading the query string makes this subtree client-rendered, so it needs a
+  // boundary of its own or it takes the whole surface down with it.
+  return (
+    <Suspense fallback={null}>
+      <LeadsTable siteId={siteId} />
+    </Suspense>
+  );
+}
+
+function LeadsTable({ siteId }: { siteId: string }) {
+  const leads = useLeads(siteId);
+  const site = useSite(siteId);
+  const brain = useBrain(siteId);
+  const destinations = useDestinations(siteId);
+  // The command menu has always linked leads as `?l=<id>`; nothing on this page
+  // read it, so those links opened the list and nothing else.
+  const [filter, setFilter] = useUrlState<Filter>("filter", "all", FILTERS);
   const [query, setQuery] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useUrlSelection("l");
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -64,12 +81,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
   const hot = leads.filter((l) => l.qualification === "hot").length;
 
   if (leads.length === 0) {
-    const setupComplete = launchChecklist(
-      getSite(siteId),
-      brainFor(siteId),
-      destinationsFor(siteId),
-      siteId,
-    ).every((s) => s.done);
+    const setupComplete = launchChecklist(site, brain, destinations, siteId).every((s) => s.done);
     return (
       <PageContainer wide>
         <PageHeader
@@ -188,7 +200,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
               <li key={lead.id}>
                 <button
                   type="button"
-                  onClick={() => setOpenId(openId === lead.id ? null : lead.id)}
+                  onClick={() => setOpenId(openId === lead.id ? null : lead.id, "push")}
                   aria-expanded={openId === lead.id}
                   className="grid w-full grid-cols-1 items-center gap-x-4 gap-y-2 px-6 py-3.5 text-left transition-colors hover:bg-surface-subtle lg:grid-cols-[1.6fr_1fr_0.9fr_0.9fr_auto]"
                 >

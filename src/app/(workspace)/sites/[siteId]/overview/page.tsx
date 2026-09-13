@@ -1,3 +1,6 @@
+"use client";
+
+import { use, useMemo } from "react";
 import Link from "next/link";
 import { PageContainer } from "@/components/shell/AppShell";
 import { AttentionList, type AttentionItem } from "@/components/overview/AttentionList";
@@ -8,22 +11,20 @@ import { StatusStrip } from "@/components/overview/StatusStrip";
 import { AreaChart, BarList, RadialGauge, Sparkline } from "@/components/ui/charts";
 import { Card, LinkButton } from "@/components/ui";
 import { ArrowRight, EyeIcon, ShieldIcon } from "@/components/icons";
+import { FOLLOW_UPS, INTENTS } from "@/lib/demo-data";
 import {
-  ACTIVITY,
-  FOLLOW_UPS,
-  INTENTS,
-  LEDGER,
-  METRICS,
-  brainFor,
-  conversationsFor,
-  destinationsFor,
-  gapsFor,
-  getSite,
-} from "@/lib/demo-data";
+  useBrain,
+  useConversations,
+  useDestinations,
+  useGaps,
+  useLedger,
+  useMetrics,
+  useSite,
+  useWorld,
+} from "@/lib/sim/store";
 import { launchChecklist, launchPhase, launchProgress, siteHealth } from "@/lib/health";
 import { INTENT_LABEL, formatMetric, money, relativeTime } from "@/lib/format";
 
-export const metadata = { title: "Overview" };
 
 /**
  * Every kind of event gets its own hue, and every pill is set to the width of
@@ -47,16 +48,19 @@ function greeting(hour: number) {
   return "Good evening";
 }
 
-export default async function OverviewPage({ params }: { params: Promise<{ siteId: string }> }) {
-  const { siteId } = await params;
-  const site = getSite(siteId);
-  const now = new Date();
+export default function OverviewPage({ params }: { params: Promise<{ siteId: string }> }) {
+  const { siteId } = use(params);
+  const site = useSite(siteId);
+  const world = useWorld();
+  const now = new Date(world.now);
 
-  const brain = brainFor(siteId);
-  const destinations = destinationsFor(siteId);
-  const siteConversations = conversationsFor(siteId);
+  const brain = useBrain(siteId);
+  const destinations = useDestinations(siteId);
+  const siteConversations = useConversations(siteId);
+  const METRICS = useMetrics(siteId);
+  const LEDGER = useLedger(siteId);
   const failing = destinations.filter((d) => d.status === "failing");
-  const openGaps = gapsFor(siteId).filter((u) => u.status === "open");
+  const openGaps = useGaps();
   const waiting = FOLLOW_UPS.filter((f) => f.siteId === siteId && f.state === "suggested");
 
   // Where this site is in its life: still being set up, live but untouched,
@@ -125,6 +129,38 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
         ]
       : []),
   ];
+
+  // What has actually happened, rather than a fixed list: the feed the
+  // simulation writes as visitors arrive and things land.
+  const activity = useMemo(
+    () =>
+      world.feed
+        .filter((e) => e.siteId === siteId)
+        .slice(0, 8)
+        .map((e) => ({
+          id: e.id,
+          kind:
+            e.kind === "lead-qualified"
+              ? "lead"
+              : e.kind === "outcome"
+                ? "action"
+                : e.kind === "gap"
+                  ? "knowledge"
+                  : e.kind.startsWith("install")
+                    ? "install"
+                    : e.kind.startsWith("delivery") || e.kind === "handoff"
+                      ? "routing"
+                      : "conversation",
+          title: e.title,
+          detail: e.detail,
+          at: new Date(e.at).toISOString(),
+          siteId: e.siteId,
+          href: e.conversationId
+            ? `/sites/${siteId}/conversations?c=${e.conversationId}`
+            : `/sites/${siteId}/conversations`,
+        })),
+    [world.feed, siteId],
+  );
 
   const headline = METRICS.filter((m) => ["conversations", "leads", "actions", "conversion"].includes(m.key));
   const conversations = METRICS.find((m) => m.key === "conversations")!;
@@ -373,8 +409,13 @@ export default async function OverviewPage({ params }: { params: Promise<{ siteI
                 <p className="text-[12.5px] font-bold">Recent activity</p>
                 <p className="t-body mt-3 text-text-primary">Everything Concierge did, newest first.</p>
               </div>
+              {activity.length === 0 && (
+                <p className="border-t border-divider px-6 py-8 text-center text-[12.5px] text-text-tertiary">
+                  Nothing has happened yet. Press play on the simulation bar and watch visitors arrive.
+                </p>
+              )}
               <ul className="divide-y divide-divider">
-                {ACTIVITY.map((event) => {
+                {activity.map((event) => {
                   const kind = KIND_STYLE[event.kind] ?? KIND_STYLE.system;
                   return (
                     <li key={event.id}>

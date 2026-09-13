@@ -2,10 +2,15 @@ import {
   ACTIONS,
   BRAIN,
   CONVERSATIONS,
+  DELIVERIES,
+  KNOWLEDGE,
+  PAGE_DOCUMENT,
   DESTINATIONS,
+  INBOX,
   INTEGRATIONS,
   LEADS,
   OUTCOMES,
+  ROUTING_RULES,
   SITES,
   UNANSWERED,
 } from "@/lib/demo-data";
@@ -13,11 +18,15 @@ import { SEED_NOW } from "@/lib/sim/clock";
 import type {
   ActionDef,
   Conversation,
+  DeliveryRecord,
   Destination,
+  InboxItem,
   Integration,
   KnowledgeItem,
   Lead,
   Outcome,
+  PageDocument,
+  RoutingRule,
   Site,
   SiteBrain,
   UnansweredQuestion,
@@ -41,11 +50,23 @@ export type World = {
   scenario: Scenario;
   sites: Site[];
   brains: Record<string, SiteBrain>;
+  /**
+   * The page document of every Pages site, by site id. A site built in the
+   * setup flow exists only here, so this is what lets the editor survive a
+   * reload — and what stops the workspace 404ing on a site it just made.
+   */
+  documents: Record<string, PageDocument>;
   knowledge: KnowledgeItem[];
   conversations: Conversation[];
   leads: Lead[];
   outcomes: Outcome[];
   destinations: Destination[];
+  /** Routing's three histories. They live here rather than as static imports
+      so a scenario can actually empty them — a day-one business has not had a
+      handoff, written a rule, or delivered anything. */
+  inbox: InboxItem[];
+  rules: RoutingRule[];
+  deliveries: DeliveryRecord[];
   integrations: Integration[];
   actions: ActionDef[];
   gaps: UnansweredQuestion[];
@@ -99,6 +120,34 @@ export const SCENARIOS: { key: Scenario; label: string; blurb: string }[] = [
 
 const PRIMARY = "site_northlane";
 
+/**
+ * The brain summary is never stored as its own truth — it is counted off the
+ * knowledge list every time. The two used to be separate constants, which is
+ * how the workspace ended up showing "16 items" beside a checklist that still
+ * believed nothing had been read.
+ */
+export function brainFrom(siteId: string, items: KnowledgeItem[], lastLearnedAt: string): SiteBrain {
+  const mine = items.filter((i) => i.siteId === siteId);
+  const approved = mine.filter((i) => i.status === "approved").length;
+  const needsReview = mine.filter((i) => i.status === "needs-review").length;
+  const missing = mine.filter((i) => i.status === "missing").length;
+  // Ready means the things nothing can launch without are settled, which is
+  // exactly what the Site Brain gauge shows the owner.
+  const blocking = mine.filter((i) => i.required && i.status !== "approved").length;
+  const answerable = approved + needsReview + missing;
+
+  return {
+    siteId,
+    ready: blocking === 0 && approved > 0,
+    itemCount: mine.length,
+    approvedCount: approved,
+    needsReviewCount: needsReview,
+    missingCount: missing,
+    coverage: answerable === 0 ? 0 : Math.round((approved / answerable) * 100),
+    lastLearnedAt,
+  };
+}
+
 function emptyBrain(siteId: string): SiteBrain {
   return {
     siteId,
@@ -122,12 +171,16 @@ export function seedWorld(scenario: Scenario = "established"): World {
     now: SEED_NOW,
     scenario,
     sites: SITES.map((s) => ({ ...s })),
-    brains: { [BRAIN.siteId]: { ...BRAIN } },
-    knowledge: [],
+    brains: { [BRAIN.siteId]: brainFrom(BRAIN.siteId, KNOWLEDGE, BRAIN.lastLearnedAt) },
+    documents: { [PAGE_DOCUMENT.siteId]: PAGE_DOCUMENT },
+    knowledge: KNOWLEDGE.map((k) => ({ ...k })),
     conversations: CONVERSATIONS.map((c) => ({ ...c })),
     leads: LEADS.map((l) => ({ ...l })),
     outcomes: OUTCOMES.map((o) => ({ ...o })),
     destinations: DESTINATIONS.map((d) => ({ ...d })),
+    inbox: INBOX.map((i) => ({ ...i })),
+    rules: ROUTING_RULES.map((r) => ({ ...r })),
+    deliveries: DELIVERIES.map((d) => ({ ...d })),
     integrations: INTEGRATIONS.map((i) => ({ ...i })),
     actions: ACTIONS.map((a) => ({ ...a })),
     gaps: UNANSWERED.map((u) => ({ ...u })),
@@ -144,14 +197,30 @@ export function seedWorld(scenario: Scenario = "established"): World {
     primary.installState = "not-installed";
     primary.status = "learning";
     primary.launchProgress = 15;
+    primary.agentConfiguredAt = undefined;
     return {
       ...base,
       brains: { [PRIMARY]: emptyBrain(PRIMARY) },
+      knowledge: [],
       conversations: [],
       leads: [],
       outcomes: [],
       gaps: [],
-      destinations: base.destinations.map((d) => ({ ...d, status: "untested" as const })),
+      // Untested means untested: the timestamps go with the status, or the
+      // readiness strip reports paths proven by deliveries that never happened.
+      destinations: base.destinations.map((d) =>
+        d.kind === "inbox"
+          ? { ...d, lastDeliveryAt: undefined }
+          : {
+              ...d,
+              status: "untested" as const,
+              lastDeliveryAt: undefined,
+              lastTestedAt: undefined,
+            },
+      ),
+      inbox: [],
+      rules: [],
+      deliveries: [],
       integrations: base.integrations.map((i) =>
         i.status === "connected" || i.status === "error"
           ? { ...i, status: "available" as const, accountLabel: undefined, lastSyncAt: undefined }
@@ -166,21 +235,32 @@ export function seedWorld(scenario: Scenario = "established"): World {
   primary.status = "live";
   primary.launchProgress = 100;
   const keep = base.conversations.slice(0, 3).map((c) => c.id);
+  // A week in, the optional knowledge has not been read yet — which is the
+  // whole point of the review queue.
+  const firstWeekKnowledge = KNOWLEDGE.map((k) =>
+    k.required || k.status !== "approved" ? { ...k } : { ...k, status: "needs-review" as const },
+  );
   return {
     ...base,
-    brains: {
-      [PRIMARY]: { ...BRAIN, ready: true, itemCount: 24, approvedCount: 19, needsReviewCount: 4, coverage: 62 },
-    },
+    knowledge: firstWeekKnowledge,
+    brains: { [PRIMARY]: brainFrom(PRIMARY, firstWeekKnowledge, BRAIN.lastLearnedAt) },
     conversations: base.conversations.filter((c) => keep.includes(c.id)),
     leads: base.leads.filter((l) => keep.includes(l.conversationId)),
     outcomes: base.outcomes.filter((o) => keep.includes(o.conversationId)),
     gaps: base.gaps.slice(0, 2),
     destinations: base.destinations.map((d) => (d.status === "failing" ? { ...d, status: "connected" as const } : d)),
+    inbox: base.inbox.slice(0, 1),
+    deliveries: base.deliveries.slice(0, 2).map((d) => ({ ...d, result: "delivered" as const })),
+    rules: base.rules.filter((r) => r.id === base.rules[base.rules.length - 1]?.id),
     actions: base.actions.map((a) => ({ ...a, completions30d: Math.round(a.completions30d / 8) })),
   };
 }
 
 /* ---- Derived ---------------------------------------------------------------- */
+
+export function documentOf(world: World, siteId: string): PageDocument | undefined {
+  return world.documents?.[siteId];
+}
 
 export function siteOf(world: World, siteId: string): Site {
   return world.sites.find((s) => s.id === siteId) ?? world.sites[0];

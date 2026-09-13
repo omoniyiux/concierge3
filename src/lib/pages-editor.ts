@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { PAGE_DOCUMENT } from "./demo-data";
+import { PAGE_DOCUMENT, getSite } from "./demo-data";
 import {
   clearSectionStyle,
   createSection,
@@ -17,6 +17,7 @@ import type {
   PageSection,
   PageSectionKind,
   PageTheme,
+  PublishedSiteFacts,
   SectionStylePatch,
   SectionStyleProperty,
 } from "./types";
@@ -46,8 +47,17 @@ const HISTORY_LIMIT = 60;
 /** Keystrokes inside this window collapse into one undo step. */
 const MERGE_WINDOW_MS = 700;
 
+/** Who the open document belongs to. Carried in state because a site created
+ *  by the setup flow does not exist in the fixtures. */
+export interface EditorSite extends PublishedSiteFacts {
+  id: ID;
+  /** The address chosen at setup, so Publish does not propose a different one. */
+  subdomain?: string;
+}
+
 export interface EditorState {
   doc: PageDocument;
+  site: EditorSite;
   past: PageDocument[];
   future: PageDocument[];
   selectedId: ID | null;
@@ -80,11 +90,19 @@ export type EditorAction =
   | { type: "addSection"; pageId: ID; kind: PageSectionKind }
   | { type: "removeSection"; sectionId: ID }
   | { type: "duplicateSection"; sectionId: ID }
+  /** Replace everything. Used by the setup flow when a site is created. */
+  | { type: "load"; doc: PageDocument; site: EditorSite }
   | { type: "undo" }
   | { type: "redo" };
 
+const fixtureSite = (): EditorSite => {
+  const site = getSite(PAGE_DOCUMENT.siteId);
+  return { id: site.id, name: site.name, url: site.url, openingHours: site.openingHours };
+};
+
 const initialState = (): EditorState => ({
   doc: PAGE_DOCUMENT,
+  site: fixtureSite(),
   past: [],
   future: [],
   selectedId: null,
@@ -293,6 +311,12 @@ export function reduce(state: EditorState, action: EditorAction): EditorState {
       });
       return { ...commit(state, doc), selectedId: copyId ?? state.selectedId };
     }
+
+    /* A new document starts a new history. Letting undo reach back into the
+       previous site's edits would be a way to resurrect content that is not
+       yours any more. */
+    case "load":
+      return { ...initialState(), doc: action.doc, site: action.site };
 
     case "undo": {
       if (state.past.length === 0) return state;

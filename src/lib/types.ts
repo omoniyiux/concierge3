@@ -71,6 +71,12 @@ export interface Site {
   updatedAt: string;
   /** Percentage 0–100 across the six launch steps. */
   launchProgress: number;
+  /**
+   * When the owner last confirmed the Agent's job, tone and limits. Unset
+   * means the launch step is still open: the checklist reads this rather than
+   * guessing from `launchProgress`, which nothing in the product can move.
+   */
+  agentConfiguredAt?: string;
   /** ISO 4217. Every value in the ledger is quoted in this. */
   currency: string;
   openingHours: OpeningHours;

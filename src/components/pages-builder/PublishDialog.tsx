@@ -6,6 +6,7 @@ import { Modal, ModalSection } from "@/components/ui/Modal";
 import { CheckIcon, ExternalIcon, GlobeIcon } from "@/components/icons";
 import { checkSubdomain, currentlyPublished, publishSite, takeDown } from "@/server/publish-actions";
 import { PAGES_DOMAIN } from "@/lib/publishing.client";
+import type { EditorSite } from "@/lib/pages-editor";
 import type { PageDocument } from "@/lib/types";
 
 /* ============================================================================
@@ -26,20 +27,20 @@ type Live = { subdomain: string; url: string; publishedAt: string } | null;
 export function PublishDialog({
   open,
   onClose,
-  siteId,
-  siteName,
+  site,
   suggestion,
   document,
   draftPageCount,
 }: {
   open: boolean;
   onClose: () => void;
-  siteId: string;
-  siteName: string;
+  site: EditorSite;
   suggestion: string;
   document: PageDocument;
   draftPageCount: number;
 }) {
+  const siteId = site.id;
+  const siteName = site.name;
   const [subdomain, setSubdomain] = useState(suggestion);
   const [live, setLive] = useState<Live>(null);
   /* The last name the server ruled on, and its verdict. Whether a check is in
@@ -84,7 +85,7 @@ export function PublishDialog({
 
   const run = () =>
     startTransition(async () => {
-      const res = await publishSite({ siteId, subdomain, document });
+      const res = await publishSite({ siteId, subdomain, site, document });
       if (res.ok) {
         setResult({ subdomain: res.subdomain, url: res.url, publishedAt: res.publishedAt });
         setLive({ subdomain: res.subdomain, url: res.url, publishedAt: res.publishedAt });

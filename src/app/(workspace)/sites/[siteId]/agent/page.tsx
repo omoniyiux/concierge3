@@ -28,7 +28,8 @@ import {
   SparkSticker,
 } from "@/components/stickers";
 import { ACTION_STICKER, MODE_STICKER } from "@/components/stickers/maps";
-import { ACTIONS, AGENT, BRAIN, DESTINATIONS } from "@/lib/demo-data";
+import { ACTIONS, AGENT, BRAIN } from "@/lib/demo-data";
+import { useDestinations, useSimActions, useSite } from "@/lib/sim/store";
 import type { AgentAutonomy, AgentMode, AgentTone } from "@/lib/types";
 
 const MODES: { key: AgentMode; label: string; description: string }[] = [
@@ -110,9 +111,36 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
   const [name, setName] = useState(AGENT.name);
   const [greeting, setGreeting] = useState(AGENT.greeting);
   const [rules, setRules] = useState(AGENT.rules);
+  // null closed; "" opens an empty composer. "Add rule" used to only mark the
+  // form dirty, so the button flashed a Save and added nothing.
+  const [draftRule, setDraftRule] = useState<string | null>(null);
   const [voice, setVoice] = useState(AGENT.voiceEnabled);
   const [autonomy, setAutonomy] = useState<AgentAutonomy>(AGENT.autonomy);
   const [dirty, setDirty] = useState(false);
+
+  const site = useSite(siteId);
+  const { configureAgent } = useSimActions();
+  // Saving is what finishes the launch step. Until this existed the step was
+  // judged on a number nothing in the product could move, so it stayed open
+  // however much of the Agent the owner had actually set up.
+  const confirmed = Boolean(site.agentConfiguredAt);
+  const save = () => {
+    setDirty(false);
+    configureAgent();
+  };
+
+  const trimmedRule = draftRule?.trim() ?? "";
+  const duplicateRule = trimmedRule.length > 0 && rules.includes(trimmedRule);
+  // Rules are keyed by their own text in the list, so a duplicate would also
+  // collide as a React key and make both rows undeletable.
+  const ruleIsAddable = trimmedRule.length > 0 && !duplicateRule;
+
+  function addRule() {
+    if (!ruleIsAddable) return;
+    setRules((prev) => [...prev, trimmedRule]);
+    setDraftRule(null);
+    setDirty(true);
+  }
 
   const touch =
     <T,>(setter: (v: T) => void) =>
@@ -122,7 +150,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
     };
 
   const readyActions = ACTIONS.filter((a) => a.readiness === "ready");
-  const connectedRoutes = DESTINATIONS.filter((d) => d.status === "connected").length;
+  const connectedRoutes = useDestinations(siteId).filter((d) => d.status === "connected").length;
 
   return (
     <PageContainer wide>
@@ -135,8 +163,8 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             <LinkButton href={`/sites/${siteId}/agent/preview`} variant="secondary">
               Test it
             </LinkButton>
-            <Button disabled={!dirty} onClick={() => setDirty(false)}>
-              {dirty ? "Save changes" : "Saved"}
+            <Button disabled={!dirty && confirmed} onClick={save}>
+              {dirty ? "Save changes" : confirmed ? "Saved" : "Confirm setup"}
             </Button>
           </>
         }
@@ -383,7 +411,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                   size="sm"
                   variant="secondary"
                   leading={<PlusIcon size={13} />}
-                  onClick={() => setDirty(true)}
+                  onClick={() => setDraftRule((v) => (v === null ? "" : v))}
                 >
                   Add rule
                 </Button>
@@ -409,6 +437,38 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
                 </li>
               ))}
             </ul>
+
+            {draftRule !== null && (
+              <form
+                className="mt-3 flex flex-wrap items-center gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addRule();
+                }}
+              >
+                <Input
+                  autoFocus
+                  value={draftRule}
+                  onChange={(e) => setDraftRule(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setDraftRule(null);
+                  }}
+                  placeholder="Ask for a postcode before quoting a callout."
+                  aria-label="New rule"
+                  className="min-w-[220px] flex-1"
+                />
+                <Button type="submit" size="sm" disabled={!ruleIsAddable}>
+                  Add
+                </Button>
+                <Button type="button" size="sm" variant="tertiary" onClick={() => setDraftRule(null)}>
+                  Cancel
+                </Button>
+              </form>
+            )}
+
+            {duplicateRule && (
+              <p className="mt-2 text-[11.5px] text-danger">That rule is already in the list.</p>
+            )}
           </Panel>
 
           <Panel className="border-danger-line p-6">
