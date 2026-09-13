@@ -418,3 +418,13 @@ export const WandIcon = (p: IconProps) => (
     <path d="M19 4v2.4M20.2 5.2h-2.4M18.4 15.6v2M19.4 16.6h-2" />
   </I>
 );
+
+/** Many things at once — the portfolio, rather than one site. */
+export const GridIcon = (p: IconProps) => (
+  <I {...p}>
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="1" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="1" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="1" />
+  </I>
+);
