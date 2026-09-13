@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SiteMark } from "@/components/shell/ConciergeMark";
-import { CheckIcon, ChevronUpDown, PlusIcon } from "@/components/icons";
+import { CheckIcon, ChevronUpDown, GridIcon, PlusIcon } from "@/components/icons";
 import { Badge } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { ORG, SITES } from "@/lib/demo-data";
@@ -87,6 +87,17 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
               {SITES.length} of {ORG.siteLimit} sites
             </span>
           </div>
+
+          {/* An agency's real home page is all of them at once. */}
+          <Link
+            href="/sites"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 border-b border-divider px-3 py-2.5 text-[13px] font-medium transition-colors hover:bg-surface-subtle"
+          >
+            <GridIcon size={15} className="text-text-tertiary" />
+            {ORG.isAgency ? "All clients" : "All sites"}
+            <span className="ml-auto text-[12px] text-text-tertiary">{SITES.length}</span>
+          </Link>
 
           <ul className="max-h-[320px] overflow-y-auto p-1.5">
             {SITES.map((s) => {
