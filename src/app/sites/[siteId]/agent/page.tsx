@@ -18,6 +18,7 @@ import {
   Toggle,
 } from "@/components/ui";
 import { CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { cx } from "@/lib/cx";
 import {
   ApprovedSticker,
   HandoffSticker,
@@ -45,6 +46,21 @@ const MODES: { key: AgentMode; label: string; description: string }[] = [
   },
   { key: "custom", label: "Custom", description: "Write the role yourself." },
 ];
+
+/** The languages Concierge can answer in today. */
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "pt", label: "Portuguese" },
+  { code: "de", label: "German" },
+  { code: "zh", label: "Chinese" },
+  { code: "ar", label: "Arabic" },
+];
+
+const LANGUAGE_LABEL: Record<string, string> = Object.fromEntries(
+  LANGUAGES.map((l) => [l.code, l.label]),
+);
 
 const TONES: { key: AgentTone; label: string }[] = [
   { key: "warm", label: "Warm" },
@@ -89,6 +105,8 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
   const { siteId } = use(params);
   const [mode, setMode] = useState<AgentMode>(AGENT.mode);
   const [tone, setTone] = useState<AgentTone>(AGENT.tone);
+  const [languages, setLanguages] = useState<string[]>(AGENT.languages);
+  const [matchLanguage, setMatchLanguage] = useState(AGENT.matchVisitorLanguage);
   const [name, setName] = useState(AGENT.name);
   const [greeting, setGreeting] = useState(AGENT.greeting);
   const [rules, setRules] = useState(AGENT.rules);
@@ -206,6 +224,71 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
               {tone === "friendly" && "Good news — that one's $89, and it covers X-rays and a cleaning too!"}
               {tone === "expert" &&
                 "The New Patient Exam is $89. It covers a full periodontal assessment, bitewing X-rays and a scale and polish."}
+            </p>
+          </Panel>
+
+
+          {/* Languages ---------------------------------------------------- */}
+          <Panel className="p-6">
+            <SectionHead
+              title="Languages"
+              hint="What it may answer in. Only list a language your team can follow up in — an answer you cannot act on is worse than none."
+              className="mb-4"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {LANGUAGES.map((l) => {
+                const on = languages.includes(l.code);
+                const isDefault = languages[0] === l.code;
+                return (
+                  <button
+                    key={l.code}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={touch(() =>
+                      setLanguages((prev) =>
+                        prev.includes(l.code)
+                          ? prev.length === 1
+                            ? prev
+                            : prev.filter((c) => c !== l.code)
+                          : [...prev, l.code],
+                      ),
+                    )}
+                    className={cx(
+                      "inline-flex h-8 items-center gap-1.5 border px-3 text-[12px] font-medium transition-colors",
+                      on
+                        ? "border-ink bg-ink text-text-inverse"
+                        : "border-line-strong bg-surface text-text-secondary hover:border-ink hover:text-text-primary",
+                    )}
+                  >
+                    {on && <CheckIcon size={12} strokeWidth={2.6} />}
+                    {l.label}
+                    {isDefault && (
+                      <span className="text-[10px] font-normal opacity-70">default</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex items-center gap-4 bg-surface-subtle px-3.5 py-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[12.5px] font-medium">Reply in the language the visitor writes in</p>
+                <p className="mt-0.5 text-[12px] leading-[1.45] text-text-tertiary">
+                  When off, Concierge always answers in {LANGUAGE_LABEL[languages[0]] ?? "English"},
+                  whatever it is asked in.
+                </p>
+              </div>
+              <Toggle
+                checked={matchLanguage}
+                onChange={touch(setMatchLanguage)}
+                label="Reply in the visitor's language"
+              />
+            </div>
+
+            <p className="mt-3 text-[12px] leading-[1.5] text-text-tertiary">
+              Your approved knowledge is written once, in {LANGUAGE_LABEL[languages[0]] ?? "English"}.
+              Concierge translates at the moment of answering and cites the same source, so there is never a
+              second copy to keep in step.
             </p>
           </Panel>
 
