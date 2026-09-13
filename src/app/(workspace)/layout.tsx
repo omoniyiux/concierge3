@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, JetBrains_Mono, Source_Serif_4, Wix_Madefor_Text } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { WorkspaceProvider } from "@/lib/workspace";
 
 /* Archivo carries the headings — tight, geometric, modern. */
