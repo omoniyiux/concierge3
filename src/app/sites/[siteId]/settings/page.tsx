@@ -7,6 +7,7 @@ import { IntegrationsSettings } from "@/components/integrations/IntegrationsSett
 import { BillingSection } from "@/components/billing/BillingSection";
 import { TeamSection } from "@/components/settings/TeamSection";
 import { InstallGuides } from "@/components/settings/InstallGuides";
+import { AuditLog } from "@/components/audit/HistorySheet";
 import { installSnippet } from "@/lib/install";
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { Button, Card, Field, Input, LinkButton, Panel, SectionHead, Select, Toggle } from "@/components/ui";
@@ -410,6 +411,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   Concierge never reads pages behind a login, and never stores payment details.
                 </p>
               </Panel>
+
+              {/* Who changed what, kept for the life of the account. */}
+              <AuditLog siteId={siteId} />
             </>
           )}
 
