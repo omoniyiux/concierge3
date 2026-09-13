@@ -14,6 +14,7 @@ import { RoutingInbox } from "@/components/routing/RoutingInbox";
 import { RoutingReadiness } from "@/components/routing/RoutingReadiness";
 import { ChannelConnect } from "@/components/routing/ChannelConnect";
 import { FIELD_LABEL, MOMENT_LABEL, OP_LABEL } from "@/components/routing/MomentLabels";
+import { EscalationLadder } from "@/components/routing/EscalationLadder";
 import { cx } from "@/lib/cx";
 import { DELIVERIES, DESTINATIONS, INBOX, ROUTING_RULES } from "@/lib/demo-data";
 import { INTENT_LABEL, relativeTime } from "@/lib/format";
@@ -266,6 +267,11 @@ export default function RoutingPage({ params }: { params: Promise<{ siteId: stri
             <PlusIcon size={17} />
             Add a destination
           </button>
+        </div>
+
+        {/* Delivering is not the same as somebody dealing with it. */}
+        <div className="mt-10 space-y-4">
+          <EscalationLadder destinations={destinations} />
         </div>
 
         <div id="connect-a-destination" className="mt-10 scroll-mt-24">
