@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
    the old name is deprecated.
 
    A request to `atlasmoving.poweredbyconcierge.com/services` is rewritten to
-   `/_sites/atlasmoving/services`, where the published document is looked up
+   `/site/atlasmoving/services`, where the published document is looked up
    and rendered. The visitor's URL never changes.
 
    This file does the routing and nothing else. Proxy runs before rendering and
@@ -20,9 +20,10 @@ import type { NextRequest } from "next/server";
 const PAGES_DOMAIN = process.env.NEXT_PUBLIC_PAGES_DOMAIN ?? "poweredbyconcierge.com";
 
 /**
- * Labels that address the platform rather than a customer site. Kept in step
- * with the reserved list in `lib/publishing.ts` by the test that compares
- * them — duplicated here only because proxy cannot import it.
+ * Labels that address the platform rather than a customer site. A subset of
+ * the reserved list in `lib/publishing.client.ts`, duplicated because proxy
+ * must not import shared modules. Reserving a name there but not here is
+ * harmless — the route simply finds nothing published and 404s.
  */
 const PLATFORM_LABELS = new Set(["www", "app", "api", "admin", "cdn", "assets", "static"]);
 
@@ -51,7 +52,7 @@ export function proxy(request: NextRequest) {
   if (label === null) return NextResponse.next();
 
   const url = request.nextUrl.clone();
-  url.pathname = `/_sites/${label}${url.pathname === "/" ? "" : url.pathname}`;
+  url.pathname = `/site/${label}${url.pathname === "/" ? "" : url.pathname}`;
   return NextResponse.rewrite(url);
 }
 
