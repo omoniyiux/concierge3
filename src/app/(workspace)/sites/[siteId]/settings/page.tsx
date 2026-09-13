@@ -10,6 +10,7 @@ import { InstallGuides } from "@/components/settings/InstallGuides";
 import { InstallHub } from "@/components/settings/InstallHub";
 import { AuditLog } from "@/components/audit/HistorySheet";
 import { AgencySettings } from "@/components/settings/AgencySettings";
+import { DataRights } from "@/components/settings/DataRights";
 import { installSnippet } from "@/lib/install";
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { Button, Field, Input, LinkButton, Panel, SectionHead, Select, Toggle } from "@/components/ui";
@@ -339,6 +340,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   Concierge never reads pages behind a login, and never stores payment details.
                 </p>
               </Panel>
+
+              {/* What a person can ask you for, and get. */}
+              <DataRights siteId={siteId} />
 
               {/* Who changed what, kept for the life of the account. */}
               <AuditLog siteId={siteId} />
