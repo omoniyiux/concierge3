@@ -1,33 +1,92 @@
+<div align="center">
+
 # Concierge
 
-A complete rebuild of the Concierge product experience — the same product, redesigned
-with the design discipline established in the Symphony study and Concierge's own identity.
+**An AI concierge that learns a business from its own website — then answers visitors
+from knowledge you approved, turns questions into booked actions, and hands off to your
+team with the context intact.**
 
-Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · TypeScript. No UI dependencies.
+[**▶ Try the live demo**](https://newconcierge.vercel.app) · [Screenshots](#screenshots) · [Design system](#design-system) · [Architecture](#data-architecture)
+
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss&logoColor=white)
+![Neon](https://img.shields.io/badge/Neon-Postgres-00E599?logo=postgresql&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-black)
+
+<img src="docs/screenshots/overview-desktop.jpg" alt="Concierge overview — status strip, items needing attention, and 14-day activity" width="840">
+
+</div>
+
+---
+
+## The problem
+
+Most site assistants fail in one of two directions. They hallucinate — confidently
+inventing prices, policies and hours that were never on the page. Or they are so
+defensive that every question becomes a support ticket, which is the thing the business
+was trying to avoid.
+
+Concierge is built around the assumption that **the owner has to be able to trust it in
+public.** That single constraint shapes every surface below.
+
+## What it does
+
+- **Learns from your own pages.** Point it at a URL. It crawls, extracts facts, and
+  presents each one for review — nothing is answerable until you approve it.
+- **Answers only from approved knowledge.** Every reply carries its verdict
+  (answered / action / handoff / refused safely), its sources, and its confidence. The
+  owner is auditing, not chatting.
+- **Turns questions into actions.** Booking, quotes and callbacks are defined as actions
+  with explicit fields — what it collects, when it fires, what happens next.
+- **Escalates with context.** Routing rules read as sentences:
+  *If intent is Wants a person → Emergency line.* Delivery history is on the same page,
+  so a failing destination is visible instead of silent.
+- **Shows you the gaps.** Insights leads with the questions your site could not answer,
+  ranked by frequency — the backlog of what to write next.
+- **Multi-tenant from the first route.** `/sites/[siteId]/…`, Org → Site switching, and
+  per-site team scopes. Nothing assumes a single website.
+
+> **Note:** the live demo runs on fixtures (`src/lib/demo-data.ts`, `IS_DEMO_DATA = true`)
+> so every surface is explorable without setup. Swapping in a real API is a data-layer
+> change — no component invents product data.
+
+## Screenshots
+
+| Overview | Mobile |
+|---|---|
+| <img src="docs/screenshots/overview-desktop.jpg" alt="Overview page" width="460"> | <img src="docs/screenshots/overview-mobile.png" alt="Overview on mobile" width="200"> |
+| Status strip, three things needing attention, activity below. | Same surface, restructured — not a squeezed desktop. |
+
+## Quick start
 
 ```bash
+git clone https://github.com/omoniyiux/concierge3.git
+cd concierge3
+npm install
 npm run dev     # http://localhost:3000
+```
+
+Runs on demo data out of the box — no database or environment variables needed.
+
+To connect a real Postgres (optional):
+
+```bash
+cp .env.example .env.local   # add DATABASE_URL, then:
+npm run dev
+```
+
+```bash
 npm run build
 npm run lint
 ```
 
-## What this is, and what it is not
-
-**Preserved:** the product. Terminology (Agent, Site Brain, routing destinations, moments,
-requests), the required seven Site Brain cards, the six routing moments, the launch
-sequence, the entitlement model, and the multi-tenant shape — all taken from `PRD.md`
-in the existing `concierge-source` codebase and from the product screenshots.
-
-**Replaced:** the experience. Information architecture, visual system, density,
-interaction quality, empty/loading/error states, responsive behaviour.
-
-`concierge-source` was read, not modified. The Symphony implementation is preserved on
-the `symphony-reference` branch and the `symphony-v1` tag.
-
 ## Design system
 
-Symphony's *discipline* — calm canvas, borders before shadows, restrained colour, one
-primary action per surface, type carrying the hierarchy. Concierge's *identity*.
+The *discipline* of the Symphony study (see [background](#project-background)) — calm
+canvas, borders before shadows, restrained colour, one primary action per surface, type
+carrying the hierarchy. Concierge's own *identity*.
 
 | | Value | Source |
 |---|---|---|
@@ -136,3 +195,29 @@ with form controls carrying their own treatment so the ring does not double up),
 accessible labels on every icon-only control, `role="switch"` / `"tab"` / `"progressbar"`
 where appropriate, status never conveyed by colour alone, and `prefers-reduced-motion`
 honoured globally.
+
+## Project background
+
+Concierge is a complete rebuild of an existing product experience — the same product,
+redesigned under the design discipline established in an earlier study codenamed
+*Symphony*.
+
+**Preserved:** the product itself. Terminology (Agent, Site Brain, routing destinations,
+moments, requests), the seven required Site Brain cards, the six routing moments, the
+launch sequence, the entitlement model, and the multi-tenant shape.
+
+**Replaced:** the experience. Information architecture, visual system, density,
+interaction quality, empty/loading/error states, responsive behaviour.
+
+The original source codebase was read, not modified. The Symphony implementation is
+preserved on the `symphony-reference` branch and the `symphony-v1` tag.
+
+## Contributing
+
+Issues and pull requests are welcome. The design system is the constraint that matters
+most: no arbitrary hex values, radii or shadows — everything comes from the `@theme`
+tokens in `src/app/globals.css`, and type comes from the named scale.
+
+## License
+
+[MIT](LICENSE) © Olaifa Promise
