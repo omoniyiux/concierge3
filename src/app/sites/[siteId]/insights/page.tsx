@@ -27,6 +27,8 @@ import {
 } from "@/components/ui";
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { TryItSheet } from "@/components/agent/TryItSheet";
+import { BenchmarkPanel } from "@/components/insights/BenchmarkPanel";
+import { peerSetFor } from "@/lib/benchmarks";
 import { ArrowRight, BrainIcon, CheckIcon, PlusIcon, SparkIcon, UploadIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import {
@@ -93,6 +95,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
   const [justAnswered, setJustAnswered] = useState<{ question: string; body: string } | null>(null);
 
   const hasHistory = conversationsFor(siteId).length > 0;
+  const peers = peerSetFor(siteId);
   const handled = [...answered, ...dismissed];
   const open = UNANSWERED.filter((u) => u.status === "open" && !handled.includes(u.id));
   const conversations = METRICS.find((m) => m.key === "conversations")!;
@@ -307,6 +310,13 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
           </p>
         </Panel>
       </div>
+
+      {/* Against everyone else -------------------------------------------- */}
+      {peers && (
+        <section className="mt-6">
+          <BenchmarkPanel peers={peers} />
+        </section>
+      )}
 
       {/* Agent behaviour -------------------------------------------------- */}
       <section className="mt-6">
