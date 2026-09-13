@@ -70,10 +70,7 @@ function BenchmarkRow({ benchmark: b }: { benchmark: Benchmark }) {
         <div className="absolute inset-x-0 top-[9px] h-1 bg-surface-sunken" />
         {/* This site */}
         <div
-          className={cx(
-            "absolute top-[9px] h-1",
-            where === "behind" ? "bg-warning" : "bg-ink",
-          )}
+          className={cx("absolute top-[9px] h-1", where === "behind" ? "bg-warning" : "bg-ink")}
           style={{ width: pct(b.value) }}
         />
         {/* The median and the top quartile, as marks rather than bars */}
