@@ -37,6 +37,7 @@ export function Composer({
   takenOverBy,
   onTakeOver,
   onSend,
+  onNote,
 }: {
   /** True while the visitor is still on the page and reachable there. */
   live: boolean;
@@ -46,6 +47,8 @@ export function Composer({
   takenOverBy?: { name: string; at: string };
   onTakeOver: () => void;
   onSend: (channel: MessageChannel, body: string) => void;
+  /** Opens an internal note in the thread — never sent to the visitor. */
+  onNote?: () => void;
 }) {
   const options = ORDER.map((channel) => {
     const grant = consent.find((c) => c.channel === channel);
@@ -89,6 +92,11 @@ export function Composer({
           <AgentIcon size={14} className="shrink-0 text-accent" />
           Concierge is handling this. Take it over and it stops replying on this thread.
         </p>
+        {onNote && (
+          <Button size="sm" variant="tertiary" onClick={onNote}>
+            Add a note
+          </Button>
+        )}
         <Button size="sm" variant="secondary" onClick={onTakeOver}>
           Take over
         </Button>
@@ -147,6 +155,11 @@ export function Composer({
           <SparkIcon size={12} className="text-accent" />
           {takenOverBy.name} is on this thread. Concierge is holding off.
         </p>
+        {onNote && (
+          <Button size="sm" variant="tertiary" onClick={onNote} className="mr-auto">
+            Add a note
+          </Button>
+        )}
         <Button
           size="sm"
           leading={<SendIcon size={13} />}
