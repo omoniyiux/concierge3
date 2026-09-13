@@ -4,18 +4,12 @@ import { Suspense, use, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import { IntegrationsSettings } from "@/components/integrations/IntegrationsSettings";
-import {
-  Badge,
-  Button,
-  Card,
-  Field,
-  Input,
-  LinkButton,
-  Panel,
-  SectionHead,
-  Select,
-  Toggle,
-} from "@/components/ui";
+import { BillingSection } from "@/components/billing/BillingSection";
+import { TeamSection } from "@/components/settings/TeamSection";
+import { InstallGuides } from "@/components/settings/InstallGuides";
+import { installSnippet } from "@/lib/install";
+import { Modal, ModalSection } from "@/components/ui/Modal";
+import { Button, Card, Field, Input, LinkButton, Panel, SectionHead, Select, Toggle } from "@/components/ui";
 import {
   AgentIcon,
   BillingIcon,
@@ -23,7 +17,6 @@ import {
   CheckIcon,
   CodeIcon,
   CopyIcon,
-  GlobeIcon,
   InstallIcon,
   IntegrationsIcon,
   LockIcon,
@@ -34,7 +27,7 @@ import {
   TrashIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { ORG, TEAM, getSite } from "@/lib/demo-data";
+import { getSite } from "@/lib/demo-data";
 import { relativeTime } from "@/lib/format";
 
 const SECTIONS = [
@@ -88,8 +81,12 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
   };
   const [accent, setAccent] = useState("#FF7A00");
   const [copied, setCopied] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [checkedAt, setCheckedAt] = useState<Date | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
 
-  const snippet = `<script src="https://cdn.poweredbyconcierge.com/agent.js"\n data-site="${site.id}"defer></script>`;
+  const snippet = installSnippet(site.id);
 
   return (
     <PageContainer wide>
@@ -101,7 +98,10 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
 
       <div className="grid items-start gap-8 lg:grid-cols-[196px_1fr]">
         {/* Pinned so the section list stays put while the panel scrolls. */}
-        <nav aria-label="Settings sections" className="lg:sticky lg:top-0 lg:max-h-dvh lg:self-start lg:overflow-y-auto lg:pb-6">
+        <nav
+          aria-label="Settings sections"
+          className="lg:sticky lg:top-0 lg:max-h-dvh lg:self-start lg:overflow-y-auto lg:pb-6"
+        >
           <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
             {SECTIONS.map(({ key, label, Icon }) => {
               const active = key === section;
@@ -189,7 +189,12 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                   hint="The Agent stops answering immediately and all conversations are removed after 30 days."
                   className="mb-4"
                 />
-                <Button variant="danger" size="sm" leading={<TrashIcon size={13} />}>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  leading={<TrashIcon size={13} />}
+                  onClick={() => setDeleting(true)}
+                >
                   Delete {site.name}
                 </Button>
               </Panel>
@@ -308,70 +313,35 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                     {site.installState === "detected" ? "Concierge is on your site" : "Not detected yet"}
                   </p>
                   <p className="t-body-sm mt-0.5 text-text-tertiary">
-                    Last checked {relativeTime(site.updatedAt)} on {site.url}
+                    {checking
+                      ? `Looking for the script on ${site.url}…`
+                      : checkedAt
+                        ? `Checked just now on ${site.url}`
+                        : `Last checked ${relativeTime(site.updatedAt)} on ${site.url}`}
                   </p>
                 </div>
-                <Button variant="secondary" size="sm">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={checking}
+                  onClick={() => {
+                    setChecking(true);
+                    setCheckedAt(null);
+                    setTimeout(() => {
+                      setChecking(false);
+                      setCheckedAt(new Date());
+                    }, 1100);
+                  }}
+                >
                   Check again
                 </Button>
               </Card>
 
-              <Panel className="p-6">
-                <SectionHead
-                  title="Platform guides"
-                  hint="Step-by-step for the usual suspects."
-                  className="mb-4"
-                />
-                <div className="grid gap-2.5 sm:grid-cols-3">
-                  {["WordPress", "Shopify", "Webflow", "Squarespace", "Wix", "Custom HTML"].map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      className="rounded-xl bg-surface-subtle px-3 py-2.5 text-left text-[12px] transition-colors hover:border-line-strong"
-                    >
-                      <span className="block font-medium">{p}</span>
-                      <span className="mt-0.5 block text-[11.5px] text-text-tertiary">2 minute guide</span>
-                    </button>
-                  ))}
-                </div>
-              </Panel>
+              <InstallGuides snippet={snippet} />
             </>
           )}
 
-          {section === "team" && (
-            <Panel className="overflow-hidden">
-              <SectionHead
-                title="Who can see what"
-                hint={`${ORG.seatsUsed} of ${ORG.seatsIncluded} seats used on the ${ORG.plan} plan.`}
-                action={<Button size="sm">Invite someone</Button>}
-                className="p-6 pb-4"
-              />
-              <ul className="divide-y divide-divider border-t border-divider">
-                {TEAM.map((m) => (
-                  <li key={m.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-surface-subtle text-[10px] font-semibold text-text-secondary">
-                      {(m.name || m.email)
-                        .split(/[\s@]/)
-                        .slice(0, 2)
-                        .map((w) => w[0]?.toUpperCase())
-                        .join("")}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[12.5px] font-medium">{m.name || m.email}</span>
-                      <span className="block truncate text-[12.5px] text-text-tertiary">
-                        {m.name ? m.email : `Invited ${m.invitedAt ? relativeTime(m.invitedAt) : ""}`}
-                      </span>
-                    </span>
-                    <Badge tone={m.role === "owner" ? "accent" : "neutral"}>{m.role}</Badge>
-                    <span className="text-[12.5px] text-text-tertiary">
-                      {m.siteIds === null ? "All sites" : `${m.siteIds.length} site`}
-                    </span>
-                    {m.status === "invited" && <Badge tone="review">Pending</Badge>}
-                  </li>
-                ))}
-              </ul>
-            </Panel>
-          )}
+          {section === "team" && <TeamSection siteId={siteId} />}
 
           {section === "notifications" && (
             <Panel className="p-6">
@@ -435,7 +405,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
                     control={<Toggle checked onChange={() => undefined} label="Restrict to domain" />}
                   />
                 </div>
-                <p className="mt-4 flex items-center gap-2 bg-surface-subtle-subtle p-3.5 text-[12px] text-text-secondary">
+                <p className="mt-4 flex items-center gap-2 bg-surface-subtle p-3.5 text-[12px] text-text-secondary">
                   <LockIcon size={14} className="shrink-0 text-text-tertiary" />
                   Concierge never reads pages behind a login, and never stores payment details.
                 </p>
@@ -445,59 +415,65 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
 
           {section === "integrations" && <IntegrationsSettings />}
 
-          {section === "billing" && (
-            <>
-              <Card className="p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="t-eyebrow text-text-muted">Current plan</p>
-                    <p className="t-section mt-2 capitalize">{ORG.plan}</p>
-                    <p className="t-body-sm mt-1.5 text-text-tertiary">
-                      {ORG.siteLimit} sites · unlimited conversations · renews 1 October 2026
-                    </p>
-                  </div>
-                  <Button variant="secondary">Change plan</Button>
-                </div>
-              </Card>
-
-              <Panel className="p-6">
-                <SectionHead title="This month" className="mb-5" />
-                <dl className="grid gap-4 sm:grid-cols-3">
-                  {[
-                    ["Conversations", "386", "Unlimited"],
-                    ["SMS sent", "27", "of 250"],
-                    ["Sites", "3", `of ${ORG.siteLimit}`],
-                  ].map(([label, value, limit]) => (
-                    <div key={label}>
-                      <dt className="t-eyebrow text-text-muted">{label}</dt>
-                      <dd className="t-num mt-2 text-[15.5px] leading-none">
-                        {value}
-                        <span className="ml-1.5 text-[11.5px] font-normal text-text-tertiary">{limit}</span>
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </Panel>
-
-              <Panel className="p-6">
-                <SectionHead title="Invoices" className="mb-4" />
-                <ul className="divide-y divide-divider">
-                  {["1 September 2026", "1 August 2026", "1 July 2026"].map((d) => (
-                    <li key={d} className="flex items-center gap-4 py-3">
-                      <span className="min-w-0 flex-1 text-[11.5px]">{d}</span>
-                      <span className="text-[11.5px] tabular-nums">$99.00</span>
-                      <Badge tone="approved">Paid</Badge>
-                      <Button size="sm" variant="tertiary">
-                        Download
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </Panel>
-            </>
-          )}
+          {section === "billing" && <BillingSection />}
         </div>
       </div>
+
+      {/* Deleting a site is the one action here that cannot be undone, so it
+          asks for the name rather than for a click. */}
+      <Modal
+        open={deleting}
+        size="sm"
+        onClose={() => {
+          setDeleting(false);
+          setConfirmName("");
+        }}
+        eyebrow="Danger zone"
+        title={`Delete ${site.name}?`}
+        description="The Agent stops answering immediately. Conversations, leads and knowledge are removed permanently after 30 days."
+        footer={
+          <>
+            <Button
+              variant="tertiary"
+              onClick={() => {
+                setDeleting(false);
+                setConfirmName("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              disabled={confirmName.trim() !== site.name}
+              leading={<TrashIcon size={13} />}
+              onClick={() => {
+                setDeleting(false);
+                setConfirmName("");
+              }}
+            >
+              Delete this site
+            </Button>
+          </>
+        }
+      >
+        <ModalSection>
+          <ul className="space-y-2 text-[12.5px] leading-[1.5] text-text-secondary">
+            <li>The script on {site.url} stops responding within a minute.</li>
+            <li>Routing destinations and integrations stay connected to your other sites.</li>
+            <li>Invoices and billing history are kept, because you may still need them.</li>
+          </ul>
+        </ModalSection>
+        <ModalSection>
+          <Field label={`Type “${site.name}” to confirm`} htmlFor="confirm-delete">
+            <Input
+              id="confirm-delete"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={site.name}
+            />
+          </Field>
+        </ModalSection>
+      </Modal>
     </PageContainer>
   );
 }
@@ -521,5 +497,3 @@ function SettingRow({
     </div>
   );
 }
-
-export { GlobeIcon };
