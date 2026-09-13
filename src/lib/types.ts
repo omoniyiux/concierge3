@@ -60,6 +60,12 @@ export interface Site {
   product: SiteProduct;
   status: SiteStatus;
   installState: InstallState;
+  /**
+   * What the site is built with, detected on the first read. It decides which
+   * install route is offered first — most owners cannot paste a script, but
+   * nearly all of them can install an app from their platform's own store.
+   */
+  platform?: "wordpress" | "shopify" | "webflow" | "squarespace" | "wix" | "custom";
   accentColor: string;
   createdAt: string;
   updatedAt: string;
@@ -853,6 +859,20 @@ export interface ConciergePage {
   styleOverrides: SectionStyleOverrides;
   published: boolean;
   updatedAt: string;
+}
+
+/**
+ * The only facts about a site that the page renderer actually reads. Narrower
+ * than `Site` on purpose: publishing freezes a copy of these alongside the
+ * document, and a snapshot should carry what a visitor's page needs, not the
+ * workspace's internal launch state.
+ *
+ * `Site` satisfies this structurally, so the editor still passes its own.
+ */
+export interface PublishedSiteFacts {
+  name: string;
+  url: string;
+  openingHours: OpeningHours;
 }
 
 /**
