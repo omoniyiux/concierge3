@@ -1,6 +1,13 @@
 /** Shared formatting so numbers and times read the same on every surface. */
 
-export function relativeTime(iso: string, now = new Date("2026-09-07T09:00:00Z")): string {
+import { simNow } from "@/lib/sim/clock";
+
+/**
+ * Relative to the simulated present rather than the wall clock, so a
+ * conversation the simulation created a moment ago reads as "just now"
+ * instead of as a date eight months away.
+ */
+export function relativeTime(iso: string, now = simNow()): string {
   const then = new Date(iso);
   const mins = Math.round((now.getTime() - then.getTime()) / 60000);
   if (mins < 1) return "just now";
