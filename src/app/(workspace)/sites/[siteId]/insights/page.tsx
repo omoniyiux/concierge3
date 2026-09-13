@@ -28,6 +28,7 @@ import {
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { TryItSheet } from "@/components/agent/TryItSheet";
 import { BenchmarkPanel } from "@/components/insights/BenchmarkPanel";
+import { AnswerQualityPanel } from "@/components/quality/AnswerQuality";
 import { peerSetFor } from "@/lib/benchmarks";
 import { ArrowRight, BrainIcon, CheckIcon, PlusIcon, SparkIcon, UploadIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
@@ -310,6 +311,16 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
           </p>
         </Panel>
       </div>
+
+      {/* When it got something wrong -------------------------------------- */}
+      <section className="mt-10">
+        <SectionHead
+          title="Answer quality"
+          hint="What your team flagged, what came of it, and what Concierge has actually been saying."
+          className="mb-3.5"
+        />
+        <AnswerQualityPanel siteId={siteId} />
+      </section>
 
       {/* Against everyone else -------------------------------------------- */}
       {peers && (
