@@ -2,13 +2,7 @@
 
 import { ConciergeMark } from "@/components/shell/ConciergeMark";
 import { Sparkline } from "@/components/ui/charts";
-import {
-  ChatSticker,
-  GapSticker,
-  HandoffSticker,
-  LeadSticker,
-  SalesSticker,
-} from "@/components/stickers";
+import { ChatSticker, GapSticker, HandoffSticker, LeadSticker, SalesSticker } from "@/components/stickers";
 import { cx } from "@/lib/cx";
 import { money } from "@/lib/format";
 import type { LedgerPeriod, MetricPoint, Site, UnansweredQuestion } from "@/lib/types";
@@ -71,9 +65,7 @@ export function WeeklyDigest({ data }: { data: DigestData }) {
       {/* ---- The line that only we can write --------------------------- */}
       <section className="bg-accent-subtle px-6 py-6">
         <p className="t-eyebrow text-accent-ink">While you were closed</p>
-        <p className="t-display mt-3 text-[30px] leading-[1.05]">
-          {afterHours} conversations
-        </p>
+        <p className="t-display mt-3 text-[30px] leading-[1.05]">{afterHours} conversations</p>
         <p className="t-body mt-3 text-text-secondary">
           {afterHours} of this week&rsquo;s {conversations} arrived outside your opening hours. Every one of
           them was answered.
@@ -90,7 +82,11 @@ export function WeeklyDigest({ data }: { data: DigestData }) {
         ].map(({ Sticker, value, label }, i) => (
           <div
             key={label}
-            className={cx("px-6 py-5", i % 2 === 1 && "border-l border-divider", i > 1 && "border-t border-divider")}
+            className={cx(
+              "px-6 py-5",
+              i % 2 === 1 && "border-l border-divider",
+              i > 1 && "border-t border-divider",
+            )}
           >
             <Sticker size={26} />
             <p className="t-num mt-3 text-[22px] leading-none">{value}</p>
@@ -124,8 +120,8 @@ export function WeeklyDigest({ data }: { data: DigestData }) {
               <div className="min-w-0">
                 <p className="text-[12.5px] font-medium">&ldquo;{topGap.question}&rdquo;</p>
                 <p className="mt-1.5 text-[12px] leading-[1.5] text-text-secondary">
-                  Asked {topGap.askCount} times this week and answered by nobody. Adding it takes a minute
-                  and Concierge uses it immediately.
+                  Asked {topGap.askCount} times this week and answered by nobody. Adding it takes a minute and
+                  Concierge uses it immediately.
                 </p>
               </div>
             </div>
