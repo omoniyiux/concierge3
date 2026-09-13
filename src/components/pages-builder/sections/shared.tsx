@@ -1,32 +1,23 @@
-"use client";
-
-import { createContext, useContext } from "react";
 import type { PageCta, PageImage } from "@/lib/types";
 
-/**
- * One set of renderers serves both the editor canvas and, from Phase 4, the
- * published site. The only thing that legitimately differs between them is
- * whether links do anything, so that is the only thing this context carries —
- * keeping the two outputs identical by construction rather than by discipline.
- */
-export type RenderMode = "canvas" | "live";
+/* ============================================================================
+   SHARED SECTION PIECES
+   ----------------------------------------------------------------------------
+   No "use client" and no hooks, deliberately. These render in two places: the
+   editor canvas, where they are pulled into the client bundle, and the
+   published page, where they are rendered to HTML on the server. Keeping them
+   free of client-only APIs is what lets one set of components serve both, so
+   the preview cannot drift from the live site.
 
-const RenderModeContext = createContext<RenderMode>("live");
-
-export const RenderModeProvider = RenderModeContext.Provider;
-
-export const useRenderMode = () => useContext(RenderModeContext);
+   Nothing here has to know it is in the editor. The canvas already swallows
+   every click in the capture phase to make the page inert, so a link needs no
+   special casing to stop it navigating while someone is editing.
+   ========================================================================== */
 
 /** A call to action. In the canvas it is inert; nothing should navigate away. */
 export function Cta({ cta, variant = "primary" }: { cta: PageCta; variant?: "primary" | "ghost" }) {
-  const mode = useRenderMode();
   return (
-    <a
-      className={`ps-btn ps-btn--${variant}`}
-      href={cta.href ?? "#"}
-      data-action-id={cta.actionId}
-      onClick={mode === "canvas" ? (e) => e.preventDefault() : undefined}
-    >
+    <a className={`ps-btn ps-btn--${variant}`} href={cta.href ?? "#"} data-action-id={cta.actionId}>
       {cta.label}
     </a>
   );
