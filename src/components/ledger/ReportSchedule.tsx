@@ -168,8 +168,8 @@ export function ReportSchedule({
             </Button>
           </div>
           <p className="mt-3 text-[11.5px] leading-[1.5] text-text-tertiary">
-            Recipients see the report only. They cannot open conversations, leads or settings, and adding
-            one does not use a seat.
+            Recipients see the report only. They cannot open conversations, leads or settings, and adding one
+            does not use a seat.
           </p>
         </div>
 
