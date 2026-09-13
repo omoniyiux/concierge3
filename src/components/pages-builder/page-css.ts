@@ -1,4 +1,18 @@
-import type { PageTheme } from "@/lib/types";
+import {
+  BREAKPOINT_ORDER,
+  STYLE_PROPERTIES,
+  getBreakpoint,
+  styleDeclKey,
+} from "@/lib/pages-builder";
+import type {
+  ConciergePage,
+  PageTheme,
+  SectionBackground,
+  SectionSpacing,
+  SectionStyle,
+  SectionStyleProperty,
+  SectionWidth,
+} from "@/lib/types";
 import { themeVarsCss } from "@/lib/page-theme";
 
 /* ============================================================================
@@ -42,13 +56,24 @@ a { color: inherit; }
 
 /* ---- Structure ----------------------------------------------------------- */
 
+/* Every dial resolves to a custom property before it is used. That indirection
+   is what lets the published page carry the author's responsive rules as media
+   queries: a breakpoint override is one custom-property declaration scoped to
+   a section id, with no need to restate the rule it is overriding. */
 .ps-section {
   --ps-pad: 64px;
   --ps-max: 1080px;
   --ps-cols: 3;
+  --ps-align: left;
+  --ps-justify: flex-start;
+  --ps-mi: 0;
+  --ps-section-bg: var(--ps-bg);
+  --ps-section-fg: var(--ps-fg);
+  --ps-section-muted: var(--ps-muted);
   padding-block: calc(var(--ps-pad) * var(--ps-density));
-  background: var(--ps-bg);
-  color: var(--ps-fg);
+  background: var(--ps-section-bg);
+  color: var(--ps-section-fg);
+  text-align: var(--ps-align);
 }
 
 .ps-section[data-spacing="compact"] { --ps-pad: 36px; }
@@ -65,11 +90,19 @@ a { color: inherit; }
 .ps-section[data-cols="3"] { --ps-cols: 3; }
 .ps-section[data-cols="4"] { --ps-cols: 4; }
 
-.ps-section[data-bg="subtle"]  { background: var(--ps-subtle); }
-.ps-section[data-bg="inverse"] { background: var(--ps-inverse-bg); color: var(--ps-inverse-fg); }
-.ps-section[data-bg="brand"]   { background: var(--ps-brand); color: var(--ps-brand-ink); }
+.ps-section[data-bg="subtle"]  { --ps-section-bg: var(--ps-subtle); }
+.ps-section[data-bg="inverse"] {
+  --ps-section-bg: var(--ps-inverse-bg);
+  --ps-section-fg: var(--ps-inverse-fg);
+  --ps-section-muted: var(--ps-inverse-muted);
+}
+.ps-section[data-bg="brand"] {
+  --ps-section-bg: var(--ps-brand);
+  --ps-section-fg: var(--ps-brand-ink);
+  --ps-section-muted: currentColor;
+}
 
-.ps-section[data-align="center"] { text-align: center; }
+.ps-section[data-align="center"] { --ps-align: center; --ps-justify: center; --ps-mi: auto; }
 
 .ps-inner {
   max-width: var(--ps-max);
@@ -103,41 +136,34 @@ a { color: inherit; }
 
 .ps-lede {
   margin: 18px 0 0;
+  margin-inline: var(--ps-mi);
   font-size: 18px;
   line-height: 1.55;
-  color: var(--ps-muted);
+  color: var(--ps-section-muted);
   max-width: 58ch;
   text-wrap: pretty;
 }
 
-.ps-section[data-align="center"] .ps-lede,
-.ps-section[data-align="center"] .ps-intro { margin-inline: auto; }
-
 .ps-intro {
   margin: 14px 0 0;
-  color: var(--ps-muted);
+  margin-inline: var(--ps-mi);
+  color: var(--ps-section-muted);
   max-width: 62ch;
   text-wrap: pretty;
 }
 
-.ps-body { margin: 0; color: var(--ps-muted); }
+.ps-body { margin: 0; color: var(--ps-section-muted); }
 
 .ps-note {
   margin-top: 28px;
   font-size: 14px;
-  color: var(--ps-muted);
+  color: var(--ps-section-muted);
 }
-
-/* Inverse and brand fills need their own quiet tone; the light one vanishes. */
-[data-bg="inverse"] .ps-lede,
-[data-bg="inverse"] .ps-intro,
-[data-bg="inverse"] .ps-body,
-[data-bg="inverse"] .ps-note { color: var(--ps-inverse-muted); }
 
 [data-bg="brand"] .ps-lede,
 [data-bg="brand"] .ps-intro,
 [data-bg="brand"] .ps-body,
-[data-bg="brand"] .ps-note { color: inherit; opacity: 0.82; }
+[data-bg="brand"] .ps-note { opacity: 0.82; }
 
 /* ---- Buttons ------------------------------------------------------------- */
 
@@ -148,7 +174,7 @@ a { color: inherit; }
   margin-top: 30px;
 }
 
-.ps-section[data-align="center"] .ps-actions { justify-content: center; }
+.ps-actions { justify-content: var(--ps-justify); }
 
 .ps-btn {
   display: inline-flex;
@@ -252,9 +278,8 @@ a { color: inherit; }
   align-items: center;
   gap: 11px;
 }
-.ps-section[data-align="center"] .ps-attribution { justify-content: center; }
-.ps-attribution__name span { display: block; font-weight: 400; color: var(--ps-muted); }
-[data-bg="inverse"] .ps-attribution__name span { color: var(--ps-inverse-muted); }
+.ps-attribution { justify-content: var(--ps-justify); }
+.ps-attribution__name span { display: block; font-weight: 400; color: var(--ps-section-muted); }
 
 .ps-avatar {
   width: 38px;
@@ -276,7 +301,7 @@ a { color: inherit; }
   letter-spacing: -0.02em;
   margin-top: 12px;
 }
-.ps-tier__price span { font-size: 14px; font-weight: 400; color: var(--ps-muted); margin-left: 6px; }
+.ps-tier__price span { font-size: 14px; font-weight: 400; color: var(--ps-section-muted); margin-left: 6px; }
 
 .ps-features { list-style: none; margin: 20px 0 24px; padding: 0; display: grid; gap: 9px; font-size: 14.5px; }
 .ps-features li { padding-left: 20px; position: relative; }
@@ -292,11 +317,11 @@ a { color: inherit; }
 /* An absolute marker stays pinned to the box's left edge, which strands it
    when the author centres the section. Inline it instead so the dash travels
    with the text and the list still reads as a list. */
-[data-align="center"] .ps-features li,
-[data-align="center"] .ps-highlights li { padding-left: 0; }
+.ps-section[data-align="center"] .ps-features li,
+.ps-section[data-align="center"] .ps-highlights li { padding-left: 0; }
 
-[data-align="center"] .ps-features li::before,
-[data-align="center"] .ps-highlights li::before {
+.ps-section[data-align="center"] .ps-features li::before,
+.ps-section[data-align="center"] .ps-highlights li::before {
   position: static;
   display: inline-block;
   margin-right: 9px;
@@ -309,7 +334,7 @@ a { color: inherit; }
 .ps-faq__item { padding: 22px 0; border-top: 1px solid var(--ps-line); }
 .ps-faq__item:last-child { border-bottom: 1px solid var(--ps-line); }
 .ps-faq__q { margin: 0; font-size: 16.5px; font-weight: 600; }
-.ps-faq__a { margin: 8px 0 0; color: var(--ps-muted); text-wrap: pretty; }
+.ps-faq__a { margin: 8px 0 0; color: var(--ps-section-muted); text-wrap: pretty; }
 
 /* ---- About --------------------------------------------------------------- */
 
@@ -430,3 +455,90 @@ a { color: inherit; }
 /** The complete stylesheet for a rendered page, tokens included. */
 export const pageStylesheet = (theme: PageTheme): string =>
   `:root {\n${themeVarsCss(theme)}\n}\n${BASE}`;
+
+/* ============================================================================
+   RESPONSIVE CSS FOR THE PUBLISHED PAGE
+   ----------------------------------------------------------------------------
+   The canvas shows one breakpoint at a time and resolves the cascade in JS.
+   A published page is viewed at every width at once, so the same override
+   table is emitted as media queries here.
+
+   One source, two outputs. The alternative — letting the live site fall back
+   to plain CSS breakpoints — would mean the phone layout an owner arranged in
+   the editor was not the phone layout their visitors got.
+   ========================================================================== */
+
+/** How each dial reaches the page: as a custom property on the section. */
+const DIAL_VAR: Record<SectionStyleProperty, (value: SectionStyle[SectionStyleProperty]) => string> = {
+  spacing: (v) => `--ps-pad:${SPACING_PX[v as SectionSpacing]}`,
+  width: (v) => `--ps-max:${WIDTH_PX[v as SectionWidth]}`,
+  columns: (v) => `--ps-cols:${v as number}`,
+  align: (v) =>
+    v === "center"
+      ? "--ps-align:center;--ps-justify:center;--ps-mi:auto"
+      : "--ps-align:left;--ps-justify:flex-start;--ps-mi:0",
+  background: (v) => BACKGROUND_VARS[v as SectionBackground],
+};
+
+const SPACING_PX: Record<SectionSpacing, string> = {
+  compact: "36px",
+  normal: "64px",
+  roomy: "92px",
+  grand: "124px",
+};
+
+const WIDTH_PX: Record<SectionWidth, string> = {
+  narrow: "680px",
+  normal: "1080px",
+  wide: "1320px",
+};
+
+const BACKGROUND_VARS: Record<SectionBackground, string> = {
+  default: "--ps-section-bg:var(--ps-bg);--ps-section-fg:var(--ps-fg);--ps-section-muted:var(--ps-muted)",
+  subtle:
+    "--ps-section-bg:var(--ps-subtle);--ps-section-fg:var(--ps-fg);--ps-section-muted:var(--ps-muted)",
+  inverse:
+    "--ps-section-bg:var(--ps-inverse-bg);--ps-section-fg:var(--ps-inverse-fg);--ps-section-muted:var(--ps-inverse-muted)",
+  brand:
+    "--ps-section-bg:var(--ps-brand);--ps-section-fg:var(--ps-brand-ink);--ps-section-muted:currentColor",
+};
+
+/**
+ * Media queries for every override on the page, narrowest last so the cascade
+ * resolves the same way the editor does.
+ */
+export function responsiveCss(page: ConciergePage): string {
+  const blocks: string[] = [];
+
+  for (const breakpoint of BREAKPOINT_ORDER) {
+    const maxWidth = getBreakpoint(breakpoint).maxWidth;
+    if (maxWidth === null) continue;
+
+    const rules: string[] = [];
+    for (const section of page.sections) {
+      const declarations = STYLE_PROPERTIES.map((property) => {
+        const decl = page.styleOverrides[styleDeclKey(section.id, breakpoint, property)];
+        return decl === undefined ? null : DIAL_VAR[decl.property](decl.value);
+      }).filter((d): d is string => d !== null);
+
+      if (declarations.length > 0) {
+        rules.push(`[data-section-id="${section.id}"]{${declarations.join(";")}}`);
+      }
+    }
+
+    if (rules.length > 0) {
+      blocks.push(`@media (max-width:${maxWidth}px){${rules.join("")}}`);
+    }
+  }
+
+  /* Below the narrowest authored breakpoint a multi-column grid is unusable no
+     matter what the author chose, so one floor is applied. It sits after the
+     authored rules deliberately: it is a safety net, not a preference. */
+  blocks.push(
+    `@media (max-width:560px){.ps-section{--ps-cols:1}` +
+      `.ps-hero__layout[data-media="true"],.ps-about__layout[data-media="true"]{grid-template-columns:1fr}` +
+      `.ps-header__inner{flex-wrap:wrap;gap:12px}.ps-nav{margin-left:0}}`,
+  );
+
+  return blocks.join("\n");
+}
