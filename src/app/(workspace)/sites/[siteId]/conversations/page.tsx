@@ -6,6 +6,14 @@ import Link from "next/link";
 import { PageContainer } from "@/components/shell/AppShell";
 import { Composer } from "@/components/conversations/Composer";
 import { FollowUpCard } from "@/components/conversations/FollowUpCard";
+import { FlagAnswerButton } from "@/components/quality/AnswerQuality";
+import {
+  AssignMenu,
+  NoteBubble,
+  NoteComposer,
+  type Assignee,
+  type InternalNote,
+} from "@/components/conversations/Assignment";
 import { Badge, Button, EmptyState, IconButton, LinkButton, SearchInput, Select } from "@/components/ui";
 import {
   ActionsIcon,
@@ -272,6 +280,11 @@ function ConversationDetail({
   const [followUps, setFollowUps] = useState<FollowUp[]>(getFollowUps(c.id));
   // Below xl the visitor panel is a sheet rather than a column.
   const [detailsOpen, setDetailsOpen] = useState(false);
+  // Who has picked this thread up, and what the team has said about it
+  // without the visitor seeing.
+  const [assignee, setAssignee] = useState<Assignee>(null);
+  const [notes, setNotes] = useState<InternalNote[]>([]);
+  const [noting, setNoting] = useState(false);
 
   const messages = [...c.messages, ...sent];
   // A thread is only reachable on the page while the visitor is still there.
@@ -340,6 +353,7 @@ function ConversationDetail({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <AssignMenu assignee={assignee} onAssign={setAssignee} />
             <Button
               variant="tertiary"
               size="sm"
@@ -426,6 +440,8 @@ function ConversationDetail({
                         {Math.round(m.confidence * 100)}% confidence
                       </span>
                     )}
+                    {/* Anyone can say "that was wrong", from the answer itself. */}
+                    {m.author === "agent" && <FlagAnswerButton said={m.body} />}
                     {m.citations?.map((cit) => (
                       <span
                         key={cit.itemId}
@@ -440,6 +456,19 @@ function ConversationDetail({
               </div>
             );
           })}
+
+          {notes.map((n) => (
+            <NoteBubble key={n.id} note={n} />
+          ))}
+
+          {noting && (
+            <NoteComposer
+              onAdd={(n) => {
+                setNotes((list) => [...list, n]);
+                setNoting(false);
+              }}
+            />
+          )}
 
           {followUps.map((f) => (
             <FollowUpCard
@@ -485,6 +514,7 @@ function ConversationDetail({
           takenOverBy={takenOverBy}
           onTakeOver={takeOver}
           onSend={send}
+          onNote={() => setNoting(true)}
         />
       </div>
 
