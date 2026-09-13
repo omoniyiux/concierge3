@@ -4,9 +4,11 @@ import { useRef, useState } from "react";
 import { Badge, Button, Card, Panel, SectionHead } from "@/components/ui";
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { InvoiceDocument } from "@/components/billing/InvoiceDocument";
-import { CheckIcon, DotIcon, UploadIcon } from "@/components/icons";
+import { ArrowRight, CheckIcon, DotIcon, UploadIcon } from "@/components/icons";
+import { LinkButton, ProgressBar } from "@/components/ui";
 import { cx } from "@/lib/cx";
-import { ORG } from "@/lib/demo-data";
+import { LEDGER, ORG } from "@/lib/demo-data";
+import { money } from "@/lib/format";
 import { INVOICES, invoiceMoney, invoiceShortDate, invoiceTotals, type Invoice } from "@/lib/invoices";
 import { printElement } from "@/lib/print";
 
@@ -41,7 +43,7 @@ const PLANS = [
   },
 ];
 
-export function BillingSection() {
+export function BillingSection({ siteId }: { siteId: string }) {
   const [plan, setPlan] = useState(ORG.plan as string);
   const [changing, setChanging] = useState(false);
   const [viewing, setViewing] = useState<Invoice | null>(null);
@@ -64,23 +66,37 @@ export function BillingSection() {
         </div>
       </Card>
 
+      {/* What it returned against what it cost. The ledger already knows. */}
+      <Card className="overflow-hidden border-accent-line">
+        <div className="flex flex-wrap items-start justify-between gap-6 bg-accent-subtle p-6">
+          <div className="min-w-0 max-w-[46ch]">
+            <p className="t-eyebrow text-accent-ink">This month</p>
+            <h3 className="t-feature mt-2.5">
+              Concierge returned {money(LEDGER.confirmedValue, "USD")} in confirmed money
+            </h3>
+            <p className="t-body mt-2.5 text-text-secondary">
+              Against {invoiceMoney(current.price)} of plan. A further{" "}
+              {money(LEDGER.estimatedValue, "USD")} is estimated from your own figures and is deliberately
+              not added to it.
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="t-num text-[27px] leading-none text-accent-ink">
+              {Math.round(LEDGER.confirmedValue / 100 / current.price)}×
+            </p>
+            <p className="mt-1.5 text-[12px] text-text-secondary">confirmed return on plan</p>
+          </div>
+        </div>
+        <LinkRow siteId={siteId} />
+      </Card>
+
       <Panel className="p-6">
-        <SectionHead title="This month" className="mb-5" />
-        <dl className="grid gap-5 sm:grid-cols-3">
-          {[
-            ["Conversations", "386", "Unlimited"],
-            ["SMS sent", "27", "of 250"],
-            ["Sites", "3", `of ${ORG.siteLimit}`],
-          ].map(([label, value, limit]) => (
-            <div key={label}>
-              <dt className="t-eyebrow text-text-muted">{label}</dt>
-              <dd className="t-num mt-2 text-[15.5px] leading-none">
-                {value}
-                <span className="ml-1.5 text-[11.5px] font-normal text-text-tertiary">{limit}</span>
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <SectionHead title="What you have used" className="mb-5" />
+        <div className="grid gap-6 sm:grid-cols-3">
+          <Meter label="Conversations" used={386} limit={null} note="Unlimited on every plan" />
+          <Meter label="SMS sent" used={27} limit={250} note="Included in the plan" />
+          <Meter label="Sites" used={3} limit={ORG.siteLimit} note="Live client sites" />
+        </div>
       </Panel>
 
       <Panel className="overflow-hidden">
@@ -250,5 +266,73 @@ function InvoicePreview({ invoice, onClose }: { invoice: Invoice | null; onClose
         </div>
       </ModalSection>
     </Modal>
+  );
+}
+
+/* ---- Usage --------------------------------------------------------------- */
+
+/**
+ * A meter rather than a figure: "27 of 250" tells an owner nothing until they
+ * can see how close the end is. Pressure near a limit is what makes an
+ * upgrade a decision rather than a surprise.
+ */
+function Meter({
+  label,
+  used,
+  limit,
+  note,
+}: {
+  label: string;
+  used: number;
+  limit: number | null;
+  note: string;
+}) {
+  const pct = limit ? Math.round((used / limit) * 100) : 0;
+  const tight = limit !== null && pct >= 80;
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="t-eyebrow text-text-muted">{label}</p>
+        {tight && <span className="text-[11px] font-medium text-warning">{pct}% used</span>}
+      </div>
+      <p className="t-num mt-2 text-[15.5px] leading-none">
+        {used.toLocaleString()}
+        <span className="ml-1.5 text-[11.5px] font-normal text-text-tertiary">
+          {limit === null ? "unlimited" : `of ${limit.toLocaleString()}`}
+        </span>
+      </p>
+      {limit !== null && (
+        <div className="mt-3">
+          <ProgressBar
+            value={used}
+            max={limit}
+            label={`${label} used`}
+            tone={tight ? "accent" : "ink"}
+            height={4}
+          />
+        </div>
+      )}
+      <p className="mt-2 text-[11.5px] text-text-tertiary">{note}</p>
+    </div>
+  );
+}
+
+/** The one honest upgrade prompt: it only appears once the value is real. */
+function LinkRow({ siteId }: { siteId: string }) {
+  return (
+    <div className="flex flex-wrap items-center gap-4 border-t border-accent-line px-6 py-4">
+      <p className="min-w-0 flex-1 text-[12px] leading-[1.5] text-text-secondary">
+        Every figure behind this traces to the conversation that produced it.
+      </p>
+      <LinkButton
+        href={`/sites/${siteId}/ledger`}
+        variant="secondary"
+        size="sm"
+        trailing={<ArrowRight size={13} />}
+      >
+        Open the ledger
+      </LinkButton>
+    </div>
   );
 }
