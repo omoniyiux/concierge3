@@ -7,17 +7,17 @@ import { IntegrationsSettings } from "@/components/integrations/IntegrationsSett
 import { BillingSection } from "@/components/billing/BillingSection";
 import { TeamSection } from "@/components/settings/TeamSection";
 import { InstallGuides } from "@/components/settings/InstallGuides";
+import { InstallHub } from "@/components/settings/InstallHub";
 import { AuditLog } from "@/components/audit/HistorySheet";
+import { AgencySettings } from "@/components/settings/AgencySettings";
 import { installSnippet } from "@/lib/install";
 import { Modal, ModalSection } from "@/components/ui/Modal";
-import { Button, Card, Field, Input, LinkButton, Panel, SectionHead, Select, Toggle } from "@/components/ui";
+import { Button, Field, Input, LinkButton, Panel, SectionHead, Select, Toggle } from "@/components/ui";
 import {
   AgentIcon,
   BillingIcon,
   BrainIcon,
   CheckIcon,
-  CodeIcon,
-  CopyIcon,
   InstallIcon,
   IntegrationsIcon,
   LockIcon,
@@ -28,8 +28,7 @@ import {
   TrashIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { getSite } from "@/lib/demo-data";
-import { relativeTime } from "@/lib/format";
+import { ORG, getSite } from "@/lib/demo-data";
 
 const SECTIONS = [
   { key: "general", label: "General", Icon: SettingsIcon },
@@ -40,6 +39,8 @@ const SECTIONS = [
   { key: "notifications", label: "Notifications", Icon: MailIcon },
   { key: "security", label: "Security & data", Icon: ShieldIcon },
   { key: "billing", label: "Plan & billing", Icon: BillingIcon },
+  // Only an agency has clients to brand anything for.
+  ...(ORG.isAgency ? ([{ key: "agency", label: "Agency", Icon: TeamIcon }] as const) : []),
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]["key"];
@@ -81,9 +82,6 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
     );
   };
   const [accent, setAccent] = useState("#FF7A00");
-  const [copied, setCopied] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [confirmName, setConfirmName] = useState("");
 
@@ -266,78 +264,8 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
 
           {section === "install" && (
             <>
-              <Panel className="overflow-hidden">
-                <SectionHead
-                  title="Your install snippet"
-                  hint="One line, before the closing body tag. Everything else updates live."
-                  className="p-6 pb-4"
-                />
-                <div className="flex items-center gap-2 border-y border-divider px-6 py-2.5">
-                  <CodeIcon size={14} className="text-text-muted" />
-                  <p className="t-eyebrow text-text-muted">HTML</p>
-                  <Button
-                    size="sm"
-                    variant="tertiary"
-                    className="ml-auto"
-                    leading={<CopyIcon size={13} />}
-                    onClick={() => {
-                      navigator.clipboard?.writeText(snippet).catch(() => {});
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 1600);
-                    }}
-                  >
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-                <pre className="t-mono overflow-x-auto bg-surface-subtle p-6 leading-[1.7] text-text-secondary">
-                  {snippet}
-                </pre>
-              </Panel>
-
-              <Card className="flex flex-wrap items-center gap-4 p-5">
-                <span
-                  className={cx(
-                    "flex h-9 w-9 shrink-0 items-center justify-center",
-                    site.installState === "detected"
-                      ? "bg-approved-soft text-success"
-                      : "bg-surface-subtle text-text-tertiary",
-                  )}
-                >
-                  {site.installState === "detected" ? (
-                    <CheckIcon size={17} strokeWidth={2.4} />
-                  ) : (
-                    <InstallIcon size={17} />
-                  )}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="t-card">
-                    {site.installState === "detected" ? "Concierge is on your site" : "Not detected yet"}
-                  </p>
-                  <p className="t-body-sm mt-0.5 text-text-tertiary">
-                    {checking
-                      ? `Looking for the script on ${site.url}…`
-                      : checkedAt
-                        ? `Checked just now on ${site.url}`
-                        : `Last checked ${relativeTime(site.updatedAt)} on ${site.url}`}
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={checking}
-                  onClick={() => {
-                    setChecking(true);
-                    setCheckedAt(null);
-                    setTimeout(() => {
-                      setChecking(false);
-                      setCheckedAt(new Date());
-                    }, 1100);
-                  }}
-                >
-                  Check again
-                </Button>
-              </Card>
-
+              {/* The snippet is the last resort, not the first offer. */}
+              <InstallHub site={site} snippet={snippet} />
               <InstallGuides snippet={snippet} />
             </>
           )}
@@ -419,7 +347,9 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
 
           {section === "integrations" && <IntegrationsSettings />}
 
-          {section === "billing" && <BillingSection />}
+          {section === "billing" && <BillingSection siteId={siteId} />}
+
+          {section === "agency" && <AgencySettings />}
         </div>
       </div>
 
