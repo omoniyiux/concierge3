@@ -45,6 +45,7 @@ export default function LandingPage() {
       <Hero />
       <LogoStrip />
       <Narrative />
+      <AssistantsSection />
       <BrainSection />
       <AgentSection />
       <ActionsSection />
@@ -113,13 +114,13 @@ function Hero() {
           <Badge tone="accent" className="mb-6">
             Answer · Guide · Act · Connect · Learn
           </Badge>
-          <h1 className="t-display mx-auto max-w-[16ch] text-[28px] sm:text-[40px] lg:text-[46px]">
-            Your website should respond in real time.
+          <h1 className="t-display mx-auto max-w-[18ch] text-[28px] sm:text-[40px] lg:text-[46px]">
+            Your customers ask an assistant about you before they ever visit.
           </h1>
-          <p className="mx-auto mt-6 max-w-[52ch] text-[13.5px] leading-[1.6] text-text-tertiary">
-            Concierge learns your business from your own pages, answers visitors from knowledge you approve,
-            finishes real jobs like bookings and quotes, and brings in the right person with the context
-            intact.
+          <p className="mx-auto mt-6 max-w-[54ch] text-[13.5px] leading-[1.6] text-text-tertiary">
+            Concierge learns your business from your own pages, publishes what you approve so the assistants
+            get it right, and answers in real time on your website — booking, quoting and bringing in the
+            right person with the context intact.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <LinkButton href="/create-account" size="lg" trailing={<ArrowRight size={16} />}>
@@ -256,6 +257,38 @@ function Split({
       </div>
       <div>{frame}</div>
     </div>
+  );
+}
+
+/**
+ * The part of the pitch nobody else is making to a small business: the first
+ * conversation about you now happens somewhere you cannot see, and what is
+ * said there is assembled from whatever the internet last read about you.
+ */
+function AssistantsSection() {
+  return (
+    <Section id="assistants">
+      <Split
+        intro={
+          <SectionIntro
+            eyebrow="Assistants"
+            title="Get quoted correctly, not approximately."
+            body="ChatGPT, Gemini and Copilot answer questions about your business every day, from whatever they last read. Concierge publishes the knowledge you have already approved in the formats assistants read, then checks every week what they actually say back."
+          />
+        }
+        points={[
+          "Your hours, prices and services, published as structured facts.",
+          "Only what you approved — restricted knowledge never leaves.",
+          "A weekly check of what four assistants say about you.",
+          "Fix a wrong answer at the source, once.",
+        ]}
+        frame={
+          <ProductFrame label="What assistants say about this business" chrome="plain">
+            <SiteBrainFrame />
+          </ProductFrame>
+        }
+      />
+    </Section>
   );
 }
 
