@@ -6,7 +6,6 @@ import { dispatch, handleEditorShortcut, useEditor } from "@/lib/pages-editor";
 import type { ConciergePage, ID, PageBreakpoint, PageDocument, Site } from "@/lib/types";
 import { PageFrame } from "./PageFrame";
 import { PageRenderer } from "./PageRenderer";
-import { RenderModeProvider } from "./sections";
 import { pageStylesheet } from "./page-css";
 
 /** Breathing room around the device frame, in px. */
@@ -181,9 +180,7 @@ export function EditorCanvas({
               className="h-full w-full border-0 bg-white"
               onDocument={onDocument}
             >
-              <RenderModeProvider value="canvas">
-                <PageRenderer document={doc} page={page} site={site} breakpoint={breakpoint} />
-              </RenderModeProvider>
+              <PageRenderer document={doc} page={page} site={site} breakpoint={breakpoint} />
             </PageFrame>
           </div>
         </div>
