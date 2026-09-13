@@ -46,7 +46,7 @@ export const ORG: Organization = {
   name: "Collab Auto",
   slug: "collab-auto",
   plan: "growth",
-  isAgency: false,
+  isAgency: true,
   seatsUsed: 3,
   seatsIncluded: 5,
   siteLimit: 5,
@@ -464,6 +464,9 @@ export const AGENT: AgentConfig = {
   // Northlane started here and has not moved: they read every draft.
   autonomy: "approve",
   followUpChannels: ["email", "sms"],
+  // Austin: a third of the practice's enquiries arrive in Spanish.
+  languages: ["en", "es"],
+  matchVisitorLanguage: true,
 };
 
 /* ---- Conversations ------------------------------------------------------- */
