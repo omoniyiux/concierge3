@@ -32,7 +32,6 @@ export function PageRenderer({
                 key={p.id}
                 href={p.slug === "" ? "/" : `/${p.slug}`}
                 aria-current={p.id === page.id ? "page" : undefined}
-                onClick={(e) => e.preventDefault()}
               >
                 {p.navLabel}
               </a>
