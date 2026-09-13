@@ -26,13 +26,24 @@ import {
   Textarea,
 } from "@/components/ui";
 import { Modal, ModalSection } from "@/components/ui/Modal";
+import { TryItSheet } from "@/components/agent/TryItSheet";
 import { ArrowRight, BrainIcon, CheckIcon, PlusIcon, SparkIcon, UploadIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { INTENTS, METRICS, UNANSWERED, getSite } from "@/lib/demo-data";
+import {
+  INTENTS,
+  brainFor,
+  conversationsFor,
+  destinationsFor,
+  gapsFor,
+  getSite,
+  metricsFor,
+} from "@/lib/demo-data";
+import { launchChecklist } from "@/lib/health";
+import { NothingYet } from "@/components/shell/NothingYet";
 import { CATEGORY_LABEL, INTENT_LABEL, formatMetric, relativeTime } from "@/lib/format";
 import { printElement } from "@/lib/print";
 import { downloadFile, toCsv } from "@/lib/download";
-import type { UnansweredQuestion } from "@/lib/types";
+import type { Metric, UnansweredQuestion } from "@/lib/types";
 
 /** One drawing per metric, so the row reads as six facts rather than six boxes. */
 const METRIC_STICKER: Record<string, typeof TargetSticker> = {
@@ -71,16 +82,42 @@ type Range = "7d" | "14d" | "30d";
 export default function InsightsPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
   const site = getSite(siteId);
+  const METRICS = metricsFor(siteId);
+  const UNANSWERED = gapsFor(siteId);
   const [range, setRange] = useState<Range>("14d");
   const [answered, setAnswered] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [answering, setAnswering] = useState<UnansweredQuestion | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  /** The answer just written, so the preview can be asked to prove it works. */
+  const [justAnswered, setJustAnswered] = useState<{ question: string; body: string } | null>(null);
 
+  const hasHistory = conversationsFor(siteId).length > 0;
   const handled = [...answered, ...dismissed];
   const open = UNANSWERED.filter((u) => u.status === "open" && !handled.includes(u.id));
   const conversations = METRICS.find((m) => m.key === "conversations")!;
   const missedDemand = open.reduce((n, u) => n + u.askCount, 0);
+
+  if (!hasHistory) {
+    const setupComplete = launchChecklist(site, brainFor(siteId), destinationsFor(siteId), siteId).every(
+      (s) => s.done,
+    );
+    return (
+      <PageContainer wide>
+        <PageHeader
+          eyebrow="Insights"
+          title="What your visitors are telling you"
+          description="Every conversation is a signal about what people want and where your website falls short."
+        />
+        <NothingYet
+          siteId={siteId}
+          setupComplete={setupComplete}
+          noun="insights"
+          body="Once visitors start talking to Concierge, this shows what they came for, what converted, and — the part worth acting on — every question your site could not answer."
+        />
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer wide>
@@ -320,10 +357,33 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
       <AnswerModal
         question={answering}
         onClose={() => setAnswering(null)}
-        onSave={(id) => {
+        onSave={(id, body) => {
           setAnswered((a) => [...a, id]);
+          const asked = UNANSWERED.find((q) => q.id === id);
           setAnswering(null);
+          if (asked) setJustAnswered({ question: asked.question, body });
         }}
+      />
+
+      {/* The loop closed: ask the agent the question you just answered. */}
+      <TryItSheet
+        open={Boolean(justAnswered)}
+        onClose={() => setJustAnswered(null)}
+        title="Your answer, live"
+        description="The same question a visitor asked, run against your knowledge as it now stands. Nothing here reaches anyone."
+        seedQuestion={justAnswered?.question}
+        extraAnswers={
+          justAnswered
+            ? {
+                [justAnswered.question.trim().toLowerCase()]: {
+                  a: justAnswered.body,
+                  verdict: { kind: "answer", note: "Answered from the knowledge you just approved" },
+                  cites: ["Just added"],
+                  confidence: 0.93,
+                },
+              }
+            : undefined
+        }
       />
 
       <ExportModal
@@ -333,6 +393,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
         range={range}
         openQuestions={open}
         site={site}
+        metrics={METRICS}
       />
     </PageContainer>
   );
@@ -352,7 +413,7 @@ function AnswerModal({
 }: {
   question: UnansweredQuestion | null;
   onClose: () => void;
-  onSave: (id: string) => void;
+  onSave: (id: string, body: string) => void;
 }) {
   const [body, setBody] = useState("");
   const [category, setCategory] = useState("");
@@ -389,7 +450,7 @@ function AnswerModal({
             onClick={() => {
               setSaving(true);
               // Stands in for the write; the queue it lands in is real.
-              setTimeout(() => onSave(question.id), 450);
+              setTimeout(() => onSave(question.id, body.trim()), 450);
             }}
           >
             Save to Site Brain
@@ -455,6 +516,7 @@ function ExportModal({
   range,
   openQuestions,
   siteName,
+  metrics,
 }: {
   open: boolean;
   onClose: () => void;
@@ -462,6 +524,7 @@ function ExportModal({
   range: Range;
   openQuestions: UnansweredQuestion[];
   siteName: string;
+  metrics: Metric[];
 }) {
   const sheet = useRef<HTMLDivElement>(null);
   const [working, setWorking] = useState<"pdf" | "csv" | null>(null);
@@ -485,7 +548,7 @@ function ExportModal({
       ["Concierge insights", siteName, RANGE_LABEL[range]],
       [],
       ["Metric", "Value", "Change on previous period"],
-      ...METRICS.map((m) => [
+      ...metrics.map((m) => [
         m.label,
         formatMetric(m.value, m.format),
         `${m.delta > 0 ? "+" : ""}${m.delta}%`,
@@ -559,7 +622,7 @@ function ExportModal({
           <InsightsReport
             site={site}
             range={range}
-            metrics={METRICS}
+            metrics={metrics}
             intents={INTENTS}
             unanswered={openQuestions}
           />
