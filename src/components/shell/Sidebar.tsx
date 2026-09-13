@@ -5,18 +5,27 @@ import { usePathname } from "next/navigation";
 import { ConciergeMark, ConciergeWordmark } from "@/components/shell/ConciergeMark";
 import { SiteSwitcher } from "@/components/shell/SiteSwitcher";
 import { Avatar } from "@/components/shell/Avatar";
-import { BellIcon, CloseIcon, HelpIcon, PanelIcon, SearchIcon, SettingsIcon } from "@/components/icons";
+import { CloseIcon, HelpIcon, PanelIcon, SearchIcon, SettingsIcon } from "@/components/icons";
+import { NotificationBell } from "@/components/shell/NotificationCentre";
 import { IconButton, Tooltip } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { NAV } from "@/lib/nav";
 import { useWorkspace } from "@/lib/workspace";
-import { BRAIN, CONVERSATIONS, DESTINATIONS } from "@/lib/demo-data";
+import { brainFor, conversationsFor, destinationsFor } from "@/lib/demo-data";
 
-/** Only surfaces that actually need the owner earn a mark in the nav. */
-function attentionFor(path: string): number | "dot" | null {
-  if (path === "brain") return BRAIN.needsReviewCount + BRAIN.missingCount || null;
-  if (path === "conversations") return CONVERSATIONS.filter((c) => c.status === "new").length || null;
-  if (path === "routing") return DESTINATIONS.some((d) => d.status === "failing") ? "dot" : null;
+/**
+ * Only surfaces that actually need the owner earn a mark in the nav — and
+ * only for the site being looked at. A badge counting another site's queue is
+ * worse than no badge at all.
+ */
+function attentionFor(path: string, siteId: string): number | "dot" | null {
+  if (path === "brain") {
+    const brain = brainFor(siteId);
+    return brain.needsReviewCount + brain.missingCount || null;
+  }
+  if (path === "conversations")
+    return conversationsFor(siteId).filter((c) => c.status === "new").length || null;
+  if (path === "routing") return destinationsFor(siteId).some((d) => d.status === "failing") ? "dot" : null;
   return null;
 }
 
@@ -114,7 +123,7 @@ export function Sidebar({ siteId, onClose }: { siteId: string; onClose?: () => v
               {group.items.map(({ path, label, Icon }) => {
                 const href = `/sites/${siteId}/${path}`;
                 const active = pathname === href || pathname.startsWith(`${href}/`);
-                const attention = attentionFor(path);
+                const attention = attentionFor(path, siteId);
 
                 const link = (
                   <Link
@@ -177,17 +186,16 @@ export function Sidebar({ siteId, onClose }: { siteId: string; onClose?: () => v
         </ul>
 
         {!collapsed && (
-          <Link
-            href="/account"
-            className="mt-3 flex items-center gap-2.5 py-1.5 pl-1 pr-1 transition-colors hover:bg-[#f7f7f7]"
-          >
-            <Avatar size={32} />
-            <span className="mr-auto truncate text-[14px] font-semibold">Olaifa Promise</span>
-            <span className="relative mr-1">
-              <BellIcon size={19} className="text-text-primary" />
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-surface bg-accent" />
-            </span>
-          </Link>
+          <div className="mt-3 flex items-center gap-1 pr-1">
+            <Link
+              href="/account"
+              className="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 pl-1 transition-colors hover:bg-[#f7f7f7]"
+            >
+              <Avatar size={32} />
+              <span className="truncate text-[14px] font-semibold">Olaifa Promise</span>
+            </Link>
+            <NotificationBell siteId={siteId} />
+          </div>
         )}
       </div>
     </nav>
