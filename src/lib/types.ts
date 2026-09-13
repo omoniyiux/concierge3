@@ -178,6 +178,15 @@ export interface AgentConfig {
   autonomy: AgentAutonomy;
   /** Channels it may carry a conversation onto once the visitor has left. */
   followUpChannels: MessageChannel[];
+  /**
+   * The languages it is allowed to answer in, as BCP-47 tags. The first is
+   * the default; the rest are only used when a visitor writes in them. A
+   * business that cannot serve a language in person should not list it here,
+   * because an answer it cannot follow up on is worse than none.
+   */
+  languages: string[];
+  /** Off by default: answer only in the default language, whatever is asked. */
+  matchVisitorLanguage: boolean;
 }
 
 /**
