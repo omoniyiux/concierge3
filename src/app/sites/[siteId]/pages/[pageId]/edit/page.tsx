@@ -6,11 +6,13 @@ import { PageContainer } from "@/components/shell/AppShell";
 import { EditorCanvas } from "@/components/pages-builder/EditorCanvas";
 import { Inspector } from "@/components/pages-builder/Inspector";
 import { SectionsRail } from "@/components/pages-builder/SectionsRail";
+import { PublishDialog } from "@/components/pages-builder/PublishDialog";
 import { Badge, Button, EmptyState, IconButton, LinkButton, Panel, SegmentedControl } from "@/components/ui";
 import { ExternalIcon, PagesIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { getSite } from "@/lib/demo-data";
 import { BREAKPOINTS, findPage, pagePath } from "@/lib/pages-builder";
+import { suggestSubdomain } from "@/lib/publishing.client";
 import {
   canRedo,
   canUndo,
@@ -37,6 +39,7 @@ export default function PageEditor({
   const { siteId, pageId } = use(params);
   const site = getSite(siteId);
   const [breakpoint, setBreakpoint] = useState<PageBreakpoint>("desktop");
+  const [publishing, setPublishing] = useState(false);
   const editor = useEditor();
 
   useEffect(() => {
@@ -128,7 +131,9 @@ export default function PageEditor({
             <Button variant="secondary" size="sm" leading={<ExternalIcon size={13} />}>
               Preview
             </Button>
-            <Button size="sm">Publish</Button>
+            <Button size="sm" variant="accent" onClick={() => setPublishing(true)}>
+              Publish
+            </Button>
           </div>
         </header>
 
@@ -201,6 +206,16 @@ export default function PageEditor({
           </aside>
         </div>
       </div>
+
+      <PublishDialog
+        open={publishing}
+        onClose={() => setPublishing(false)}
+        siteId={siteId}
+        siteName={site.name}
+        suggestion={suggestSubdomain(site.name)}
+        document={doc}
+        draftPageCount={doc.pages.filter((p) => !p.published).length}
+      />
     </PageContainer>
   );
 }
