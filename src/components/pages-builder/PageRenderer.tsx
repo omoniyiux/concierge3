@@ -1,5 +1,5 @@
 import { resolveSectionStyle, visibleSections } from "@/lib/pages-builder";
-import type { ConciergePage, PageBreakpoint, PageDocument, Site } from "@/lib/types";
+import type { ConciergePage, PageBreakpoint, PageDocument, PublishedSiteFacts } from "@/lib/types";
 import { SectionRenderer } from "./sections";
 
 /**
@@ -16,7 +16,7 @@ export function PageRenderer({
 }: {
   document: PageDocument;
   page: ConciergePage;
-  site: Site;
+  site: PublishedSiteFacts;
   breakpoint: PageBreakpoint;
 }) {
   const sections = visibleSections(page);
