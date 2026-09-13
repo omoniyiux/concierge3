@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
+import { TryItButton } from "@/components/agent/TryItSheet";
 import { KnowledgeCard } from "@/components/brain/KnowledgeCard";
 import { KnowledgeComposer } from "@/components/brain/KnowledgeComposer";
 import { RelearnPanel } from "@/components/brain/RelearnPanel";
@@ -120,6 +121,8 @@ export default function SiteBrainPage() {
         description="Everything Concierge is allowed to say about your business, where it learned it, and how sure it is. Nothing here reaches a visitor until you approve it."
         actions={
           <>
+            {/* Knowledge changes here; the proof it worked is one click away. */}
+            <TryItButton size="md" />
             <Button
               variant="secondary"
               leading={<RefreshIcon size={15} />}
