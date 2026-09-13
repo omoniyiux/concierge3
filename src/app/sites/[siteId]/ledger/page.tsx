@@ -4,14 +4,12 @@ import { use, useState } from "react";
 import Link from "next/link";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
 import { ArrivalRibbon } from "@/components/ledger/ArrivalRibbon";
-import { Badge, Button, Card, EmptyState, Panel, SectionHead, SegmentedControl } from "@/components/ui";
+import { Badge, Button, EmptyState, Panel, SectionHead, SegmentedControl } from "@/components/ui";
 import {
   ArrowRight,
   CheckIcon,
   ClockIcon,
-  MailIcon,
   ReturnIcon,
-  SendIcon,
   ShieldIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
@@ -20,12 +18,14 @@ import {
   brainFor,
   conversationsFor,
   destinationsFor,
+  gapsFor,
   getSite,
   ledgerFor,
   outcomesFor,
   reportsFor,
 } from "@/lib/demo-data";
 import { launchChecklist } from "@/lib/health";
+import { ReportSchedule } from "@/components/ledger/ReportSchedule";
 import { NothingYet } from "@/components/shell/NothingYet";
 import {
   BASIS_LABEL,
@@ -63,14 +63,25 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
   const reports = reportsFor(siteId);
   const conversations = conversationsFor(siteId);
   const [filter, setFilter] = useState<Filter>("all");
-  const [sentReportId, setSentReportId] = useState<string | null>(null);
+  /** Estimates an owner has since settled, one way or the other. */
+  const [settled, setSettled] = useState<Record<string, "happened" | "did-not">>({});
 
   const setupComplete = launchChecklist(site, brainFor(siteId), destinationsFor(siteId), siteId).every(
     (s) => s.done,
   );
   const envelope = openingEnvelope(site.openingHours.days);
-  const confirmedDelta = pctChange(ledger.confirmedValue, ledger.previousConfirmedValue);
-  const estimatedDelta = pctChange(ledger.estimatedValue, ledger.previousEstimatedValue);
+  // Settling an estimate moves the money across in front of the owner.
+  const settledIn = outcomes
+    .filter((o) => settled[o.id] === "happened")
+    .reduce((n, o) => n + o.value, 0);
+  const settledOut = outcomes
+    .filter((o) => settled[o.id] !== undefined)
+    .reduce((n, o) => n + o.value, 0);
+  const confirmedValue = ledger.confirmedValue + settledIn;
+  const estimatedValue = Math.max(0, ledger.estimatedValue - settledOut);
+
+  const confirmedDelta = pctChange(confirmedValue, ledger.previousConfirmedValue);
+  const estimatedDelta = pctChange(estimatedValue, ledger.previousEstimatedValue);
 
   const ordered = [...outcomes].sort((a, b) => b.at.localeCompare(a.at));
   const shown = filter === "all" ? ordered : ordered.filter((o) => o.basis === filter);
@@ -78,6 +89,27 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
   const answered = outcomes.filter((o) => o.kind === "answer").length;
   const scheduled = reports.find((r) => r.state === "scheduled");
   const previous = reports.filter((r) => r.state === "sent");
+
+  // The last seven days, which is what the weekly note reports on.
+  const weekStart = new Date(ledger.end);
+  weekStart.setDate(weekStart.getDate() - 7);
+  const thisWeek = outcomes.filter((o) => new Date(o.at) >= weekStart);
+  const weekConfirmed = thisWeek
+    .filter((o) => o.basis === "confirmed")
+    .reduce((n, o) => n + o.value, 0);
+  const weekEstimated = thisWeek.filter((o) => o.basis === "estimated").reduce((n, o) => n + o.value, 0);
+  const bookings = thisWeek.filter((o) => o.kind === "booking").length;
+  const weekSeries = ledger.hourHistogram
+    .slice(8, 20)
+    .map((v, i) => ({ date: `h${i}`, value: v }));
+  const openGaps = gapsFor(siteId).filter((g) => g.status === "open");
+  const topGap = openGaps[0];
+  const needsYou = destinationsFor(siteId)
+    .filter((d) => d.status === "failing")
+    .map((d) => ({
+      title: `${d.name} stopped delivering`,
+      detail: "Requests are queued rather than lost, but nobody is being told. It takes one click to replay them.",
+    }));
 
   if (outcomes.length === 0) {
     return (
@@ -116,14 +148,14 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
         <div className="grid sm:grid-cols-2">
           <ValueHalf
             label="Money confirmed"
-            value={money(ledger.confirmedValue, site.currency)}
+            value={money(confirmedValue, site.currency)}
             delta={confirmedDelta}
             hint="Settled through a connected system. Not a projection."
             icon={<ShieldIcon size={15} className="text-success" />}
           />
           <ValueHalf
             label="Value estimated"
-            value={money(ledger.estimatedValue, site.currency)}
+            value={money(estimatedValue, site.currency)}
             delta={estimatedDelta}
             hint="Your own figures applied to bookings, quotes and leads Concierge produced."
             className="border-t border-line-strong sm:border-l sm:border-t-0"
@@ -290,6 +322,45 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
                       />
                     </span>
                   </Link>
+
+                  {/* An estimate is a question until somebody answers it. The
+                      row asks, because this is where an owner is already
+                      reading the figure. */}
+                  {o.basis === "estimated" && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-divider bg-surface-subtle px-6 py-2.5">
+                      {settled[o.id] === "happened" ? (
+                        <p className="flex items-center gap-2 text-[12px] font-medium text-success">
+                          <CheckIcon size={13} strokeWidth={2.4} />
+                          Confirmed by you — now counted as settled money.
+                        </p>
+                      ) : settled[o.id] === "did-not" ? (
+                        <p className="flex items-center gap-2 text-[12px] text-text-tertiary">
+                          Marked as not happening. Removed from the estimate, and the average it feeds.
+                        </p>
+                      ) : (
+                        <>
+                          <p className="min-w-[180px] flex-1 text-[12px] text-text-secondary">
+                            Did this one actually happen? Telling us makes every figure above it truer.
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            leading={<CheckIcon size={13} />}
+                            onClick={() => setSettled((m) => ({ ...m, [o.id]: "happened" }))}
+                          >
+                            It happened
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            onClick={() => setSettled((m) => ({ ...m, [o.id]: "did-not" }))}
+                          >
+                            It did not
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </li>
               );
             })}
@@ -297,59 +368,27 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
         )}
       </Panel>
 
-      {/* ---- The artefact that gets forwarded ---------------------------- */}
-      <Card className="p-6">
-        <SectionHead
-          title="The monthly report"
-          hint="One page, sent on the first, written for someone who never opens Concierge."
-        />
+      {/* ---- What gets sent, and how often ------------------------------ */}
+      <ReportSchedule
+        scheduled={scheduled}
+        previous={previous}
+        digest={{
+          site,
+          ledger,
+          weekLabel: "1–7 September",
+          conversations: 52,
+          leads: 17,
+          bookings: bookings,
+          afterHours: 19,
+          confirmed: weekConfirmed,
+          estimated: weekEstimated,
+          handoffs: 9,
+          series: weekSeries,
+          topGap: topGap,
+          needsYou: needsYou,
+        }}
+      />
 
-        {scheduled && (
-          <div className="mt-5 border border-line-strong bg-surface-subtle p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="max-w-[58ch]">
-                <p className="t-eyebrow text-text-muted">{scheduled.periodLabel}</p>
-                <p className="t-serif mt-2.5 text-[15px] leading-[1.45]">{scheduled.headline}</p>
-                <p className="t-meta mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-text-tertiary">
-                  <MailIcon size={12} />
-                  {scheduled.recipients.join(", ")}
-                  <span aria-hidden>·</span>
-                  {scheduled.scheduledFor && `Goes out ${longDate(scheduled.scheduledFor)}`}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                {sentReportId === scheduled.id ? (
-                  <span className="flex items-center gap-2 text-[12px] font-medium text-success">
-                    <CheckIcon size={14} strokeWidth={2.4} />
-                    Sent now
-                  </span>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    leading={<SendIcon size={14} />}
-                    onClick={() => setSentReportId(scheduled.id)}
-                  >
-                    Send it now
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {previous.length > 0 && (
-          <ul className="mt-4 divide-y divide-divider border-t border-line">
-            {previous.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
-                <span className="min-w-[140px] text-[12.5px] font-medium">{r.periodLabel}</span>
-                <span className="t-meta min-w-0 flex-1 truncate text-text-tertiary">{r.headline}</span>
-                <Badge tone="approved">Sent {r.sentAt && relativeTime(r.sentAt)}</Badge>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
     </PageContainer>
   );
 }
