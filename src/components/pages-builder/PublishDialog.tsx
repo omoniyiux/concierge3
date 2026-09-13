@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, Field, Input, Spinner } from "@/components/ui";
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { CheckIcon, ExternalIcon, GlobeIcon } from "@/components/icons";
-import { checkSubdomain, currentlyPublished, publishSite, takeDown } from "@/app/sites/[siteId]/pages/actions";
+import { checkSubdomain, currentlyPublished, publishSite, takeDown } from "@/server/publish-actions";
 import { PAGES_DOMAIN } from "@/lib/publishing.client";
 import type { PageDocument } from "@/lib/types";
 
