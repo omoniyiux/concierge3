@@ -522,7 +522,11 @@ export function responsiveCss(page: ConciergePage): string {
       }).filter((d): d is string => d !== null);
 
       if (declarations.length > 0) {
-        rules.push(`[data-section-id="${section.id}"]{${declarations.join(";")}}`);
+        /* `.ps-section[data-section-id]` rather than the attribute alone: the
+           base rules are class-plus-attribute, so a bare attribute selector
+           loses on specificity and source order never gets a say. Matching
+           their specificity lets "later wins" do the work. */
+        rules.push(`.ps-section[data-section-id="${section.id}"]{${declarations.join(";")}}`);
       }
     }
 
@@ -535,7 +539,7 @@ export function responsiveCss(page: ConciergePage): string {
      matter what the author chose, so one floor is applied. It sits after the
      authored rules deliberately: it is a safety net, not a preference. */
   blocks.push(
-    `@media (max-width:560px){.ps-section{--ps-cols:1}` +
+    `@media (max-width:560px){.ps-section[data-cols]{--ps-cols:1}` +
       `.ps-hero__layout[data-media="true"],.ps-about__layout[data-media="true"]{grid-template-columns:1fr}` +
       `.ps-header__inner{flex-wrap:wrap;gap:12px}.ps-nav{margin-left:0}}`,
   );
