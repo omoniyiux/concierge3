@@ -15,7 +15,18 @@ import {
   ShieldIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { ACTIONS, CONVERSATIONS, LEDGER, OUTCOMES, OWNER_REPORTS, getSite } from "@/lib/demo-data";
+import {
+  ACTIONS,
+  brainFor,
+  conversationsFor,
+  destinationsFor,
+  getSite,
+  ledgerFor,
+  outcomesFor,
+  reportsFor,
+} from "@/lib/demo-data";
+import { launchChecklist } from "@/lib/health";
+import { NothingYet } from "@/components/shell/NothingYet";
 import {
   BASIS_LABEL,
   OUTCOME_LABEL,
@@ -25,7 +36,7 @@ import {
   openingSummary,
   relativeTime,
 } from "@/lib/format";
-import type { OutcomeKind, ValueBasis } from "@/lib/types";
+import type { Outcome, OutcomeKind, ValueBasis } from "@/lib/types";
 
 /* ============================================================================
    RETURN
@@ -47,19 +58,44 @@ const BASIS_TONE = { confirmed: "approved", estimated: "neutral", none: "neutral
 export default function LedgerPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
   const site = getSite(siteId);
+  const ledger = ledgerFor(siteId);
+  const outcomes = outcomesFor(siteId);
+  const reports = reportsFor(siteId);
+  const conversations = conversationsFor(siteId);
   const [filter, setFilter] = useState<Filter>("all");
   const [sentReportId, setSentReportId] = useState<string | null>(null);
 
+  const setupComplete = launchChecklist(site, brainFor(siteId), destinationsFor(siteId), siteId).every(
+    (s) => s.done,
+  );
   const envelope = openingEnvelope(site.openingHours.days);
-  const confirmedDelta = pctChange(LEDGER.confirmedValue, LEDGER.previousConfirmedValue);
-  const estimatedDelta = pctChange(LEDGER.estimatedValue, LEDGER.previousEstimatedValue);
+  const confirmedDelta = pctChange(ledger.confirmedValue, ledger.previousConfirmedValue);
+  const estimatedDelta = pctChange(ledger.estimatedValue, ledger.previousEstimatedValue);
 
-  const ordered = [...OUTCOMES].sort((a, b) => b.at.localeCompare(a.at));
+  const ordered = [...outcomes].sort((a, b) => b.at.localeCompare(a.at));
   const shown = filter === "all" ? ordered : ordered.filter((o) => o.basis === filter);
 
-  const answered = OUTCOMES.filter((o) => o.kind === "answer").length;
-  const scheduled = OWNER_REPORTS.find((r) => r.state === "scheduled");
-  const previous = OWNER_REPORTS.filter((r) => r.state === "sent");
+  const answered = outcomes.filter((o) => o.kind === "answer").length;
+  const scheduled = reports.find((r) => r.state === "scheduled");
+  const previous = reports.filter((r) => r.state === "sent");
+
+  if (outcomes.length === 0) {
+    return (
+      <PageContainer wide>
+        <PageHeader
+          eyebrow="Return"
+          title="What Concierge did for the business"
+          description="Every figure here traces back to the conversation that produced it. Where a number is an estimate, it says so and shows its arithmetic."
+        />
+        <NothingYet
+          siteId={siteId}
+          setupComplete={setupComplete}
+          noun="return to report"
+          body="The moment Concierge books an appointment, captures a lead or takes a payment, it is recorded here against the conversation that produced it — confirmed money and estimated value kept apart."
+        />
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer wide>
@@ -69,7 +105,7 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
         description="Every figure below traces back to the conversation that produced it. Where a number is an estimate, it says so and shows its arithmetic."
         meta={
           <p className="t-body-sm text-text-tertiary">
-            {longDate(LEDGER.start)} – {longDate(LEDGER.end)} · {LEDGER.conversations.toLocaleString()}{" "}
+            {longDate(ledger.start)} – {longDate(ledger.end)} · {ledger.conversations.toLocaleString()}{" "}
             conversations · Open {openingSummary(site.openingHours.days)}
           </p>
         }
@@ -80,14 +116,14 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
         <div className="grid sm:grid-cols-2">
           <ValueHalf
             label="Money confirmed"
-            value={money(LEDGER.confirmedValue, site.currency)}
+            value={money(ledger.confirmedValue, site.currency)}
             delta={confirmedDelta}
             hint="Settled through a connected system. Not a projection."
             icon={<ShieldIcon size={15} className="text-success" />}
           />
           <ValueHalf
             label="Value estimated"
-            value={money(LEDGER.estimatedValue, site.currency)}
+            value={money(ledger.estimatedValue, site.currency)}
             delta={estimatedDelta}
             hint="Your own figures applied to bookings, quotes and leads Concierge produced."
             className="border-t border-line-strong sm:border-l sm:border-t-0"
@@ -109,19 +145,19 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
           />
           <div className="shrink-0 text-right">
             <p className="t-num text-[23px] leading-none text-accent">
-              {LEDGER.afterHoursConversations}
-              <span className="text-text-tertiary">/{LEDGER.conversations}</span>
+              {ledger.afterHoursConversations}
+              <span className="text-text-tertiary">/{ledger.conversations}</span>
             </p>
             <p className="mt-1.5 text-[11.5px] text-text-secondary">arrived with nobody there</p>
           </div>
         </div>
 
         <div className="mt-6">
-          <ArrivalRibbon hours={LEDGER.hourHistogram} opens={envelope?.opens} closes={envelope?.closes} />
+          <ArrivalRibbon hours={ledger.hourHistogram} opens={envelope?.opens} closes={envelope?.closes} />
         </div>
 
         <p className="t-body-sm mt-5 max-w-[74ch] border-t border-line pt-4 text-text-tertiary">
-          The chart reads hour of day only. The {LEDGER.afterHoursConversations} figure also counts every
+          The chart reads hour of day only. The {ledger.afterHoursConversations} figure also counts every
           conversation that landed on a day you were shut, which is why it runs higher than the orange bars
           alone.
         </p>
@@ -135,7 +171,7 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
             hint="Grouped by what Concierge completed, not by what it talked about."
           />
           <ul className="mt-5 divide-y divide-divider border-t border-line">
-            {composition().map((row) => (
+            {composition(outcomes).map((row) => (
               <li key={row.kind} className="flex items-center gap-4 py-3">
                 <span className="min-w-0 flex-1">
                   <span className="block text-[12.5px] font-medium">{OUTCOME_LABEL[row.kind]}</span>
@@ -160,16 +196,16 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
         <Panel className="flex flex-col p-6">
           <SectionHead title="What it saved you" hint="Work that never reached a person." />
           <div className="mt-6 flex items-baseline gap-2.5">
-            <span className="t-num text-[34px] leading-none">{LEDGER.hoursSaved}</span>
+            <span className="t-num text-[34px] leading-none">{ledger.hoursSaved}</span>
             <span className="text-[12.5px] text-text-secondary">hours of front-desk time</span>
           </div>
           <p className="t-body-sm mt-4 text-text-tertiary">
-            The {LEDGER.resolvedWithoutHuman} conversations Concierge closed out on its own, at the six
+            The {ledger.resolvedWithoutHuman} conversations Concierge closed out on its own, at the six
             minutes a phone enquiry costs you.
           </p>
           <div className="mt-auto border-t border-line pt-4">
             <p className="t-meta text-text-tertiary">
-              {answered === 1 ? "One" : answered} of the {OUTCOMES.length} most recent outcomes{" "}
+              {answered === 1 ? "One" : answered} of the {outcomes.length} most recent outcomes{" "}
               {answered === 1 ? "was a question" : "were questions"} answered outright.
             </p>
           </div>
@@ -210,7 +246,7 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
         ) : (
           <ul className="divide-y divide-divider border-t border-line">
             {shown.map((o) => {
-              const conversation = CONVERSATIONS.find((c) => c.id === o.conversationId);
+              const conversation = conversations.find((c) => c.id === o.conversationId);
               return (
                 <li key={o.id}>
                   <Link
@@ -371,7 +407,7 @@ function pctChange(now: number, before: number): number | null {
  * outcome in it is — one estimate in the group and the whole line is an
  * estimate, because that is what it has become.
  */
-function composition(): {
+function composition(outcomes: Outcome[]): {
   kind: OutcomeKind;
   count: number;
   value: number;
@@ -380,7 +416,7 @@ function composition(): {
 }[] {
   const byKind = new Map<OutcomeKind, { count: number; value: number; bases: Set<ValueBasis> }>();
 
-  for (const o of OUTCOMES) {
+  for (const o of outcomes) {
     const row = byKind.get(o.kind) ?? { count: 0, value: 0, bases: new Set<ValueBasis>() };
     row.count += 1;
     row.value += o.value;
