@@ -52,14 +52,40 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return leads.filter((l) => {
-      if (filter !== "all" && l.qualification !== filter) return false;
-      if (q && !`${l.name} ${l.service ?? ""} ${l.email ?? ""}`.toLowerCase().includes(q)) return false;
-      return true;
-    }).sort((a, b) => b.score - a.score);
-  }, [filter, query]);
+    return leads
+      .filter((l) => {
+        if (filter !== "all" && l.qualification !== filter) return false;
+        if (q && !`${l.name} ${l.service ?? ""} ${l.email ?? ""}`.toLowerCase().includes(q)) return false;
+        return true;
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [leads, filter, query]);
 
   const hot = leads.filter((l) => l.qualification === "hot").length;
+
+  if (leads.length === 0) {
+    const setupComplete = launchChecklist(
+      getSite(siteId),
+      brainFor(siteId),
+      destinationsFor(siteId),
+      siteId,
+    ).every((s) => s.done);
+    return (
+      <PageContainer wide>
+        <PageHeader
+          eyebrow="Leads"
+          title="People worth following up"
+          description="Every visitor Concierge qualified, with what it learned about them and where it sent them."
+        />
+        <NothingYet
+          siteId={siteId}
+          setupComplete={setupComplete}
+          noun="leads"
+          body="When a visitor gives Concierge enough to be worth following up — what they want, when, and how to reach them — they appear here, scored and routed."
+        />
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer wide>
@@ -90,7 +116,7 @@ export default function LeadsPage({ params }: { params: Promise<{ siteId: string
               },
               {
                 Sticker: TargetSticker,
-                value: Math.round(leads.reduce((n, l) => n + l.score, 0) / leads.length),
+                value: Math.round(leads.reduce((n, l) => n + l.score, 0) / Math.max(leads.length, 1)),
                 label: "Average score",
                 detail: "Out of 100, across every lead",
               },
