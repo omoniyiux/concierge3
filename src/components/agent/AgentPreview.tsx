@@ -61,14 +61,27 @@ const VERDICT_STYLE = {
  * its sources and its confidence, because the owner is auditing behaviour
  * here — not chatting.
  */
-export function AgentPreview({ greeting }: { greeting: string }) {
+export function AgentPreview({
+  greeting,
+  /** Answers this run knows that the standing script does not — what the
+      owner just approved, so they can watch it take effect. */
+  extraAnswers,
+  /** Asked automatically on open. */
+  seedQuestion,
+  compact,
+}: {
+  greeting: string;
+  extraAnswers?: Record<string, Omit<Turn, "id" | "q">>;
+  seedQuestion?: string;
+  compact?: boolean;
+}) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [thinking, setThinking] = useState(false);
 
   function ask(question: string) {
     const key = question.trim().toLowerCase();
-    const scripted = SCRIPTED[key];
+    const scripted = extraAnswers?.[key] ?? SCRIPTED[key];
     setThinking(true);
     setDraft("");
     setTimeout(() => {
@@ -88,8 +101,17 @@ export function AgentPreview({ greeting }: { greeting: string }) {
     }, 850);
   }
 
+  // The seeded question is asked once, on open.
+  const [seeded, setSeeded] = useState(false);
+  if (seedQuestion && !seeded) {
+    setSeeded(true);
+    // Deferred so the first paint is the greeting, not the answer.
+    setTimeout(() => ask(seedQuestion), 240);
+  }
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+    <div className={cx("grid gap-4", compact ? "" : "lg:grid-cols-[280px_1fr]")}>
+      {!compact && (
       <div>
         <p className="t-eyebrow mb-2.5 text-text-muted">Suggested tests</p>
         <ul className="space-y-1.5">
@@ -118,6 +140,7 @@ export function AgentPreview({ greeting }: { greeting: string }) {
           {turns.length} of {SUGGESTIONS.length} launch checks run
         </p>
       </div>
+      )}
 
       <div className="overflow-hidden bg-surface">
         <div className="flex items-center gap-2.5 border-b border-divider px-4 py-2.5">
