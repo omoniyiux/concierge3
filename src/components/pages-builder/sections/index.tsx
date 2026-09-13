@@ -8,8 +8,6 @@ import { Pricing } from "./Pricing";
 import { Services } from "./Services";
 import { Testimonials } from "./Testimonials";
 
-export { RenderModeProvider, useRenderMode, type RenderMode } from "./shared";
-
 /**
  * `section.kind` narrows `section.content`, so each renderer receives exactly
  * the content type it was written against and the switch needs no assertions.
