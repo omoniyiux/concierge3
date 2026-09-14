@@ -153,7 +153,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
   const connectedRoutes = useDestinations(siteId).filter((d) => d.status === "connected").length;
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Agent"
         title={name}
@@ -178,9 +178,9 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
       />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           {/* Identity ------------------------------------------------- */}
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="Identity"
               hint="What visitors see before they type anything."
@@ -205,7 +205,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             </div>
           </Panel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="Role"
               hint="Sets what Concierge leads with when intent is unclear."
@@ -231,7 +231,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
           {/* Behaviour ------------------------------------------------ */}
           <GroupLabel>Behaviour</GroupLabel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="Tone"
               hint="How it sounds. It never changes what it is allowed to say."
@@ -257,7 +257,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
 
 
           {/* Languages ---------------------------------------------------- */}
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="Languages"
               hint="What it may answer in. Only list a language your team can follow up in — an answer you cannot act on is worse than none."
@@ -320,7 +320,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             </p>
           </Panel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="Quick actions"
               hint="Offered as buttons when the moment fits. Only actions that are ready appear."
@@ -356,7 +356,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             </ul>
           </Panel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="How far it may go on its own"
               hint="A visitor who leaves the page is not gone. This decides what Concierge may do about it."
@@ -382,7 +382,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             </p>
           </Panel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="Voice"
               hint="Lets a visitor talk instead of type. Answers stay grounded in Site Brain."
@@ -402,7 +402,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
           {/* Rules & limits ------------------------------------------- */}
           <GroupLabel>Rules &amp; limits</GroupLabel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead
               title="How it should behave"
               hint="Instructions layered on top of your approved knowledge."
@@ -471,7 +471,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             )}
           </Panel>
 
-          <Panel className="border-danger-line p-6">
+          <Panel className="border-danger-line p-5 sm:p-6">
             <SectionHead
               title="Never promise"
               hint="Hard limits. Concierge refuses and offers a handoff rather than risk being wrong."
@@ -493,7 +493,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
             </p>
           </Panel>
 
-          <Panel className="p-6">
+          <Panel className="p-5 sm:p-6">
             <SectionHead title="Hand off to a person when" className="mb-4" />
             <ul className="space-y-2">
               {AGENT.escalationTriggers.map((r) => (
@@ -507,7 +507,7 @@ export default function AgentPage({ params }: { params: Promise<{ siteId: string
         </div>
 
         {/* Live preview rail ------------------------------------------ */}
-        <aside className="lg:sticky lg:top-[76px] lg:self-start">
+        <aside className="min-w-0 lg:sticky lg:top-[76px] lg:self-start">
           <Card className="overflow-hidden">
             <div className="flex items-center gap-2 border-b border-divider px-4 py-2.5">
               <p className="t-eyebrow text-text-muted">Live preview</p>
@@ -566,9 +566,13 @@ function AgentReadiness({
     <Card className="p-5">
       {/* Two halves that each take what is left over, so the three facts spread
           across the right of the card instead of bunching beside the sentence
-          and leaving a third of the row empty. */}
-      <div className="flex flex-wrap items-center gap-x-10 gap-y-6">
-        <div className="flex min-w-[320px] flex-1 items-center gap-4">
+          and leaving a third of the row empty.
+
+          The 320px floor only applies from sm. On a phone this card is about
+          287px wide inside its padding, so an unconditional min-width pushed
+          both halves past the viewport and scrolled the whole page sideways. */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-5 sm:gap-x-10 sm:gap-y-6">
+        <div className="flex w-full flex-1 items-center gap-4 sm:w-auto sm:min-w-[320px]">
           <RadialGauge
             value={confidence}
             label="Agent confidence"
@@ -583,7 +587,7 @@ function AgentReadiness({
           </div>
         </div>
 
-        <dl className="grid min-w-[320px] flex-1 grid-cols-3 gap-x-6 gap-y-4">
+        <dl className="grid w-full flex-1 grid-cols-1 gap-x-6 gap-y-3.5 sm:w-auto sm:min-w-[320px] sm:grid-cols-3 sm:gap-y-4">
           {[
             { Sticker: ApprovedSticker, label: "Knowledge", value: `${BRAIN.approvedCount} approved` },
             { Sticker: SparkSticker, label: "Actions", value: `${readyActions} ready` },
@@ -601,7 +605,7 @@ function AgentReadiness({
       </div>
 
       {gaps.length > 0 && (
-        <div className="w-full border-t border-divider pt-4">
+        <div className="mt-5 w-full border-t border-divider pt-4">
           <p className="t-eyebrow mb-2 text-text-muted">Finish these to raise confidence</p>
           <ul className="flex flex-wrap gap-2">
             {gaps.map((g) => (

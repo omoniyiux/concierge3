@@ -12,8 +12,18 @@ import {
   WebsiteStep,
 } from "@/components/onboarding/steps";
 import { DEFAULT_SITE_ID } from "@/lib/demo-data";
-import { isStepKey, nextStep, prevStep, stepHref, type StepKey } from "@/lib/onboarding";
-import { clearWizard, useWizard } from "@/lib/onboarding-state";
+import {
+  isStepKey,
+  nextStep,
+  prevStep,
+  siteIdFor,
+  siteNameFrom,
+  stepHref,
+  tidyUrl,
+  type StepKey,
+} from "@/lib/onboarding";
+import { createAgentSite } from "@/lib/sim/store";
+import { useWizard } from "@/lib/onboarding-state";
 
 /**
  * One step, one URL. Forward moves push — Back should walk the flow backwards,
@@ -35,9 +45,29 @@ function Step({ step }: { step: StepKey }) {
   const onNext = () => go(nextStep(step));
   const onBack = () => go(prevStep(step));
 
+  const host = tidyUrl(url);
+  const siteId = host ? siteIdFor(host) : null;
+
+  /**
+   * The site is created the moment the owner names their website — not at the
+   * end of the flow.
+   *
+   * It used to be created in the last step's "Go to your dashboard", which is
+   * disabled until the install check passes. Click through without running
+   * that check and the site was never created at all: the owner had answered
+   * seven screens about their website and it was nowhere in the switcher.
+   *
+   * A site part-way through setup is a real state the workspace already knows
+   * how to show — "Setting up · 33%" — so there is nothing to hide until the
+   * end.
+   */
+  function onWebsiteNext() {
+    if (host && siteId) createAgentSite({ id: siteId, name: siteNameFrom(host), url: host });
+    onNext();
+  }
+
   function finish() {
-    clearWizard();
-    router.push(`/sites/${DEFAULT_SITE_ID}/overview`);
+    router.push(`/sites/${siteId ?? DEFAULT_SITE_ID}/overview`);
   }
 
   switch (step) {
@@ -48,7 +78,7 @@ function Step({ step }: { step: StepKey }) {
           setUrl={setUrl}
           authorized={authorized}
           setAuthorized={setAuthorized}
-          onNext={onNext}
+          onNext={onWebsiteNext}
         />
       );
 

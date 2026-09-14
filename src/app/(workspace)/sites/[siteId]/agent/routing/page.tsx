@@ -16,7 +16,7 @@ import { ChannelConnect } from "@/components/routing/ChannelConnect";
 import { FIELD_LABEL, MOMENT_LABEL, OP_LABEL } from "@/components/routing/MomentLabels";
 import { EscalationLadder } from "@/components/routing/EscalationLadder";
 import { cx } from "@/lib/cx";
-import { useUrlState } from "@/lib/url-state";
+import { useUrlSelection, useUrlState } from "@/lib/url-state";
 import { DELIVERIES, INBOX, ROUTING_RULES } from "@/lib/demo-data";
 import { useDestinations, useSimActions } from "@/lib/sim/store";
 import { INTENT_LABEL, relativeTime } from "@/lib/format";
@@ -63,13 +63,27 @@ function Routing({ siteId }: { siteId: string }) {
   const [ruleEdit, setRuleEdit] = useState<RoutingRule | "new" | null>(null);
   const [destEdit, setDestEdit] = useState<Destination | "new" | null>(null);
 
+  /* Arriving from Service health with ?destination=<id>: the owner asked to
+     fix one specific thing, so open that one rather than leaving them to find
+     it in a grid. Derived during render rather than pushed into state by an
+     effect — the URL is already the source of truth, and copying it into
+     state just to read it back cascades a second render. */
+  const [focusId, setFocusId] = useUrlSelection("destination");
+  const focused = focusId ? (destinations.find((d) => d.id === focusId) ?? null) : null;
+  const openDestination = destEdit ?? focused;
+
+  function closeDestination() {
+    setDestEdit(null);
+    if (focusId) setFocusId(null);
+  }
+
   const failing = destinations.filter((d) => d.status === "failing");
   const waiting = INBOX.filter((i) => i.state === "unread" || i.state === "open").length;
 
   const closeAll = () => {
     setChecking(false);
     setRuleEdit(null);
-    setDestEdit(null);
+    closeDestination();
   };
 
   function editDestination(d: Destination) {
@@ -81,11 +95,11 @@ function Routing({ siteId }: { siteId: string }) {
   function saveDestination(next: Destination) {
     if (destinations.some((d) => d.id === next.id)) setDestination(next.id, next);
     else addDestination(next);
-    setDestEdit(null);
+    closeDestination();
   }
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Agent"
         title="Where visitors end up"
@@ -172,11 +186,11 @@ function Routing({ siteId }: { siteId: string }) {
         />
       )}
 
-      {destEdit && (
+      {openDestination && (
         <DestinationEditor
-          destination={destEdit === "new" ? undefined : destEdit}
+          destination={openDestination === "new" ? undefined : openDestination}
           onSave={saveDestination}
-          onClose={() => setDestEdit(null)}
+          onClose={closeDestination}
         />
       )}
 

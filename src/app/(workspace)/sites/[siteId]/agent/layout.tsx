@@ -50,10 +50,14 @@ export default function AgentLayout({
   return (
     <>
       <div className="sticky top-0 z-30 border-b border-divider bg-canvas/85 backdrop-blur-md">
+        {/* Same max width and the same gutters as PageContainer, so the first
+            tab lines up with the page title underneath it. It used to be
+            sm:px-8 lg:px-10 against the body's sm:px-7 lg:px-9 — 4px out at
+            every breakpoint above mobile. */}
         <nav
           aria-label="Agent"
-          style={{ maxWidth: "1090px" }}
-          className="cg-no-scrollbar mx-auto flex w-full items-center gap-1.5 overflow-x-auto px-5 pb-4 pt-4 sm:px-8 lg:px-10"
+          style={{ maxWidth: "var(--content-max)" }}
+          className="cg-no-scrollbar mx-auto flex w-full items-center gap-1.5 overflow-x-auto px-5 pb-4 pt-4 sm:px-7 lg:px-9"
         >
           {tabs.map(({ href, label, badge }) => {
             const active = href === base ? pathname === base : pathname.startsWith(href);

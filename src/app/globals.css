@@ -119,8 +119,12 @@
   --sidebar-w: 260px;
   --sidebar-rail-w: 68px;
   --topbar-h: 64px;
-  --content-max: 1010px;
-  --content-max-wide: 1090px;
+  /* One width for every dashboard surface. There used to be two — a 1010px
+     default and a 1090px "wide" — but nothing ever asked for the narrow one on
+     purpose; it was only reached by empty states and loading fallbacks that
+     forgot to opt in, so a surface visibly narrowed when it had nothing to
+     show and widened again once it did. */
+  --content-max: 1090px;
 
   --dur-micro: 120ms;
   --dur-base: 180ms;

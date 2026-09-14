@@ -7,7 +7,8 @@ import { SiteMark } from "@/components/shell/ConciergeMark";
 import { CheckIcon, ChevronUpDown, GridIcon, PlusIcon } from "@/components/icons";
 import { Badge } from "@/components/ui";
 import { cx } from "@/lib/cx";
-import { ORG, SITES } from "@/lib/demo-data";
+import { ORG } from "@/lib/demo-data";
+import { useWorld } from "@/lib/sim/store";
 import type { Site } from "@/lib/types";
 
 const STATUS_TONE = {
@@ -44,7 +45,10 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const current = SITES.find((s) => s.id === siteId) ?? SITES[0];
+  // The world, not the fixtures: a site the owner just added through setup has
+  // to appear here, and it never did while this read a constant.
+  const sites = useWorld().sites;
+  const current = sites.find((s) => s.id === siteId) ?? sites[0];
 
   useEffect(() => {
     if (!open) return;
@@ -84,7 +88,7 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
           <div className="flex items-center justify-between border-b border-divider px-3 py-2">
             <p className="t-eyebrow text-text-muted">{ORG.name}</p>
             <span className="text-[13px] text-text-tertiary">
-              {SITES.length} of {ORG.siteLimit} sites
+              {sites.length} of {ORG.siteLimit} sites
             </span>
           </div>
 
@@ -96,11 +100,11 @@ export function SiteSwitcher({ siteId }: { siteId: string }) {
           >
             <GridIcon size={15} className="text-text-tertiary" />
             {ORG.isAgency ? "All clients" : "All sites"}
-            <span className="ml-auto text-[12px] text-text-tertiary">{SITES.length}</span>
+            <span className="ml-auto text-[12px] text-text-tertiary">{sites.length}</span>
           </Link>
 
           <ul className="max-h-[320px] overflow-y-auto p-1.5">
-            {SITES.map((s) => {
+            {sites.map((s) => {
               const active = s.id === siteId;
               return (
                 <li key={s.id}>

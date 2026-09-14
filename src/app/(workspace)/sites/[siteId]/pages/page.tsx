@@ -28,7 +28,7 @@ import {
   PlusIcon,
 } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { PAGES, getSite } from "@/lib/demo-data";
+import { saveDocument, useDocument, useSite } from "@/lib/sim/store";
 import { sectionHint, sectionSummary } from "@/lib/pages-builder";
 import { relativeTime } from "@/lib/format";
 import type { ConciergePage } from "@/lib/types";
@@ -41,10 +41,33 @@ type Device = "desktop" | "tablet" | "mobile";
  */
 export default function PagesWorkspace({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = use(params);
-  const site = getSite(siteId);
-  const [selected, setSelected] = useState<ConciergePage>(PAGES[0]);
+  const site = useSite(siteId);
+  /* This site's own pages, not the fixture's: a site built in the setup flow
+     has a document of its own, and listing Atlas Moving's pages under it was
+     how this page used to answer. */
+  const doc = useDocument(siteId);
+  const pages = doc?.pages ?? [];
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("desktop");
-  const [sections, setSections] = useState(PAGES[0].sections);
+  const selected: ConciergePage | undefined = pages.find((p) => p.id === selectedId) ?? pages[0];
+  const sections = selected?.sections ?? [];
+  const setSelected = (p: ConciergePage) => setSelectedId(p.id);
+
+  /* Toggling a section writes to the document in the world, so the change is
+     there when the editor opens and after a reload. It used to write to a copy
+     held on this page alone, which forgot it the moment you left. */
+  const setSectionEnabled = (sectionId: string, enabled: boolean) => {
+    if (!doc || !selected) return;
+    saveDocument(siteId, {
+      ...doc,
+      pages: doc.pages.map((p) =>
+        p.id === selected.id
+          ? { ...p, sections: p.sections.map((x) => (x.id === sectionId ? { ...x, enabled } : x)) }
+          : p,
+      ),
+      updatedAt: new Date().toISOString(),
+    });
+  };
 
   /* Agent sites do not have Pages; say so rather than showing an empty shell. */
   if (site.product !== "pages") {
@@ -59,16 +82,16 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
           <EmptyState
             icon={<PagesIcon size={19} />}
             title={`${site.name} already has a website`}
-            body="Pages is for businesses starting from nothing. Since Concierge is installed on your existing site, there is nothing to build here — but you can add a Pages site to your organisation at any time."
+            body="Pages is for businesses starting from nothing. Concierge already runs on your existing site, so there is nothing to build here."
             action={
               <LinkButton href="/onboarding/pages" leading={<PlusIcon size={15} />}>
                 Create a Pages site
               </LinkButton>
             }
             secondaryAction={
-              <Button variant="secondary" onClick={() => undefined}>
+              <LinkButton href="/help/docs/build-pages" variant="secondary">
                 Learn how Pages works
-              </Button>
+              </LinkButton>
             }
           />
         </Panel>
@@ -76,8 +99,12 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
     );
   }
 
+  /* A Pages site whose document has not arrived yet — the world restores a
+     tick after the first paint. Better a quiet frame than a crash. */
+  if (!selected) return null;
+
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Pages"
         title={site.name}
@@ -102,9 +129,9 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
               {site.url}
             </span>
             <Badge tone="approved" dot pulse>
-              {PAGES.filter((p) => p.published).length} pages live
+              {pages.filter((p) => p.published).length} pages live
             </Badge>
-            <Badge tone="review">{PAGES.filter((p) => !p.published).length} draft</Badge>
+            <Badge tone="review">{pages.filter((p) => !p.published).length} draft</Badge>
             <span className="text-[11.5px] text-text-tertiary">Updated {relativeTime(site.updatedAt)}</span>
           </div>
         }
@@ -119,7 +146,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
         <div className="min-w-0">
           <p className="t-eyebrow mb-2.5 text-text-muted">Pages</p>
           <ul className="space-y-1">
-            {PAGES.map((p) => {
+            {pages.map((p) => {
               const active = p.id === selected.id;
               return (
                 <li key={p.id}>
@@ -127,7 +154,6 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                     type="button"
                     onClick={() => {
                       setSelected(p);
-                      setSections(p.sections);
                     }}
                     className={cx(
                       "flex w-full items-center gap-2.5 px-2.5 py-2 text-left transition-colors",
@@ -186,7 +212,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                     size="sm"
                     checked={s.enabled}
                     onChange={(v) =>
-                      setSections((prev) => prev.map((x) => (x.id === s.id ? { ...x, enabled: v } : x)))
+                      setSectionEnabled(s.id, v)
                     }
                     label={`Show ${s.title}`}
                   />

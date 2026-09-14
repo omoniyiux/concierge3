@@ -10,7 +10,7 @@ import { PublishDialog } from "@/components/pages-builder/PublishDialog";
 import { Badge, Button, EmptyState, IconButton, LinkButton, Panel, SegmentedControl } from "@/components/ui";
 import { ExternalIcon, PagesIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
-import { getSite } from "@/lib/demo-data";
+import { saveDocument, useDocument, useHydrated, useSite } from "@/lib/sim/store";
 import { BREAKPOINTS, findPage, pagePath } from "@/lib/pages-builder";
 import { suggestSubdomain } from "@/lib/publishing.client";
 import {
@@ -40,6 +40,9 @@ export default function PageEditor({
   const [breakpoint, setBreakpoint] = useState<PageBreakpoint>("desktop");
   const [publishing, setPublishing] = useState(false);
   const editor = useEditor();
+  const stored = useDocument(siteId);
+  const worldSite = useSite(siteId);
+  const hydrated = useHydrated();
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -49,19 +52,51 @@ export default function PageEditor({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const doc = editor.doc;
-  /* A site the setup flow just created is not in the fixtures, so the store is
-     the authority whenever it holds the site this URL names. */
-  const fixture = getSite(siteId);
+  /* The editor store is in memory, so a reload — or arriving from anywhere but
+     the setup flow — leaves it holding some other site's document. The world
+     is where the document actually lives, so pull it back in. */
+  useEffect(() => {
+    if (!stored || editor.site.id === siteId) return;
+    dispatch({
+      type: "load",
+      doc: stored,
+      site: {
+        id: siteId,
+        name: worldSite.name,
+        url: worldSite.url,
+        openingHours: worldSite.openingHours,
+      },
+    });
+  }, [stored, siteId, editor.site.id, worldSite.name, worldSite.url, worldSite.openingHours]);
+
+  /* And every edit goes back, so the work survives the next reload. */
+  useEffect(() => {
+    if (editor.site.id === siteId) saveDocument(siteId, editor.doc);
+  }, [editor.doc, editor.site.id, siteId]);
+
+  /* Read through to the world until the effect above has synced the store, so
+     opening the editor never flashes "that page does not exist" at a page that
+     is in fact right there. */
+  const doc = editor.site.id === siteId ? editor.doc : (stored ?? editor.doc);
+  /* A site the setup flow just created is not in the fixtures, so the world is
+     the authority — the store only catches up once the effect above runs. */
   const site =
     editor.site.id === siteId
       ? editor.site
-      : { id: fixture.id, name: fixture.name, url: fixture.url, openingHours: fixture.openingHours };
-  const isPagesSite = editor.site.id === siteId || fixture.product === "pages";
+      : {
+          id: worldSite.id,
+          name: worldSite.name,
+          url: worldSite.url,
+          openingHours: worldSite.openingHours,
+        };
+  const isPagesSite = editor.site.id === siteId || worldSite.product === "pages";
   const page = findPage(doc, pageId);
   /* Scoped to this page, so switching pages never leaves the inspector
      pointing at a section that is no longer on screen. */
   const selected = page?.sections.find((s) => s.id === editor.selectedId);
+
+  /* Before the stored world is back there is nothing to be wrong about. */
+  if (!hydrated) return null;
 
   if (isPagesSite === false || page === undefined) {
     return (
@@ -82,7 +117,7 @@ export default function PageEditor({
     <PageContainer flush>
       <div className="flex h-full flex-col">
         {/* Toolbar ------------------------------------------------------- */}
-        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-divider bg-surface px-4">
+        <header className="flex h-14 shrink-0 items-center gap-2.5 border-b border-divider bg-surface px-3 sm:gap-4 sm:px-4">
           <Link
             href={`/sites/${siteId}/pages`}
             className="flex items-center gap-1.5 text-[11.5px] text-text-tertiary transition-colors hover:text-text-primary"
@@ -91,16 +126,20 @@ export default function PageEditor({
             Pages
           </Link>
 
-          <span className="h-4 w-px bg-line-strong" aria-hidden />
+          <span className="hidden h-4 w-px bg-line-strong sm:block" aria-hidden />
 
-          <div className="flex min-w-0 items-baseline gap-2.5">
+          <div className="flex min-w-0 flex-1 items-baseline gap-2.5">
             <span className="truncate text-[12.5px] font-semibold">{page.title}</span>
-            <span className="truncate text-[11.5px] text-text-tertiary">{pagePath(page)}</span>
+            {/* The path is the first thing to go: the title already identifies
+                the page, and the slug is recoverable from the Pages list. */}
+            <span className="hidden truncate text-[11.5px] text-text-tertiary sm:inline">
+              {pagePath(page)}
+            </span>
             {!page.published && <Badge tone="review">Draft</Badge>}
             {isDirty(editor) && <Badge tone="accent">Unsaved</Badge>}
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-0.5">
               <IconButton
                 label="Undo"
@@ -124,20 +163,24 @@ export default function PageEditor({
               </IconButton>
             </div>
 
-            <span className="h-4 w-px bg-line-strong" aria-hidden />
+            <span className="hidden h-4 w-px bg-line-strong md:block" aria-hidden />
 
-            <SegmentedControl
-              label="Preview width"
-              value={breakpoint}
-              onChange={setBreakpoint}
-              options={BREAKPOINTS.map((b) => ({ value: b.id, label: b.label }))}
-            />
+            <div className="hidden md:block">
+              <SegmentedControl
+                label="Preview width"
+                value={breakpoint}
+                onChange={setBreakpoint}
+                options={BREAKPOINTS.map((b) => ({ value: b.id, label: b.label }))}
+              />
+            </div>
 
-            <span className="h-4 w-px bg-line-strong" aria-hidden />
+            <span className="hidden h-4 w-px bg-line-strong sm:block" aria-hidden />
 
-            <Button variant="secondary" size="sm" leading={<ExternalIcon size={13} />}>
-              Preview
-            </Button>
+            <div className="hidden sm:block">
+              <Button variant="secondary" size="sm" leading={<ExternalIcon size={13} />}>
+                Preview
+              </Button>
+            </div>
             <Button size="sm" variant="accent" onClick={() => setPublishing(true)}>
               Publish
             </Button>

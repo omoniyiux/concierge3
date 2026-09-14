@@ -1,5 +1,4 @@
-import { CONVERSATIONS } from "@/lib/demo-data";
-import type { ID, Message } from "@/lib/types";
+import type { Conversation, ID, Message } from "@/lib/types";
 
 /* ============================================================================
    WHEN IT GETS SOMETHING WRONG
@@ -26,6 +25,23 @@ export const FLAG_REASON: Record<FlagReason, { label: string; detail: string }> 
   missed: { label: "Refused unnecessarily", detail: "It had the answer and did not use it." },
 };
 
+/**
+ * Whether this kind of complaint is the knowledge's fault.
+ *
+ * A wrong or stale fact came from an item in the brain, and the fix is to
+ * un-approve it. A bad tone, an answer that should have been a handoff, or a
+ * refusal it did not need to make are all the Agent's configuration — the
+ * knowledge behind them may be perfectly correct, and retracting it would
+ * punish the owner for a problem somewhere else.
+ */
+export const RETRACTS_KNOWLEDGE: Record<FlagReason, boolean> = {
+  wrong: true,
+  outdated: true,
+  tone: false,
+  "should-not-have": false,
+  missed: false,
+};
+
 export type FlagState = "open" | "investigating" | "fixed" | "dismissed";
 
 export type AnswerFlag = {
@@ -35,6 +51,13 @@ export type AnswerFlag = {
   messageId: ID;
   /** What the agent actually said, kept verbatim on the flag. */
   said: string;
+  /**
+   * The knowledge the answer was built from, copied off the message's
+   * citations at the moment it was flagged. This is the link that turns a
+   * complaint into a correction: without it a flag is a note somebody wrote,
+   * and the item that produced the bad answer keeps producing it.
+   */
+  cites: { itemId: ID; title: string }[];
   reason: FlagReason;
   note?: string;
   flaggedBy: string;
@@ -53,6 +76,7 @@ export const FLAGS: AnswerFlag[] = [
     conversationId: "c_3",
     messageId: "m_c3_2",
     said: "Whitening starts at $349 and takes about an hour.",
+    cites: [{ itemId: "k_pricing", title: "Treatment pricing" }],
     reason: "outdated",
     note: "We put whitening up to $389 in August. It has been quoting the old price.",
     flaggedBy: "Dana Whitmore",
@@ -68,6 +92,7 @@ export const FLAGS: AnswerFlag[] = [
     conversationId: "c_5",
     messageId: "m_c5_4",
     said: "That sounds like it could be an infection — you should be seen urgently.",
+    cites: [{ itemId: "k_escalation", title: "Human escalation rules" }],
     reason: "should-not-have",
     note: "It is not allowed to say anything that reads as a diagnosis, even a cautious one.",
     flaggedBy: "Olaifa Promise",
@@ -77,8 +102,16 @@ export const FLAGS: AnswerFlag[] = [
   },
 ];
 
-export function flagsFor(siteId: string): AnswerFlag[] {
-  return FLAGS.filter((f) => f.siteId === siteId).sort((a, b) => b.at.localeCompare(a.at));
+export function flagsFor(flags: AnswerFlag[], siteId: string): AnswerFlag[] {
+  return flags.filter((f) => f.siteId === siteId).sort((a, b) => b.at.localeCompare(a.at));
+}
+
+/** The open complaints against one knowledge item, newest first. */
+export function flagsAgainst(flags: AnswerFlag[], itemId: ID): AnswerFlag[] {
+  return flags
+    .filter((f) => f.cites.some((c) => c.itemId === itemId))
+    .filter((f) => f.state === "open" || f.state === "investigating")
+    .sort((a, b) => b.at.localeCompare(a.at));
 }
 
 export const FLAG_STATE_LABEL: Record<FlagState, string> = {
@@ -103,12 +136,12 @@ export type SaidHit = {
  * This is the question an owner asks the moment they find one bad answer,
  * and until now the product could not answer it.
  */
-export function whatWeSaid(siteId: string, query: string): SaidHit[] {
+export function whatWeSaid(conversations: Conversation[], siteId: string, query: string): SaidHit[] {
   const q = query.trim().toLowerCase();
   if (q.length < 2) return [];
 
   const hits: SaidHit[] = [];
-  for (const c of CONVERSATIONS) {
+  for (const c of conversations) {
     if (c.siteId !== siteId) continue;
     for (const m of c.messages) {
       if (m.author !== "agent" && m.author !== "human") continue;

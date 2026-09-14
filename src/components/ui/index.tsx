@@ -692,8 +692,18 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h3 className="t-section max-w-[28ch]">{title}</h3>
-      <p className="t-body mt-2.5 max-w-[46ch] text-text-tertiary">{body}</p>
+      {/* The heading gets balance, which evens the lines when it does wrap —
+          but at 28ch it was wrapping titles that fit on one line, splitting
+          "Northlane Dental / already has a website" across the subject and
+          its verb. A wider ceiling lets a short title stay whole.
+
+          The body gets pretty, not balance. Balance narrows the measure to
+          even out line lengths, which is right for two or three words of
+          heading and wrong for a sentence — it was squeezing this paragraph
+          into a ragged column well inside its 46ch. Pretty only lifts the
+          orphan off the last line. */}
+      <h3 className="t-section max-w-[36ch] text-balance">{title}</h3>
+      <p className="t-body mt-2.5 max-w-[46ch] text-pretty text-text-tertiary">{body}</p>
       {(action || secondaryAction) && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           {action}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { cx } from "@/lib/cx";
 import type { MetricPoint } from "@/lib/types";
 
@@ -149,6 +149,10 @@ export function AreaChart({
 }) {
   const gid = useId();
   const ready = useMotionReady();
+  /** Which day the pointer or the keyboard is on. null means "none". */
+  const [active, setActive] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
   const w = 720;
   const h = height;
   const padL = 44;
@@ -175,6 +179,51 @@ export function AreaChart({
     v: Math.round(min + span * t),
   }));
 
+  const dayLabel = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
+  /* The SVG scales to the card, so a client x has to come back through the
+     viewBox before it means anything in chart units. */
+  function indexAt(clientX: number) {
+    const el = svgRef.current;
+    if (!el) return null;
+    const box = el.getBoundingClientRect();
+    if (box.width === 0) return null;
+    const x = ((clientX - box.left) / box.width) * w;
+    const i = step === 0 ? 0 : Math.round((x - padL) / step);
+    return Math.max(0, Math.min(points.length - 1, i));
+  }
+
+  function onKeyDown(e: ReactKeyboardEvent<SVGSVGElement>) {
+    const last = points.length - 1;
+    const at = active ?? last;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive(Math.min(last, at + 1));
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setActive(Math.max(0, at - 1));
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setActive(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setActive(last);
+    } else if (e.key === "Escape") {
+      setActive(null);
+    }
+  }
+
+  const cur = active === null ? null : pts[active];
+
+  /* The readout is drawn in chart units so it tracks the point exactly, and
+     clamped at both ends so it never hangs off the card. */
+  const TIP_W = 168;
+  const TIP_H = 52;
+  const tipX = cur ? Math.max(padL, Math.min(cur.x - TIP_W / 2, w - 16 - TIP_W)) : 0;
+  const tipAbove = cur ? cur.y > padT + TIP_H + 12 : true;
+  const tipY = cur ? (tipAbove ? cur.y - TIP_H - 12 : cur.y + 12) : 0;
+
   return (
     <figure className="w-full">
       <figcaption className="sr-only">{label}</figcaption>
@@ -182,11 +231,18 @@ export function AreaChart({
           card's width, so the drawing fills its box instead of being letterboxed
           inside one and leaving a band of white underneath. */}
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${w} ${h}`}
-        className="block w-full"
+        className="block w-full touch-pan-y focus:outline-none"
         style={{ height: "auto" }}
         role="img"
         aria-label={label}
+        tabIndex={0}
+        onPointerMove={(e) => setActive(indexAt(e.clientX))}
+        onPointerDown={(e) => setActive(indexAt(e.clientX))}
+        onPointerLeave={() => setActive(null)}
+        onBlur={() => setActive(null)}
+        onKeyDown={onKeyDown}
       >
         <defs>
           <linearGradient id={`${gid}-fill`} x1="0" y1="0" x2="0" y2="1">
@@ -195,8 +251,8 @@ export function AreaChart({
           </linearGradient>
         </defs>
 
-        {ticks.map((t) => (
-          <g key={t.v}>
+        {ticks.map((t, i) => (
+          <g key={i}>
             <line x1={padL} x2={w - 16} y1={t.y} y2={t.y} stroke="var(--color-line)" strokeWidth="1" />
             <text
               x={padL - 12}
@@ -240,16 +296,81 @@ export function AreaChart({
           ) : null,
         )}
 
-        <circle
-          cx={pts[pts.length - 1].x}
-          cy={pts[pts.length - 1].y}
-          r="5"
-          fill="var(--color-surface)"
-          stroke="var(--color-accent)"
-          strokeWidth="3"
-          className={ready ? "cg-pop [animation-delay:640ms]" : "opacity-0"}
-        />
+        {/* The end-of-series marker steps aside while a day is being read, so
+            there are never two dots claiming to be the point of interest. */}
+        {!cur && (
+          <circle
+            cx={pts[pts.length - 1].x}
+            cy={pts[pts.length - 1].y}
+            r="5"
+            fill="var(--color-surface)"
+            stroke="var(--color-accent)"
+            strokeWidth="3"
+            className={ready ? "cg-pop [animation-delay:640ms]" : "opacity-0"}
+          />
+        )}
+
+        {/* ---- Hover / keyboard readout -------------------------------- */}
+        {cur && (
+          <g pointerEvents="none">
+            <line
+              x1={cur.x}
+              x2={cur.x}
+              y1={padT}
+              y2={padT + innerH}
+              stroke="var(--color-line-strong)"
+              strokeWidth="1"
+              strokeDasharray="3 3"
+            />
+            <circle
+              cx={cur.x}
+              cy={cur.y}
+              r="6"
+              fill="var(--color-surface)"
+              stroke="var(--color-accent)"
+              strokeWidth="3"
+            />
+            <g transform={`translate(${tipX}, ${tipY})`}>
+              <rect
+                width={TIP_W}
+                height={TIP_H}
+                rx="2"
+                fill="var(--color-ink)"
+                opacity="0.96"
+              />
+              <text x="12" y="21" fill="#FFFFFF" style={{ fontSize: 13, opacity: 0.72 }}>
+                {dayLabel(cur.p.date)}
+              </text>
+              <text
+                x="12"
+                y="41"
+                fill="#FFFFFF"
+                style={{ fontSize: 15, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}
+              >
+                {cur.p.value}
+                {valueSuffix}
+              </text>
+            </g>
+          </g>
+        )}
       </svg>
+
+      {/* Announced to a screen reader as the selection moves; the full series
+          is below, because a lone <svg role="img"> cannot be walked. */}
+      <p aria-live="polite" className="sr-only">
+        {cur ? `${dayLabel(cur.p.date)}: ${cur.p.value}${valueSuffix}` : ""}
+      </p>
+      <dl className="sr-only">
+        {points.map((p) => (
+          <div key={p.date}>
+            <dt>{dayLabel(p.date)}</dt>
+            <dd>
+              {p.value}
+              {valueSuffix}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </figure>
   );
 }

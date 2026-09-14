@@ -1,7 +1,16 @@
 "use client";
 
 import { Card, LinkButton, ProgressBar } from "@/components/ui";
-import { AlertIcon, ArrowRight, CheckIcon, InfoIcon } from "@/components/icons";
+import { ArrowRight } from "@/components/icons";
+import {
+  AllClearSticker,
+  ChatSticker,
+  InstallSticker,
+  KnowledgeSticker,
+  RoutingSticker,
+  WarningSticker,
+} from "@/components/stickers";
+import { BrokenLinkSticker, IdeaSticker, ReviewSticker } from "@/components/stickers/attention";
 import { cx } from "@/lib/cx";
 import { HEALTH_COPY, type HealthSeverity, type SiteHealth } from "@/lib/health";
 
@@ -14,11 +23,33 @@ import { HEALTH_COPY, type HealthSeverity, type SiteHealth } from "@/lib/health"
    This is the standing answer to that, on the page an owner already opens.
    ========================================================================== */
 
-const SEVERITY: Record<HealthSeverity, { ink: string; wash: string; Icon: typeof AlertIcon }> = {
-  critical: { ink: "text-danger", wash: "bg-danger-soft", Icon: AlertIcon },
-  warn: { ink: "text-warning", wash: "bg-warning-soft", Icon: AlertIcon },
-  watch: { ink: "text-info", wash: "bg-info-soft", Icon: InfoIcon },
-  good: { ink: "text-success", wash: "bg-success-soft", Icon: CheckIcon },
+/**
+ * A sticker per signal, not per severity.
+ *
+ * Every row used to carry the same washed ⓘ, which made a dead script and an
+ * unanswered question look like the same event and left the eye nothing to
+ * sort by. These name the thing that is actually wrong — the cable pulled out
+ * of the socket, the page waiting to be read — the way the attention list
+ * beside it already does.
+ *
+ * Keyed by signal id, with a severity fallback so a signal added later still
+ * renders something sensible.
+ */
+const SIGNAL_STICKER: Record<string, typeof BrokenLinkSticker> = {
+  install: InstallSticker,
+  routing: BrokenLinkSticker,
+  untested: RoutingSticker,
+  stale: KnowledgeSticker,
+  review: ReviewSticker,
+  quiet: ChatSticker,
+  gaps: IdeaSticker,
+};
+
+const SEVERITY_STICKER: Record<HealthSeverity, typeof BrokenLinkSticker> = {
+  critical: BrokenLinkSticker,
+  warn: WarningSticker,
+  watch: ReviewSticker,
+  good: AllClearSticker,
 };
 
 const BAND_TONE: Record<SiteHealth["band"], { tone: "success" | "accent" | "ink"; ink: string }> = {
@@ -51,8 +82,8 @@ export function HealthCard({ health }: { health: SiteHealth }) {
       </div>
 
       {health.signals.length === 0 ? (
-        <div className="flex items-center gap-3 border-t border-divider bg-success-soft px-6 py-4">
-          <CheckIcon size={15} className="shrink-0 text-success" strokeWidth={2.4} />
+        <div className="flex items-center gap-3.5 border-t border-divider bg-success-soft px-6 py-4">
+          <AllClearSticker size={30} className="shrink-0" />
           <p className="text-[12.5px] text-text-secondary">
             The script is answering, every destination is delivering, and your knowledge is current.
           </p>
@@ -60,12 +91,10 @@ export function HealthCard({ health }: { health: SiteHealth }) {
       ) : (
         <ul className="divide-y divide-divider border-t border-divider">
           {health.signals.map((s) => {
-            const v = SEVERITY[s.severity];
+            const Sticker = SIGNAL_STICKER[s.id] ?? SEVERITY_STICKER[s.severity];
             return (
               <li key={s.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-6 py-4">
-                <span className={cx("flex h-7 w-7 shrink-0 items-center justify-center", v.wash, v.ink)}>
-                  <v.Icon size={15} />
-                </span>
+                <Sticker size={32} className="shrink-0" />
                 <div className="min-w-[200px] flex-1">
                   <p className="text-[12.5px] font-medium">{s.title}</p>
                   <p className="mt-1 text-[12px] leading-[1.5] text-text-tertiary">{s.detail}</p>

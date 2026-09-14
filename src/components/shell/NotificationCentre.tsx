@@ -3,18 +3,9 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { Badge, Button, IconButton } from "@/components/ui";
-import {
-  ActionsIcon,
-  AlertIcon,
-  BellIcon,
-  CheckIcon,
-  CloseIcon,
-  ConversationsIcon,
-  LeadsIcon,
-  PhoneIcon,
-  RoutingIcon,
-  SettingsIcon,
-} from "@/components/icons";
+import { BellIcon, CheckIcon, CloseIcon, PhoneIcon, SettingsIcon } from "@/components/icons";
+import { ChatSticker, LeadSticker, TaskSticker } from "@/components/stickers";
+import { BrokenLinkSticker, ReviewSticker } from "@/components/stickers/attention";
 import { cx } from "@/lib/cx";
 import { relativeTime } from "@/lib/format";
 import { useBrain, useConversations, useDestinations, useLeads } from "@/lib/sim/store";
@@ -46,20 +37,21 @@ type Note = {
   urgent?: boolean;
 };
 
-const KIND_ICON: Record<Kind, ComponentType<{ size?: number; className?: string }>> = {
-  lead: LeadsIcon,
-  conversation: ConversationsIcon,
-  routing: RoutingIcon,
-  knowledge: AlertIcon,
-  action: ActionsIcon,
-};
-
-const KIND_TINT: Record<Kind, string> = {
-  lead: "bg-accent-soft text-accent-ink",
-  conversation: "bg-info-soft text-info",
-  routing: "bg-danger-soft text-danger",
-  knowledge: "bg-warning-soft text-warning",
-  action: "bg-success-soft text-success",
+/**
+ * A sticker per kind. Every row used to be the same 28px tinted square with a
+ * line icon in it, so a hot lead and a dead webhook were told apart only by
+ * the colour of the box behind them — which is the one cue that does not
+ * survive a glance at a list this dense.
+ *
+ * The tint goes with them: a sticker carries its own colour, and a wash behind
+ * it fights rather than reinforces.
+ */
+const KIND_STICKER: Record<Kind, ComponentType<{ size?: number; className?: string }>> = {
+  lead: LeadSticker,
+  conversation: ChatSticker,
+  routing: BrokenLinkSticker,
+  knowledge: ReviewSticker,
+  action: TaskSticker,
 };
 
 /** Built from the site's own records, newest first. */
@@ -196,7 +188,7 @@ export function NotificationBell({ siteId }: { siteId: string }) {
           ) : (
             <ul className="cg-scroll max-h-[380px] divide-y divide-divider overflow-y-auto">
               {notes.map((n) => {
-                const Icon = KIND_ICON[n.kind];
+                const Sticker = KIND_STICKER[n.kind];
                 const isRead = read.includes(n.id);
                 return (
                   <li key={n.id}>
@@ -211,14 +203,7 @@ export function NotificationBell({ siteId }: { siteId: string }) {
                         !isRead && "bg-surface",
                       )}
                     >
-                      <span
-                        className={cx(
-                          "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center",
-                          KIND_TINT[n.kind],
-                        )}
-                      >
-                        <Icon size={14} />
-                      </span>
+                      <Sticker size={30} className="mt-0.5 shrink-0" />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-start gap-2">
                           <span

@@ -13,10 +13,11 @@ import {
   SectionHead,
   Spinner,
 } from "@/components/ui";
-import { AgentIcon, CheckIcon, GlobeIcon, PagesIcon } from "@/components/icons";
+import { AgentIcon, CheckIcon, ChevronLeft, GlobeIcon, PagesIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { ORG, SITES } from "@/lib/demo-data";
 import { dispatch } from "@/lib/pages-editor";
+import { createSite } from "@/lib/sim/store";
 import { PAGES_DOMAIN, checkSubdomainShape, suggestSubdomain } from "@/lib/publishing.client";
 import { STARTERS, buildDocument, type Starter } from "@/lib/starters";
 import { checkSubdomain } from "@/server/publish-actions";
@@ -75,28 +76,42 @@ export default function NewPagesSite() {
     }
 
     const document = buildDocument({ starter, siteId, businessName: businessName.trim() });
-
-    dispatch({
-      type: "load",
-      doc: document,
-      site: {
-        id: siteId,
-        subdomain: effectiveSubdomain,
-        name: businessName.trim(),
-        url: `${effectiveSubdomain}.${PAGES_DOMAIN}`,
-        /* Mon–Fri, nine to five, until the owner says otherwise in settings. */
-        openingHours: {
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          days: [null, ...Array(5).fill({ opens: 540, closes: 1020 }), null],
-        },
+    const site = {
+      id: siteId,
+      subdomain: effectiveSubdomain,
+      name: businessName.trim(),
+      url: `${effectiveSubdomain}.${PAGES_DOMAIN}`,
+      /* Mon–Fri, nine to five, until the owner says otherwise in settings. */
+      openingHours: {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        days: [null, ...Array(5).fill({ opens: 540, closes: 1020 }), null],
       },
-    });
+    };
+
+    /* The site has to exist in the world before we navigate into it. Loading
+       the editor alone was not enough: the workspace only knew about the
+       fixture sites, so the URL this flow pushes to answered 404. */
+    createSite(site, document);
+    dispatch({ type: "load", doc: document, site });
 
     router.push(`/sites/${siteId}/pages/${document.pages[0].id}/edit`);
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1090px] px-5 pb-24 pt-16 sm:px-7 lg:px-9">
+    <div
+      style={{ maxWidth: "var(--content-max)" }}
+      className="mx-auto w-full px-5 pb-24 pt-16 sm:px-7 lg:px-9"
+    >
+      {/* A dead end otherwise: this flow is reached from the site list and from
+          the Pages surface, and had no way back to either. */}
+      <Link
+        href="/sites"
+        className="mb-7 inline-flex items-center gap-1.5 text-[12.5px] text-text-tertiary transition-colors hover:text-text-primary"
+      >
+        <ChevronLeft size={15} />
+        All sites
+      </Link>
+
       <header className="mb-8">
         <p className="t-eyebrow text-text-muted">Concierge Pages</p>
         <h1 className="t-page mt-2.5">Create a Pages site</h1>

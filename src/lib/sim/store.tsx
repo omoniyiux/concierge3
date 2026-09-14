@@ -20,6 +20,7 @@ import {
   type World,
 } from "@/lib/sim/world";
 import { LEDGER, METRICS } from "@/lib/demo-data";
+import { RETRACTS_KNOWLEDGE, type AnswerFlag, type FlagReason } from "@/lib/quality";
 import type {
   ActionDef,
   KnowledgeItem,
@@ -62,7 +63,11 @@ import type {
    calls should be a swap rather than a rewrite.
    ========================================================================== */
 
-const STORAGE_KEY = "concierge.sim.v1";
+/* Bumped from v1: routing's inbox, rules and deliveries moved into the world,
+   and any browser still holding a v1 snapshot restores a day-one world it has
+   no way to leave — the scenario switcher that used to set it no longer
+   exists. A new key drops those and starts everyone from the seeded world. */
+const STORAGE_KEY = "concierge.sim.v2";
 /** Simulated minutes advanced per real second at 1×. */
 const MINUTES_PER_SECOND = 4;
 
@@ -128,8 +133,17 @@ function restore() {
   } catch {
     /* a workspace that cannot read storage still has to open */
   }
+  // A world saved by an earlier build can be missing whole slices this one
+  // reads — routing's inbox, rules and deliveries were static imports until
+  // they moved in here. Merging the saved world over a fresh seed of its own
+  // scenario fills those gaps instead of handing a component undefined and
+  // throwing on the first .filter().
+  const world = saved?.world
+    ? { ...seedWorld(saved.world.scenario ?? "established"), ...saved.world }
+    : snapshot.world;
+
   emit({
-    world: saved?.world ?? snapshot.world,
+    world,
     // Nothing on screen starts the clock any more, so it starts itself:
     // visitors arrive, leads qualify and the ledger fills while you use it.
     running: saved?.running ?? true,
@@ -239,7 +253,75 @@ export function createSite(
   save();
 }
 
+/**
+ * A website the owner already has, connected through the setup flow. The
+ * sibling of `createSite`, which builds a hosted Pages site; this one adopts
+ * an existing address, so it is an "agent" product with a script still to go
+ * on, and it carries no page document.
+ *
+ * The flow used to collect a URL, create nothing at all, and then push to the
+ * default fixture site — so adding a website appeared to do nothing, and the
+ * owner landed in somebody else's workspace.
+ */
+export function createAgentSite(site: { id: string; name: string; url: string }) {
+  restore();
+  // Idempotent: the setup flow can pass back through the website step, and
+  // re-creating a site the owner has already part-configured would throw that
+  // progress away.
+  if (snapshot.world.sites.some((s) => s.id === site.id)) return;
+  const now = new Date(snapshot.world.now).toISOString();
+  const created: Site = {
+    id: site.id,
+    orgId: "org_1",
+    name: site.name,
+    url: site.url,
+    product: "agent",
+    status: "learning",
+    // The script is the next thing the owner does, so the launch checklist
+    // opens on it rather than claiming the site is ready.
+    installState: "not-installed",
+    accentColor: "#FF7A00",
+    createdAt: now,
+    updatedAt: now,
+    launchProgress: 0,
+    currency: "USD",
+    openingHours: {
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      days: [null, ...Array(5).fill({ opens: 540, closes: 1020 }), null],
+    },
+  };
+
+  emit({
+    world: {
+      ...snapshot.world,
+      sites: [...snapshot.world.sites, created],
+      brains: { ...snapshot.world.brains, [site.id]: brainFrom(site.id, [], now) },
+    },
+  });
+  save();
+}
+
 /** The editor saving its work back to the world, so a reload keeps it. */
+/**
+ * A Pages site whose address is now live. The workspace reads the site's own
+ * status, not the publish table, so without this a site stayed a "draft"
+ * everywhere after it had already gone live.
+ */
+export function markPublished(siteId: string, url: string) {
+  restore();
+  emit({
+    world: {
+      ...snapshot.world,
+      sites: snapshot.world.sites.map((s) =>
+        s.id === siteId
+          ? { ...s, url, status: "live" as const, updatedAt: new Date(snapshot.world.now).toISOString() }
+          : s,
+      ),
+    },
+  });
+  save();
+}
+
 export function saveDocument(siteId: string, doc: PageDocument) {
   if (!snapshot.hydrated) return;
   if (documentOf(snapshot.world, siteId) === doc) return;
@@ -247,6 +329,31 @@ export function saveDocument(siteId: string, doc: PageDocument) {
     world: { ...snapshot.world, documents: { ...snapshot.world.documents, [siteId]: doc } },
   });
   save();
+}
+
+/**
+ * Re-approving an item closes the complaints that were made against it.
+ *
+ * The other half of the correction loop. A flag that stayed open after its
+ * cause was fixed would leave the owner with a list of problems they had
+ * already solved, and they would stop reading it.
+ */
+function settleFlags(world: World, itemIds: Set<string>, at: string): AnswerFlag[] {
+  if (itemIds.size === 0) return world.flags;
+  return world.flags.map((f) => {
+    if (f.state !== "open" && f.state !== "investigating") return f;
+    const cause = f.cites.find((c) => itemIds.has(c.itemId));
+    if (!cause) return f;
+    return {
+      ...f,
+      state: "fixed" as const,
+      resolution: `${cause.title} was re-approved on ${new Date(at).toLocaleDateString()}.${
+        f.alsoTold > 0
+          ? ` ${f.alsoTold} other ${f.alsoTold === 1 ? "visitor was" : "visitors were"} told the same thing.`
+          : ""
+      }`,
+    };
+  });
 }
 
 /** Every write the workspace makes goes through here. */
@@ -310,6 +417,13 @@ export function useSim() {
 }
 
 export function useWorld(): World {
+  // The site list and the switcher read the world from outside SimProvider,
+  // which is what used to call restore(). Without this they render the seed
+  // and a site the owner just added is simply not in the list. restore() is
+  // idempotent, so calling it from every reader is free.
+  useEffect(() => {
+    restore();
+  }, []);
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot).world;
 }
 
@@ -383,6 +497,15 @@ export function useDeliveries(): DeliveryRecord[] {
   return useWorld().deliveries;
 }
 
+/** Every answer somebody said was wrong on this site. */
+export function useFlags(siteId: string): AnswerFlag[] {
+  const world = useWorld();
+  return useMemo(
+    () => world.flags.filter((f) => f.siteId === siteId).sort((a, b) => b.at.localeCompare(a.at)),
+    [world.flags, siteId],
+  );
+}
+
 export function useIntegrations(): Integration[] {
   return useWorld().integrations;
 }
@@ -390,6 +513,18 @@ export function useIntegrations(): Integration[] {
 export function useActions(siteId: string): ActionDef[] {
   const world = useWorld();
   return useMemo(() => world.actions.filter((a) => a.siteId === siteId), [world.actions, siteId]);
+}
+
+/** Gaps the owner has closed, newest answer first. The attribution set. */
+export function useAnsweredGaps(): UnansweredQuestion[] {
+  const world = useWorld();
+  return useMemo(
+    () =>
+      world.gaps
+        .filter((g) => g.status === "resolved" && g.resolvedAt && g.knowledgeItemId)
+        .sort((a, b) => (b.resolvedAt ?? "").localeCompare(a.resolvedAt ?? "")),
+    [world.gaps],
+  );
 }
 
 export function useGaps(): UnansweredQuestion[] {
@@ -476,21 +611,46 @@ export function useSimActions() {
   return useMemo(
     () => ({
       /** A gap answered: it leaves the list and the brain grows. */
-      answerGap: (gapId: string) =>
+      /**
+       * A gap answered becomes a real knowledge item, and the gap keeps a
+       * pointer to it.
+       *
+       * It used to nudge the brain's counters by hand and throw the answer
+       * away, which meant the product could never say what answering had been
+       * worth — the one number that proves Concierge earned its keep. Now the
+       * answer is knowledge like any other, and `gapReturn` can follow it to
+       * the conversations and outcomes it produced.
+       */
+      answerGap: (gapId: string, body = "") =>
         updateWorld((w) => {
-          const brain = brainOf(w, siteId);
+          const gap = w.gaps.find((g) => g.id === gapId);
+          if (!gap) return w;
+          const at = new Date(w.now).toISOString();
+          const itemId = `k_gap_${gapId}`;
+
+          const item: KnowledgeItem = {
+            id: itemId,
+            siteId,
+            category: gap.suggestedCategory,
+            title: gap.question,
+            body,
+            // Written by the owner, so it answers immediately.
+            status: "approved",
+            confidence: 1,
+            required: false,
+            sources: [
+              { id: `src_${gapId}`, kind: "manual", label: "Answered by you", fetchedAt: at },
+            ],
+            updatedAt: at,
+          };
+
           return {
-            ...w,
-            gaps: w.gaps.map((g) => (g.id === gapId ? { ...g, status: "resolved" as const } : g)),
-            brains: {
-              ...w.brains,
-              [siteId]: {
-                ...brain,
-                itemCount: brain.itemCount + 1,
-                approvedCount: brain.approvedCount + 1,
-                coverage: Math.min(100, brain.coverage + 2),
-              },
-            },
+            ...withKnowledge(w, siteId, [item, ...w.knowledge.filter((k) => k.id !== itemId)]),
+            gaps: w.gaps.map((g) =>
+              g.id === gapId
+                ? { ...g, status: "resolved" as const, resolvedAt: at, knowledgeItemId: itemId }
+                : g,
+            ),
           };
         }),
 
@@ -584,30 +744,31 @@ export function useSimActions() {
        */
       setKnowledgeStatus: (ids: string | string[], status: KnowledgeStatus) => {
         const set = new Set(Array.isArray(ids) ? ids : [ids]);
-        updateWorld((w) =>
-          withKnowledge(
+        updateWorld((w) => {
+          const at = new Date(w.now).toISOString();
+          const next = withKnowledge(
             w,
             siteId,
-            w.knowledge.map((k) =>
-              set.has(k.id) ? { ...k, status, updatedAt: new Date(w.now).toISOString() } : k,
-            ),
-          ),
-        );
+            w.knowledge.map((k) => (set.has(k.id) ? { ...k, status, updatedAt: at } : k)),
+          );
+          // Approving it again is what closes the complaints against it.
+          return { ...next, flags: status === "approved" ? settleFlags(w, set, at) : w.flags };
+        });
       },
 
       /** An owner's own words. Editing an answer is approving it. */
       setKnowledgeBody: (id: string, body: string) =>
-        updateWorld((w) =>
-          withKnowledge(
+        updateWorld((w) => {
+          const at = new Date(w.now).toISOString();
+          const next = withKnowledge(
             w,
             siteId,
             w.knowledge.map((k) =>
-              k.id === id
-                ? { ...k, body, status: "approved" as const, updatedAt: new Date(w.now).toISOString() }
-                : k,
+              k.id === id ? { ...k, body, status: "approved" as const, updatedAt: at } : k,
             ),
-          ),
-        ),
+          );
+          return { ...next, flags: settleFlags(w, new Set([id]), at) };
+        }),
 
       addKnowledge: (item: KnowledgeItem) =>
         updateWorld((w) => withKnowledge(w, siteId, [item, ...w.knowledge])),
@@ -635,6 +796,78 @@ export function useSimActions() {
           sites: w.sites.map((s) =>
             s.id === siteId ? { ...s, agentConfiguredAt: new Date(w.now).toISOString() } : s,
           ),
+        })),
+
+      /**
+       * THE CORRECTION LOOP.
+       *
+       * Someone says an answer was wrong, and the knowledge that produced it
+       * loses its approval on the spot.
+       *
+       * Approval used to be a gate the owner walked through once. Every agent
+       * message already carried the items it answered from, but nothing
+       * connected a bad answer back to them — so the item stayed approved and
+       * went on giving the same wrong answer to everybody after.
+       *
+       * Only the reasons that are actually the knowledge's fault retract it;
+       * see RETRACTS_KNOWLEDGE.
+       */
+      reportFlag: (flag: {
+        conversationId: string;
+        messageId: string;
+        said: string;
+        cites: { itemId: string; title: string }[];
+        reason: FlagReason;
+        note?: string;
+        flaggedBy: string;
+      }) =>
+        updateWorld((w) => {
+          const at = new Date(w.now).toISOString();
+          const retract = RETRACTS_KNOWLEDGE[flag.reason];
+          const hit = new Set(retract ? flag.cites.map((c) => c.itemId) : []);
+
+          // How many other visitors were told the same thing. The owner asks
+          // this immediately, so it is counted at the moment of the flag.
+          const needle = flag.said.trim().toLowerCase().slice(0, 60);
+          const alsoTold = w.conversations.filter(
+            (c) =>
+              c.siteId === siteId &&
+              c.id !== flag.conversationId &&
+              c.messages.some((m) => m.author === "agent" && m.body.toLowerCase().includes(needle)),
+          ).length;
+
+          const knowledge = w.knowledge.map((k) =>
+            hit.has(k.id) && k.status === "approved"
+              ? { ...k, status: "needs-review" as const, updatedAt: at }
+              : k,
+          );
+
+          return {
+            ...withKnowledge(w, siteId, knowledge),
+            flags: [
+              {
+                id: `fl_${Math.random().toString(36).slice(2, 9)}`,
+                siteId,
+                conversationId: flag.conversationId,
+                messageId: flag.messageId,
+                said: flag.said,
+                cites: flag.cites,
+                reason: flag.reason,
+                note: flag.note || undefined,
+                flaggedBy: flag.flaggedBy,
+                at,
+                state: "open" as const,
+                alsoTold,
+              },
+              ...w.flags,
+            ],
+          };
+        }),
+
+      setFlagState: (id: string, state: AnswerFlag["state"], resolution?: string) =>
+        updateWorld((w) => ({
+          ...w,
+          flags: w.flags.map((f) => (f.id === id ? { ...f, state, resolution: resolution ?? f.resolution } : f)),
         })),
 
       /** Finishing the install, from the install hub or the checklist. */

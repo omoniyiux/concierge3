@@ -83,7 +83,7 @@ function LeadsTable({ siteId }: { siteId: string }) {
   if (leads.length === 0) {
     const setupComplete = launchChecklist(site, brain, destinations, siteId).every((s) => s.done);
     return (
-      <PageContainer wide>
+      <PageContainer>
         <PageHeader
           eyebrow="Leads"
           title="People worth following up"
@@ -100,7 +100,7 @@ function LeadsTable({ siteId }: { siteId: string }) {
   }
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Leads"
         title="People worth following up"

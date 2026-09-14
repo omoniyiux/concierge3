@@ -17,6 +17,8 @@ import {
   useConversations,
   useDestinations,
   useGaps,
+  useFlags,
+  useKnowledge,
   useLedger,
   useMetrics,
   useSite,
@@ -61,12 +63,17 @@ export default function OverviewPage({ params }: { params: Promise<{ siteId: str
   const LEDGER = useLedger(siteId);
   const failing = destinations.filter((d) => d.status === "failing");
   const openGaps = useGaps();
+  const knowledge = useKnowledge(siteId);
+  const flags = useFlags(siteId);
   const waiting = FOLLOW_UPS.filter((f) => f.siteId === siteId && f.state === "suggested");
 
   // Where this site is in its life: still being set up, live but untouched,
   // or running. The three need three different pages.
   const steps = launchChecklist(site, brain, destinations, siteId);
-  const phase = launchPhase(steps, siteConversations.length);
+  // A site that has carried a conversation, or that the install check has
+  // switched on, has finished setting up — whatever has broken since.
+  const everLive = siteConversations.length > 0 || site.status === "live";
+  const phase = launchPhase(steps, siteConversations.length, everLive);
   const progress = launchProgress(steps);
   const health = siteHealth({
     site,
@@ -74,6 +81,8 @@ export default function OverviewPage({ params }: { params: Promise<{ siteId: str
     destinations,
     conversations: siteConversations,
     gaps: openGaps,
+    knowledge,
+    flags,
     siteId,
   });
 
@@ -178,7 +187,7 @@ export default function OverviewPage({ params }: { params: Promise<{ siteId: str
   const lowDay = asDay(volumeLow.date);
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       {/* Greeting ------------------------------------------------------- */}
       <header className="flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
         <div>
@@ -421,7 +430,7 @@ export default function OverviewPage({ params }: { params: Promise<{ siteId: str
                     <li key={event.id}>
                       <Link
                         href={event.href ?? "#"}
-                        className="grid grid-cols-[104px_1fr_auto] items-start gap-4 px-6 py-4 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle"
+                        className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-5 py-4 transition-colors duration-[var(--dur-micro)] hover:bg-surface-subtle sm:grid-cols-[104px_minmax(0,1fr)_auto] sm:gap-4 sm:px-6"
                       >
                         <span
                           className="mt-px inline-flex h-[22px] items-center justify-center rounded-full px-2 text-[11px] font-semibold"

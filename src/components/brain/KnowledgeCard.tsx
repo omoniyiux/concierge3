@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   CheckIcon,
   ChevronDown,
@@ -15,8 +16,22 @@ import { HistorySheet } from "@/components/audit/HistorySheet";
 import { ClockIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { CATEGORY_LABEL, KNOWLEDGE_STATUS_LABEL, relativeTime } from "@/lib/format";
+import { itemFreshness } from "@/lib/health";
+import { flagsAgainst, type AnswerFlag } from "@/lib/quality";
+import { useFlags } from "@/lib/sim/store";
 import type { KnowledgeItem, KnowledgeStatus } from "@/lib/types";
 import type { Tone } from "@/components/ui";
+
+/**
+ * The open complaints against one item.
+ *
+ * Onboarding renders these cards before a site exists, so `siteId` is optional
+ * and the hook still runs unconditionally — it just has nothing to find.
+ */
+function useComplaints(siteId: string | undefined, itemId: string): AnswerFlag[] {
+  const flags = useFlags(siteId ?? "");
+  return siteId ? flagsAgainst(flags, itemId) : [];
+}
 
 const STATUS_TONE: Record<KnowledgeStatus, Tone> = {
   approved: "approved",
@@ -45,11 +60,14 @@ export function KnowledgeCard({
   onStatusChange,
   onBodyChange,
   defaultOpen = false,
+  siteId,
 }: {
   item: KnowledgeItem;
   onStatusChange?: (id: string, status: KnowledgeStatus) => void;
   onBodyChange?: (id: string, body: string) => void;
   defaultOpen?: boolean;
+  /** Enables the complaints against this item. Omit outside the workspace. */
+  siteId?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [editing, setEditing] = useState(false);
@@ -58,6 +76,11 @@ export function KnowledgeCard({
 
   const missing = item.status === "missing";
   const restricted = item.status === "restricted";
+
+  // Why this is back on the queue, when a person put it there. An item that
+  // lost its approval without saying why is just a chore.
+  const complaints = useComplaints(siteId, item.id);
+  const fresh = itemFreshness(item);
 
   return (
     <article
@@ -96,7 +119,19 @@ export function KnowledgeCard({
               {item.confidence > 0 && ` · ${Math.round(item.confidence * 100)}%`}
             </span>
             <span aria-hidden>·</span>
-            <span>Updated {relativeTime(item.updatedAt)}</span>
+            {/* Said against the allowance for this kind of knowledge, so
+                "47 days" reads as late rather than merely as a number. */}
+            <span className={cx(fresh.overdue && "text-warning")}>
+              Updated {relativeTime(item.updatedAt)}
+              {fresh.due && item.status === "approved" && (
+                <>
+                  {" · "}
+                  <span className="font-medium">
+                    past its {fresh.after}-day review
+                  </span>
+                </>
+              )}
+            </span>
           </p>
 
           {!open && item.body && (
@@ -106,6 +141,33 @@ export function KnowledgeCard({
             <p className="mt-2 text-[12.5px] text-text-tertiary">
               Concierge found nothing about this. Visitors asking will get a handoff instead of an answer.
             </p>
+          )}
+
+          {complaints.length > 0 && (
+            <div className="mt-3 border-l-2 border-danger bg-danger-soft/50 py-2.5 pl-3.5 pr-3">
+              <p className="text-[11.5px] font-medium text-danger">
+                {complaints.length === 1
+                  ? "Someone said this answer was wrong"
+                  : `${complaints.length} people said this answer was wrong`}
+              </p>
+              <p className="mt-1 text-[12.5px] leading-[1.55] text-text-secondary">
+                “{complaints[0].note ?? complaints[0].said}”
+              </p>
+              <p className="mt-1.5 text-[11px] text-text-tertiary">
+                {complaints[0].flaggedBy} · {relativeTime(complaints[0].at)}
+                {complaints[0].alsoTold > 0 &&
+                  ` · ${complaints[0].alsoTold} other ${
+                    complaints[0].alsoTold === 1 ? "visitor was" : "visitors were"
+                  } told the same thing`}
+                {" · "}
+                <Link
+                  href={`/sites/${siteId}/conversations?c=${complaints[0].conversationId}`}
+                  className="underline underline-offset-2 hover:text-text-primary"
+                >
+                  Read it
+                </Link>
+              </p>
+            </div>
           )}
         </div>
 

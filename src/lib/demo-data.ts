@@ -275,7 +275,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.94,
     required: true,
     sources: [src("About page", "/about"), src("Homepage", "/")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-02T09:30:00Z",
   },
   {
     id: "k_customer",
@@ -287,7 +287,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.88,
     required: true,
     sources: [src("Services page", "/services"), src("Owner interview")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-02T09:30:00Z",
   },
   {
     id: "k_next_step",
@@ -299,7 +299,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.91,
     required: true,
     sources: [src("Pricing page", "/pricing")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-08-14T11:00:00Z",
   },
   {
     id: "k_goals",
@@ -311,7 +311,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.9,
     required: true,
     sources: [src("Owner interview")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-02T09:30:00Z",
   },
   {
     id: "k_escalation",
@@ -323,7 +323,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.96,
     required: true,
     sources: [src("Owner interview")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-03T16:20:00Z",
   },
   {
     id: "k_never",
@@ -335,7 +335,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.97,
     required: true,
     sources: [src("Owner interview")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-03T16:20:00Z",
   },
   {
     id: "k_tone",
@@ -347,7 +347,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.85,
     required: true,
     sources: [src("Homepage", "/"), src("Blog", "/blog")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-04T11:20:00Z",
   },
   {
     id: "k_hours",
@@ -383,7 +383,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.54,
     required: false,
     sources: [src("FAQ page", "/faq")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-05-11T09:00:00Z",
   },
   {
     id: "k_parking",
@@ -407,7 +407,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.89,
     required: false,
     sources: [src("Emergency page", "/emergency")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-04-18T10:00:00Z",
   },
   {
     id: "k_invisalign",
@@ -419,7 +419,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 0.87,
     required: false,
     sources: [src("Invisalign page", "/invisalign")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-06-20T14:40:00Z",
   },
   {
     id: "k_competitor",
@@ -431,7 +431,7 @@ export const KNOWLEDGE: KnowledgeItem[] = [
     confidence: 1,
     required: false,
     sources: [src("Owner interview")],
-    updatedAt: "2026-09-06T22:12:00Z",
+    updatedAt: "2026-07-03T16:20:00Z",
   },
   {
     id: "k_newpatient_form",

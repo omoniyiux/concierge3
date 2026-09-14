@@ -84,19 +84,17 @@ export function AppShell({ siteId, children }: { siteId: string; children: React
 export function PageContainer({
   children,
   className,
-  wide,
   flush,
 }: {
   children: ReactNode;
   className?: string;
-  wide?: boolean;
-  /** Full-bleed surfaces (split inboxes) opt out of the max width. */
+  /** Full-bleed surfaces (split inboxes, the page editor) opt out entirely. */
   flush?: boolean;
 }) {
   if (flush) return <div className={cx("h-full", className)}>{children}</div>;
   return (
     <div
-      style={{ maxWidth: wide ? "1090px" : "var(--content-max)" }}
+      style={{ maxWidth: "var(--content-max)" }}
       className={cx("mx-auto w-full px-5 pb-24 pt-16 sm:px-7 lg:px-9", className)}
     >
       {children}
@@ -127,7 +125,7 @@ export function PageHeader({
           <h1 className="t-page mt-2.5">{title}</h1>
           {description && <p className="t-body mt-3 max-w-[62ch] text-text-primary">{description}</p>}
         </div>
-        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+        {actions && <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {meta && <div className="mt-5">{meta}</div>}
     </header>

@@ -15,6 +15,7 @@ import {
   UNANSWERED,
 } from "@/lib/demo-data";
 import { SEED_NOW } from "@/lib/sim/clock";
+import { FLAGS, type AnswerFlag } from "@/lib/quality";
 import type {
   ActionDef,
   Conversation,
@@ -67,6 +68,8 @@ export type World = {
   inbox: InboxItem[];
   rules: RoutingRule[];
   deliveries: DeliveryRecord[];
+  /** Every answer somebody said was wrong, and what came of it. */
+  flags: AnswerFlag[];
   integrations: Integration[];
   actions: ActionDef[];
   gaps: UnansweredQuestion[];
@@ -181,6 +184,7 @@ export function seedWorld(scenario: Scenario = "established"): World {
     inbox: INBOX.map((i) => ({ ...i })),
     rules: ROUTING_RULES.map((r) => ({ ...r })),
     deliveries: DELIVERIES.map((d) => ({ ...d })),
+    flags: FLAGS.map((f) => ({ ...f })),
     integrations: INTEGRATIONS.map((i) => ({ ...i })),
     actions: ACTIONS.map((a) => ({ ...a })),
     gaps: UNANSWERED.map((u) => ({ ...u })),
@@ -206,6 +210,8 @@ export function seedWorld(scenario: Scenario = "established"): World {
       leads: [],
       outcomes: [],
       gaps: [],
+      // Nothing has been answered, so nothing can have been answered wrongly.
+      flags: [],
       // Untested means untested: the timestamps go with the status, or the
       // readiness strip reports paths proven by deliveries that never happened.
       destinations: base.destinations.map((d) =>
@@ -248,6 +254,8 @@ export function seedWorld(scenario: Scenario = "established"): World {
     leads: base.leads.filter((l) => keep.includes(l.conversationId)),
     outcomes: base.outcomes.filter((o) => keep.includes(o.conversationId)),
     gaps: base.gaps.slice(0, 2),
+    // Only complaints about conversations this scenario actually kept.
+    flags: base.flags.filter((f) => keep.includes(f.conversationId)),
     destinations: base.destinations.map((d) => (d.status === "failing" ? { ...d, status: "connected" as const } : d)),
     inbox: base.inbox.slice(0, 1),
     deliveries: base.deliveries.slice(0, 2).map((d) => ({ ...d, result: "delivered" as const })),

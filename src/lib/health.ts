@@ -1,7 +1,10 @@
+import { CATEGORY_LABEL } from "@/lib/format";
 import type {
   Conversation,
   Destination,
+  KnowledgeCategory,
   KnowledgeItem,
+  Outcome,
   Site,
   SiteBrain,
   UnansweredQuestion,
@@ -31,6 +34,105 @@ const DAY = 86_400_000;
 
 function daysSince(iso: string, now: Date = NOW) {
   return Math.floor((now.getTime() - new Date(iso).getTime()) / DAY);
+}
+
+/* ---- Freshness ------------------------------------------------------------- */
+
+/**
+ * How long each kind of knowledge stays trustworthy without being re-read.
+ *
+ * The health check used to judge the whole brain on one 30-day rule, which
+ * gets both halves wrong: it nags about an About page that has not changed
+ * since 2011, and says nothing about a price list that moved last week. What
+ * goes stale, and how fast, is a property of the category.
+ */
+export const REVIEW_AFTER_DAYS: Record<KnowledgeCategory, number> = {
+  pricing: 30,
+  services: 60,
+  products: 60,
+  // Hours and availability live here, and they move at holidays.
+  policies: 90,
+  faqs: 120,
+  business: 365,
+  // The owner's own decisions. They change when the owner changes them.
+  voice: 365,
+  rules: 365,
+  restrictions: 365,
+};
+
+export type ItemFreshness = {
+  days: number;
+  /** The category's allowance, for saying why it is due. */
+  after: number;
+  due: boolean;
+  /** Past the allowance by more than half again. */
+  overdue: boolean;
+};
+
+export function itemFreshness(item: KnowledgeItem, now: Date = NOW): ItemFreshness {
+  const days = daysSince(item.updatedAt, now);
+  const after = REVIEW_AFTER_DAYS[item.category];
+  return { days, after, due: days > after, overdue: days > after * 1.5 };
+}
+
+/** The approved items that are past their category's allowance, stalest first. */
+export function staleItems(items: KnowledgeItem[], now: Date = NOW): KnowledgeItem[] {
+  return items
+    .filter((i) => i.status === "approved" && itemFreshness(i, now).due)
+    .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
+}
+
+/* ---- What answering a gap was worth ---------------------------------------- */
+
+export type GapReturn = {
+  /** Conversations that cited the answer after it was written. */
+  conversations: number;
+  /** Outcomes those conversations produced. */
+  outcomes: number;
+  /** Minor units, in the site currency. */
+  value: number;
+  /** Whether any of the value is still an estimate. */
+  estimated: boolean;
+  since: string;
+};
+
+/**
+ * What a gap earned after the owner closed it.
+ *
+ * This is the most defensible sentence the product can say — *it made you
+ * money by learning something it did not know last month* — and it was
+ * unsayable, because answering a gap threw the answer away instead of making
+ * it knowledge. Now the gap points at an item, agent messages already carry
+ * the items they cited, and outcomes already carry their conversation. The
+ * whole claim is a two-hop join over facts that were always there.
+ *
+ * Only conversations after `resolvedAt` count. Crediting the answer with
+ * business it could not have influenced would make the number worthless,
+ * which is the same reason the ledger separates confirmed from estimated.
+ */
+export function gapReturn(
+  gap: UnansweredQuestion,
+  conversations: Conversation[],
+  outcomes: Outcome[],
+): GapReturn | null {
+  if (!gap.resolvedAt || !gap.knowledgeItemId) return null;
+
+  const since = gap.resolvedAt;
+  const credited = conversations.filter(
+    (c) =>
+      c.startedAt > since &&
+      c.messages.some((m) => m.citations?.some((cit) => cit.itemId === gap.knowledgeItemId)),
+  );
+  const ids = new Set(credited.map((c) => c.id));
+  const earned = outcomes.filter((o) => ids.has(o.conversationId));
+
+  return {
+    conversations: credited.length,
+    outcomes: earned.length,
+    value: earned.reduce((n, o) => n + o.value, 0),
+    estimated: earned.some((o) => o.basis === "estimated"),
+    since,
+  };
 }
 
 /* ---- Brain readiness ------------------------------------------------------- */
@@ -200,9 +302,20 @@ export type LaunchPhase = "setting-up" | "waiting" | "live";
 /**
  * Three states, because they need three different pages: still building it,
  * built but nobody has arrived yet, and running.
+ *
+ * Setup is a one-way door. A site that has been live and then loses a step —
+ * its only destination starts failing, a re-learn retracts a required item —
+ * used to be sent back to "N things left before Concierge can answer", which
+ * told a three-month-old business it had never launched. A regression on a
+ * live site is a health signal, and `siteHealth` already raises it properly.
  */
-export function launchPhase(steps: LaunchStep[], conversationCount: number): LaunchPhase {
-  if (steps.some((s) => !s.done)) return "setting-up";
+export function launchPhase(
+  steps: LaunchStep[],
+  conversationCount: number,
+  /** Whether this site has ever finished setup. */
+  everLive = false,
+): LaunchPhase {
+  if (steps.some((s) => !s.done) && !everLive) return "setting-up";
   return conversationCount === 0 ? "waiting" : "live";
 }
 
@@ -244,6 +357,8 @@ export function siteHealth({
   destinations,
   conversations,
   gaps,
+  knowledge = [],
+  flags = [],
   siteId = site.id,
 }: {
   site: Site;
@@ -251,6 +366,10 @@ export function siteHealth({
   destinations: Destination[];
   conversations: Conversation[];
   gaps: UnansweredQuestion[];
+  /** Enables the per-item freshness check. Without it that signal is skipped. */
+  knowledge?: KnowledgeItem[];
+  /** Answers somebody said were wrong and nobody has settled. */
+  flags?: { state: string; cites: { title: string }[] }[];
   siteId?: string;
 }): SiteHealth {
   const base = `/sites/${siteId}`;
@@ -282,7 +401,9 @@ export function siteHealth({
       detail:
         "Requests are still captured, but nobody is being told about them. Anything queued is replayed once it reconnects.",
       actionLabel: "Fix routing",
-      href: `${base}/agent/routing`,
+      // Opens the destinations tab with the broken one already selected,
+      // rather than dropping the owner on a page of four tabs to go hunting.
+      href: `${base}/agent/routing?tab=destinations&destination=${failing[0].id}`,
     });
   }
 
@@ -294,20 +415,57 @@ export function siteHealth({
       title: `${untested.length} destination${untested.length === 1 ? "" : "s"} never tested`,
       detail: "A destination that has never delivered anything is a promise nobody has checked.",
       actionLabel: "Send a test",
-      href: `${base}/agent/routing`,
+      href: `${base}/agent/routing?tab=destinations&destination=${untested[0].id}`,
     });
   }
 
-  const staleDays = daysSince(brain.lastLearnedAt);
-  if (staleDays > 30) {
+  // Named items past their own category's allowance, rather than one rule for
+  // the whole brain. "Your pricing is 47 days old" is actionable; "your brain
+  // is 47 days old" is not, and is wrong about the half that never changes.
+  const stale = staleItems(knowledge);
+  if (stale.length) {
+    const worst = stale[0];
+    const { days, after } = itemFreshness(worst);
+    signals.push({
+      id: "stale",
+      severity: itemFreshness(worst).overdue ? "warn" : "watch",
+      title:
+        stale.length === 1
+          ? `${worst.title} was last read ${days} days ago`
+          : `${stale.length} answers are past their review date`,
+      detail: `${CATEGORY_LABEL[worst.category]} is re-read every ${after} days, because that is how often it moves. Knowledge past its date is the most common cause of a confidently wrong answer.`,
+      actionLabel: "Re-learn the site",
+      href: `${base}/agent/brain?tab=sources`,
+    });
+  } else if (knowledge.length === 0 && daysSince(brain.lastLearnedAt) > 90) {
+    // No item detail to go on — fall back to the whole-brain reading.
     signals.push({
       id: "stale",
       severity: "warn",
-      title: `Site Brain last read your site ${staleDays} days ago`,
-      detail:
-        "Prices, hours and services move. Knowledge that has not been re-read is the most common cause of a confidently wrong answer.",
+      title: `Site Brain last read your site ${daysSince(brain.lastLearnedAt)} days ago`,
+      detail: "Prices, hours and services move. Re-reading is how Concierge keeps up with them.",
       actionLabel: "Re-learn the site",
-      href: `${base}/agent/brain`,
+      href: `${base}/agent/brain?tab=sources`,
+    });
+  }
+
+  // Somebody said an answer was wrong and nothing has settled it since. This
+  // outranks staleness: it is not a guess that something has drifted, it is a
+  // person reporting that it already has.
+  const openFlags = flags.filter((f) => f.state === "open" || f.state === "investigating");
+  if (openFlags.length) {
+    signals.push({
+      id: "flags",
+      severity: "critical",
+      title:
+        openFlags.length === 1
+          ? "An answer was reported wrong and is unresolved"
+          : `${openFlags.length} answers were reported wrong and are unresolved`,
+      detail: `${openFlags[0].cites.map((c) => c.title).join(", ") || "The knowledge behind it"} is off the site until someone settles it, so Concierge is saying less than it could.`,
+      actionLabel: "Settle them",
+      // Flags are settled in the Answer quality panel on Insights. This used
+      // to point at Site Brain, which is a different page entirely.
+      href: `${base}/insights#answer-quality`,
     });
   }
 
@@ -319,7 +477,7 @@ export function siteHealth({
       detail:
         "Concierge will not use any of them until someone decides. Until then it says less than it could.",
       actionLabel: "Review them",
-      href: `${base}/agent/brain`,
+      href: `${base}/agent/brain?tab=review&filter=needs-review`,
     });
   }
 
@@ -348,7 +506,7 @@ export function siteHealth({
       title: `${openGaps.length} questions your site could not answer`,
       detail: `“${openGaps[0].question}” came up ${openGaps[0].askCount} times. Each one is demand you are not meeting.`,
       actionLabel: "Close the gaps",
-      href: `${base}/insights`,
+      href: `${base}/insights#gaps`,
     });
   }
 

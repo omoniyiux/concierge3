@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/shell/AppShell";
-import { TryItButton } from "@/components/agent/TryItSheet";
+import { TryItButton, TryItSheet } from "@/components/agent/TryItSheet";
 import { KnowledgeCard } from "@/components/brain/KnowledgeCard";
 import { KnowledgeComposer } from "@/components/brain/KnowledgeComposer";
 import { RelearnPanel } from "@/components/brain/RelearnPanel";
@@ -41,13 +41,15 @@ import { useUrlState } from "@/lib/url-state";
 import { DEFAULT_SITE_ID, KNOWLEDGE } from "@/lib/demo-data";
 import { useBrain, useKnowledge, useSimActions, useSite } from "@/lib/sim/store";
 import { brainReadiness, type BrainReadiness } from "@/lib/health";
+import { proveAnswerable } from "@/lib/proof";
+import { ProofPanel } from "@/components/brain/ProofPanel";
 import { CrawlProgress } from "@/components/onboarding/CrawlProgress";
 import { CATEGORY_LABEL, relativeTime } from "@/lib/format";
 import type { KnowledgeCategory, KnowledgeItem, KnowledgeStatus } from "@/lib/types";
 
-type Tab = "review" | "library" | "sources";
+type Tab = "review" | "proof" | "library" | "sources";
 type Filter = "all" | "needs-review" | "approved" | "restricted" | "missing";
-const TABS = ["review", "library", "sources"] as const;
+const TABS = ["review", "proof", "library", "sources"] as const;
 const FILTERS = ["all", "needs-review", "approved", "restricted", "missing"] as const;
 
 /**
@@ -123,6 +125,9 @@ function SiteBrain() {
 
   const needsAttention = items.filter((i) => i.status === "needs-review" || i.status === "missing");
   const readiness = brainReadiness(items);
+  const proof = proveAnswerable(items);
+  /** A probe question sent to the preview, so the proof can be checked. */
+  const [probe, setProbe] = useState<string | null>(null);
   // The summary card can send the owner straight at one kind of problem, so
   // this queue narrows with it. Required first: those are what the Agent
   // speaks from in every conversation.
@@ -154,7 +159,7 @@ function SiteBrain() {
   }, [filtered]);
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Agent"
         title="What Concierge knows"
@@ -272,10 +277,32 @@ function SiteBrain() {
         onChange={setTab}
         tabs={[
           { value: "review", label: "Needs you", count: needsAttention.length },
+          { value: "proof", label: "What it can answer", count: proof.answerable },
           { value: "library", label: "Knowledge library", count: items.length },
           { value: "sources", label: "Sources", count: 7 },
         ]}
       />
+
+      {/* Checking a claim the proof made, with the question it claimed. */}
+      <TryItSheet
+        open={probe !== null}
+        onClose={() => setProbe(null)}
+        seedQuestion={probe ?? undefined}
+        title="Ask it yourself"
+        description="The same run a visitor gets, against the knowledge you have approved."
+      />
+
+      {/* ---- Proof ----------------------------------------------------- */}
+      {tab === "proof" && (
+        <div className="mt-6">
+          <ProofPanel
+            items={items}
+            onApproveAll={() => setKnowledgeStatus(readiness.pending.map((i) => i.id), "approved")}
+            onWrite={(question) => setComposing(question)}
+            onTry={(question) => setProbe(question)}
+          />
+        </div>
+      )}
 
       {/* ---- Needs you ------------------------------------------------- */}
       {tab === "review" && (
@@ -312,6 +339,7 @@ function SiteBrain() {
               <div className="mt-5 space-y-4">
                 {queue.map((item) => (
                   <KnowledgeCard
+                    siteId={siteId}
                     key={item.id}
                     item={item}
                     onStatusChange={setStatus}
@@ -384,6 +412,7 @@ function SiteBrain() {
                   <div className="space-y-2.5">
                     {list.map((item) => (
                       <KnowledgeCard
+                    siteId={siteId}
                         key={item.id}
                         item={item}
                         onStatusChange={setStatus}

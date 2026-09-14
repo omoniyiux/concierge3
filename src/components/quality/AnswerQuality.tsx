@@ -10,11 +10,13 @@ import { relativeTime } from "@/lib/format";
 import {
   FLAG_REASON,
   FLAG_STATE_LABEL,
+  RETRACTS_KNOWLEDGE,
   flagsFor,
   whatWeSaid,
   type AnswerFlag,
   type FlagReason,
 } from "@/lib/quality";
+import { useConversations, useFlags } from "@/lib/sim/store";
 
 /* ============================================================================
    ANSWER QUALITY
@@ -26,9 +28,12 @@ import {
 /** The control that lives on a message in the thread. */
 export function FlagAnswerButton({
   said,
+  cites = [],
   onFlagged,
 }: {
   said: string;
+  /** What the answer was built from, so the flag can reach the knowledge. */
+  cites?: { itemId: string; title: string }[];
   onFlagged?: (reason: FlagReason, note: string) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -123,6 +128,38 @@ export function FlagAnswerButton({
               </div>
             </ModalSection>
 
+            {/* The consequence, before they commit to it. Retracting an
+                approval takes knowledge off the site, so it is said plainly
+                rather than discovered afterwards. */}
+            {cites.length > 0 && (
+              <ModalSection title="What this will do">
+                {RETRACTS_KNOWLEDGE[reason] ? (
+                  <div className="border border-warning-line bg-warning-soft p-3.5">
+                    <p className="text-[12.5px] leading-[1.55]">
+                      <span className="font-medium">
+                        {cites.map((c) => c.title).join(" and ")} will stop being used
+                      </span>{" "}
+                      <span className="text-text-secondary">
+                        the moment you flag this, and go back on your review queue. Concierge will not
+                        answer from {cites.length === 1 ? "it" : "them"} again until you approve{" "}
+                        {cites.length === 1 ? "it" : "them"}.
+                      </span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border border-line-strong p-3.5">
+                    <p className="text-[12.5px] leading-[1.55] text-text-secondary">
+                      This one is about how the Agent behaved, not what it knows, so{" "}
+                      <span className="font-medium text-text-primary">
+                        {cites.map((c) => c.title).join(" and ")}
+                      </span>{" "}
+                      stays approved. The flag goes on the queue for you to look at.
+                    </p>
+                  </div>
+                )}
+              </ModalSection>
+            )}
+
             <ModalSection>
               <Field
                 label="What should it have said?"
@@ -147,9 +184,11 @@ export function FlagAnswerButton({
 /* ---- The queue, and the search ------------------------------------------- */
 
 export function AnswerQualityPanel({ siteId }: { siteId: string }) {
-  const flags = flagsFor(siteId);
+  // Live: a flag raised in a thread has to show up here without a reload.
+  const flags = flagsFor(useFlags(siteId), siteId);
+  const conversations = useConversations(siteId);
   const [query, setQuery] = useState("");
-  const hits = whatWeSaid(siteId, query);
+  const hits = whatWeSaid(conversations, siteId, query);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_380px]">

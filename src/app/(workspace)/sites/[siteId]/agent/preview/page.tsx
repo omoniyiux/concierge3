@@ -7,7 +7,7 @@ import { AGENT } from "@/lib/demo-data";
 /** A full-width run of the agent, using the same greeting Persona sets. */
 export default function AgentPreviewPage() {
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Agent"
         title="Test the agent"

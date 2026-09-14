@@ -6,6 +6,7 @@ import { Modal, ModalSection } from "@/components/ui/Modal";
 import { CheckIcon, ExternalIcon, GlobeIcon } from "@/components/icons";
 import { checkSubdomain, currentlyPublished, publishSite, takeDown } from "@/server/publish-actions";
 import { PAGES_DOMAIN } from "@/lib/publishing.client";
+import { markPublished } from "@/lib/sim/store";
 import type { EditorSite } from "@/lib/pages-editor";
 import type { PageDocument } from "@/lib/types";
 
@@ -90,6 +91,9 @@ export function PublishDialog({
         setResult({ subdomain: res.subdomain, url: res.url, publishedAt: res.publishedAt });
         setLive({ subdomain: res.subdomain, url: res.url, publishedAt: res.publishedAt });
         setFailure(null);
+        /* The address is live, so the rest of the workspace should stop
+           calling this site a draft. */
+        markPublished(siteId, res.url);
       } else {
         setFailure(res.reason);
       }

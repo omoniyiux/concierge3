@@ -79,5 +79,6 @@ export const AGENT_FACETS: NavItem[] = [
   { path: "agent/brain", label: "Site Brain", Icon: BrainIcon, keywords: ["knowledge", "learn", "sources"] },
   { path: "agent/actions", label: "Actions", Icon: ActionsIcon, keywords: ["book", "quote", "capture"] },
   { path: "agent/routing", label: "Routing", Icon: RoutingIcon, keywords: ["destinations", "rules", "escalation"] },
+  { path: "agent/inbox", label: "Handoff inbox", Icon: RoutingIcon, keywords: ["handoffs", "waiting", "replies"] },
   { path: "agent/preview", label: "Preview the agent", Icon: AgentIcon, keywords: ["test", "try", "run"] },
 ];

@@ -29,6 +29,7 @@ import { Modal, ModalSection } from "@/components/ui/Modal";
 import { TryItSheet } from "@/components/agent/TryItSheet";
 import { BenchmarkPanel } from "@/components/insights/BenchmarkPanel";
 import { AnswerQualityPanel } from "@/components/quality/AnswerQuality";
+import { GapReturnPanel } from "@/components/insights/GapReturnPanel";
 import { peerSetFor } from "@/lib/benchmarks";
 import { ArrowRight, BrainIcon, CheckIcon, PlusIcon, SparkIcon, UploadIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
@@ -37,7 +38,9 @@ import {
   useBrain,
   useConversations,
   useDestinations,
+  useAnsweredGaps,
   useGaps,
+  useOutcomes,
   useMetrics,
   useSimActions,
   useSite,
@@ -99,7 +102,10 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
   /** The answer just written, so the preview can be asked to prove it works. */
   const [justAnswered, setJustAnswered] = useState<{ question: string; body: string } | null>(null);
 
-  const hasHistory = useConversations(siteId).length > 0;
+  const allConversations = useConversations(siteId);
+  const outcomes = useOutcomes(siteId);
+  const answeredGaps = useAnsweredGaps();
+  const hasHistory = allConversations.length > 0;
   const peers = peerSetFor(siteId);
   const handled = [...answered, ...dismissed];
   const open = UNANSWERED.filter((u) => !handled.includes(u.id));
@@ -109,7 +115,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
   if (!hasHistory) {
     const setupComplete = launchChecklist(site, brain, destinations, siteId).every((s) => s.done);
     return (
-      <PageContainer wide>
+      <PageContainer>
         <PageHeader
           eyebrow="Insights"
           title="What your visitors are telling you"
@@ -126,7 +132,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
   }
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Insights"
         title="What your visitors are telling you"
@@ -189,7 +195,9 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
       </section>
 
       {/* Then the thing that asks something of you ------------------------ */}
-      <section className="mb-10">
+      {/* scroll-mt clears the sticky header, so a deep link from Service
+          health lands on the heading rather than under it. */}
+      <section id="gaps" className="mb-10 scroll-mt-24">
         <Card className="border-accent-line bg-accent-subtle p-6">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="max-w-[52ch]">
@@ -321,8 +329,19 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
         </Panel>
       </div>
 
-      {/* When it got something wrong -------------------------------------- */}
+      {/* What closing a gap actually earned -------------------------------- */}
       <section className="mt-10">
+        <GapReturnPanel
+          gaps={answeredGaps}
+          conversations={allConversations}
+          outcomes={outcomes}
+          currency={site.currency}
+          siteId={siteId}
+        />
+      </section>
+
+      {/* When it got something wrong -------------------------------------- */}
+      <section id="answer-quality" className="mt-10 scroll-mt-24">
         <SectionHead
           title="Answer quality"
           hint="What your team flagged, what came of it, and what Concierge has actually been saying."
@@ -389,7 +408,7 @@ export default function InsightsPage({ params }: { params: Promise<{ siteId: str
         onClose={() => setAnswering(null)}
         onSave={(id, body) => {
           setAnswered((a) => [...a, id]);
-          answerGap(id);
+          answerGap(id, body);
           const asked = UNANSWERED.find((q) => q.id === id);
           setAnswering(null);
           if (asked) setJustAnswered({ question: asked.question, body });

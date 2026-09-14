@@ -114,7 +114,7 @@ export default function AssistantsPage({ params }: { params: Promise<{ siteId: s
         );
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Assistants"
         title="Where assistants get their answers about you"

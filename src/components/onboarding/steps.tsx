@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { KnowledgeCard } from "@/components/brain/KnowledgeCard";
 import {
-  AgentIcon,
   ArrowRight,
   CheckIcon,
   ChevronLeft,
@@ -16,6 +15,9 @@ import {
   SparkIcon,
 } from "@/components/icons";
 import { Badge, Button, Card, Checkbox, Field, Input, RadioCard, Textarea, Toggle } from "@/components/ui";
+import { MODE_STICKER } from "@/components/stickers/maps";
+import { PhoneSticker, WebhookSticker } from "@/components/stickers";
+import { SlackLogo, TelegramLogo } from "@/components/integrations/BrandLogos";
 import { cx } from "@/lib/cx";
 import type { AgentMode, KnowledgeItem, KnowledgeStatus } from "@/lib/types";
 
@@ -308,16 +310,22 @@ export function AgentStep({ onNext, onBack }: { onNext: () => void; onBack: () =
       <fieldset>
         <legend className="t-eyebrow mb-3 text-text-muted">What should it do first?</legend>
         <div className="grid gap-2.5 sm:grid-cols-2">
-          {MODES.map((m) => (
-            <RadioCard
-              key={m.key}
-              selected={mode === m.key}
-              onSelect={() => setMode(m.key)}
-              label={m.label}
-              description={m.description}
-              icon={<AgentIcon size={17} />}
-            />
-          ))}
+          {/* The same per-role stickers the Agent's Role setting uses. All four
+              cards used to carry one generic robot, so the icon column said
+              nothing and the wizard did not look like the surface it sets up. */}
+          {MODES.map((m) => {
+            const Sticker = MODE_STICKER[m.key];
+            return (
+              <RadioCard
+                key={m.key}
+                selected={mode === m.key}
+                onSelect={() => setMode(m.key)}
+                label={m.label}
+                description={m.description}
+                icon={<Sticker size={30} />}
+              />
+            );
+          })}
         </div>
       </fieldset>
 
@@ -462,23 +470,39 @@ export function RoutingStep({ onNext, onBack }: { onNext: () => void; onBack: ()
         </div>
       </Card>
 
-      <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        {["Slack", "SMS", "Webhook", "Telegram"].map((name) => (
-          <button
-            key={name}
-            type="button"
-            className="rounded-xl bg-surface-subtle px-3 py-2.5 text-[12px] text-text-secondary transition-colors hover:border-line-strong hover:text-text-primary"
+      {/* What else email can be joined by. Each sits in its own bordered cell
+          on the surface colour, the way the Routing page's channel strip does,
+          rather than floating as bare text on the canvas. */}
+      <ul className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        {OTHER_CHANNELS.map(({ key, label, Mark }) => (
+          <li
+            key={key}
+            className="flex h-[52px] items-center gap-2.5 border border-line-strong bg-surface px-3"
           >
-            + {name}
-          </button>
+            <Mark size={22} />
+            <span className="min-w-0 truncate text-[12px] font-medium text-text-secondary">{label}</span>
+          </li>
         ))}
-      </div>
+      </ul>
       <p className="mt-2.5 text-[11.5px] text-text-tertiary">
         You can add more destinations and build routing rules once you are live.
       </p>
     </StepShell>
   );
 }
+
+/**
+ * Slack and Telegram get their own brand marks — they are products, and an
+ * owner scans for the logo before the word. SMS and webhooks belong to nobody,
+ * so they keep the product's own sticker rather than a logo we would have to
+ * invent for them.
+ */
+const OTHER_CHANNELS = [
+  { key: "slack", label: "Slack", Mark: SlackLogo },
+  { key: "sms", label: "SMS", Mark: PhoneSticker },
+  { key: "webhook", label: "Webhook", Mark: WebhookSticker },
+  { key: "telegram", label: "Telegram", Mark: TelegramLogo },
+] as const;
 
 /* ---- 6 · Preview --------------------------------------------------------- */
 

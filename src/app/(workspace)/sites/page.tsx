@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { SiteMark } from "@/components/shell/ConciergeMark";
+import { useRouter } from "next/navigation";
+import { SiteMark, ConciergeWordmark } from "@/components/shell/ConciergeMark";
 import { SiteStatusBadge } from "@/components/shell/SiteSwitcher";
 import { StickerStats } from "@/components/ui/StickerStats";
 import {
@@ -16,12 +17,11 @@ import {
 } from "@/components/ui";
 import { Modal, ModalSection } from "@/components/ui/Modal";
 import { Field, Input, Select } from "@/components/ui";
-import { ArrowRight, PlusIcon } from "@/components/icons";
+import { ArrowRight, ChevronLeft, PlusIcon } from "@/components/icons";
 import { LiveSticker, SalesSticker, AlertSticker, ContactSticker } from "@/components/stickers";
 import { cx } from "@/lib/cx";
 import {
   ORG,
-  SITES,
   brainFor,
   conversationsFor,
   destinationsFor,
@@ -29,6 +29,8 @@ import {
   ledgerFor,
 } from "@/lib/demo-data";
 import { launchChecklist, launchProgress, siteHealth, HEALTH_COPY } from "@/lib/health";
+import { createAgentSite, useWorld } from "@/lib/sim/store";
+import { siteIdFor, tidyUrl } from "@/lib/onboarding";
 import { money } from "@/lib/format";
 
 /* ============================================================================
@@ -49,9 +51,13 @@ export default function PortfolioPage() {
   const [sort, setSort] = useState<Sort>("attention");
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
+  // Every site in the world, including ones added through setup. This list is
+  // the first place an owner looks after connecting a website, and it used to
+  // show only the four fixtures however many they had added.
+  const sites = useWorld().sites;
 
   const rows = useMemo(() => {
-    const built = SITES.map((site) => {
+    const built = sites.map((site) => {
       const brain = brainFor(site.id);
       const destinations = destinationsFor(site.id);
       const conversations = conversationsFor(site.id);
@@ -85,7 +91,9 @@ export default function PortfolioPage() {
       if (sort === "name") return a.site.name.localeCompare(b.site.name);
       return a.health.score - b.health.score;
     });
-  }, [sort, query]);
+    // `sites` belongs here: without it the list is computed once and a site
+    // added while this page is open never appears, which is the whole bug.
+  }, [sites, sort, query]);
 
   const needing = rows.filter((r) => r.health.band !== "healthy").length;
   const confirmed = rows.reduce((n, r) => n + r.ledger.confirmedValue, 0);
@@ -93,7 +101,20 @@ export default function PortfolioPage() {
 
   return (
     <main className="cg-scroll h-dvh overflow-y-auto bg-canvas">
-      <div className="mx-auto w-full max-w-[1090px] px-5 pb-24 pt-14 sm:px-7 lg:px-9">
+      <div
+        style={{ maxWidth: "var(--content-max)" }}
+        className="mx-auto w-full px-5 pb-24 pt-16 sm:px-7 lg:px-9"
+      >
+        {/* This page has no rail, so without this there is no way out of it
+            except the browser's own Back — and no way back to the site you
+            were working in. */}
+        <div className="mb-7 flex items-center justify-between gap-4">
+          <Link href="/" aria-label="Concierge home">
+            <ConciergeWordmark />
+          </Link>
+          <BackToSite />
+        </div>
+
         <header className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
           <div className="min-w-0 max-w-[58ch]">
             <p className="t-eyebrow text-text-muted">{ORG.isAgency ? "Agency" : "Workspace"}</p>
@@ -237,7 +258,7 @@ export default function PortfolioPage() {
               Reports, emails and the launcher can all carry your brand rather than ours.
             </p>
             <LinkButton
-              href={`/sites/${SITES[0].id}/settings?section=agency`}
+              href={`/sites/${sites[0].id}/settings?section=agency`}
               variant="secondary"
               size="sm"
               trailing={<ArrowRight size={13} />}
@@ -254,12 +275,37 @@ export default function PortfolioPage() {
 }
 
 function AddSiteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const router = useRouter();
+  const sites = useWorld().sites;
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [product, setProduct] = useState("agent");
   const [working, setWorking] = useState(false);
 
-  const valid = name.trim().length > 1 && url.trim().length > 3;
+  const host = tidyUrl(url);
+  const valid = name.trim().length > 1 && host !== null;
+
+  /**
+   * This used to run a 700ms spinner, clear the fields and close — so adding a
+   * site looked like it worked and left no site behind. A Pages site needs a
+   * starter and a document, so that product hands off to the flow that builds
+   * them rather than half-creating one here.
+   */
+  function addSite() {
+    if (!host) return;
+    setWorking(true);
+    if (product === "pages") {
+      router.push("/onboarding/pages");
+      return;
+    }
+    const id = siteIdFor(host);
+    createAgentSite({ id, name: name.trim(), url: host });
+    onClose();
+    setName("");
+    setUrl("");
+    setWorking(false);
+    router.push(`/sites/${id}/overview`);
+  }
 
   return (
     <Modal
@@ -267,7 +313,7 @@ function AddSiteModal({ open, onClose }: { open: boolean; onClose: () => void })
       onClose={onClose}
       eyebrow={ORG.isAgency ? "Add a client" : "Add a site"}
       title={ORG.isAgency ? "Set up a new client" : "Add another site"}
-      description={`${SITES.length} of ${ORG.siteLimit} sites used on the ${ORG.plan} plan. Concierge reads the website first, and nothing goes live until you approve what it learned.`}
+      description={`${sites.length} of ${ORG.siteLimit} sites used on the ${ORG.plan} plan. Concierge reads the website first, and nothing goes live until you approve what it learned.`}
       footer={
         <>
           <Button variant="tertiary" onClick={onClose}>
@@ -276,15 +322,7 @@ function AddSiteModal({ open, onClose }: { open: boolean; onClose: () => void })
           <Button
             loading={working}
             disabled={!valid}
-            onClick={() => {
-              setWorking(true);
-              setTimeout(() => {
-                setWorking(false);
-                onClose();
-                setName("");
-                setUrl("");
-              }, 700);
-            }}
+            onClick={addSite}
           >
             Start reading the site
           </Button>
@@ -322,5 +360,31 @@ function AddSiteModal({ open, onClose }: { open: boolean; onClose: () => void })
         </div>
       </ModalSection>
     </Modal>
+  );
+}
+
+/**
+ * Back to wherever you came from, and only when there is a there to go back
+ * to — landing on /sites directly should not offer a Back that does nothing.
+ * History length can only be read on the client, so it is read after mount.
+ */
+const NO_SUBSCRIBE = () => () => {};
+
+function BackToSite() {
+  const router = useRouter();
+  // A client-only fact, read the way client-only facts are meant to be read:
+  // false on the server and on the first paint, so hydration matches, then the
+  // real answer. No setState in an effect, and nothing to re-render on.
+  const canGoBack = useSyncExternalStore(
+    NO_SUBSCRIBE,
+    () => window.history.length > 1,
+    () => false,
+  );
+
+  if (!canGoBack) return null;
+  return (
+    <Button variant="tertiary" size="sm" leading={<ChevronLeft size={15} />} onClick={() => router.back()}>
+      Back
+    </Button>
   );
 }

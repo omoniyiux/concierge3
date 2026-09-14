@@ -110,7 +110,7 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
 
   if (outcomes.length === 0) {
     return (
-      <PageContainer wide>
+      <PageContainer>
         <PageHeader
           eyebrow="Return"
           title="What Concierge did for the business"
@@ -127,7 +127,7 @@ export default function LedgerPage({ params }: { params: Promise<{ siteId: strin
   }
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Return"
         title="What Concierge did for the business"

@@ -138,7 +138,7 @@ export default function IntegrationsPage() {
   const broken = catalogue.filter((i) => i.status === "error");
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Integrations"
         title="The tools Concierge works through"

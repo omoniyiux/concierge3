@@ -92,7 +92,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
   const snippet = installSnippet(site.id);
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow="Settings"
         title={site.name}
@@ -103,7 +103,7 @@ function Settings({ params }: { params: Promise<{ siteId: string }> }) {
         {/* Pinned so the section list stays put while the panel scrolls. */}
         <nav
           aria-label="Settings sections"
-          className="lg:sticky lg:top-0 lg:max-h-dvh lg:self-start lg:overflow-y-auto lg:pb-6"
+          className="min-w-0 lg:sticky lg:top-0 lg:max-h-dvh lg:self-start lg:overflow-y-auto lg:pb-6"
         >
           <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
             {SECTIONS.map(({ key, label, Icon }) => {

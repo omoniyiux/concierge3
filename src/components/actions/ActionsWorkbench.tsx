@@ -93,7 +93,7 @@ export function ActionsWorkbench({ siteId, eyebrow }: { siteId: string; eyebrow:
   const completions = actions.reduce((n, a) => n + a.completions30d, 0);
 
   return (
-    <PageContainer wide>
+    <PageContainer>
       <PageHeader
         eyebrow={eyebrow}
         title="What Concierge can do for a visitor"

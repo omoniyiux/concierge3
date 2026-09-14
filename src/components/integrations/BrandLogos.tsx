@@ -45,6 +45,24 @@ export function SlackLogo({ size, className }: P) {
   );
 }
 
+export function TelegramLogo({ size, className }: P) {
+  return (
+    <Mark size={size} className={className} viewBox="0 0 240 240">
+      <defs>
+        <linearGradient id="tg-a" x1="120" y1="0" x2="120" y2="240" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#2AABEE" />
+          <stop offset="1" stopColor="#229ED9" />
+        </linearGradient>
+      </defs>
+      <circle cx="120" cy="120" r="120" fill="url(#tg-a)" />
+      <path
+        d="M54 118.8c35-15.2 58.3-25.3 70-30.2 33.3-13.9 40.2-16.3 44.7-16.4 1 0 3.2.2 4.7 1.4 1.2 1 1.5 2.4 1.7 3.4.2 1 .4 3.2.2 4.9-1.8 19.3-9.7 66.1-13.7 87.7-1.7 9.1-5 12.2-8.2 12.5-7 .6-12.3-4.6-19-9-10.6-6.9-16.5-11.2-26.8-18-11.9-7.8-4.2-12.1 2.6-19.1 1.8-1.8 32.6-29.9 33.2-32.4.1-.3.1-1.5-.6-2.1-.7-.6-1.7-.4-2.5-.2-1.1.2-18 11.4-50.8 33.6-4.8 3.3-9.1 4.9-13 4.8-4.3-.1-12.5-2.4-18.6-4.4-7.5-2.4-13.5-3.7-13-7.9.3-2.2 3.3-4.4 9.1-6.6Z"
+        fill="#fff"
+      />
+    </Mark>
+  );
+}
+
 export function CalendlyLogo({ size, className }: P) {
   return (
     <Mark size={size} className={className} viewBox="0 0 48 48">

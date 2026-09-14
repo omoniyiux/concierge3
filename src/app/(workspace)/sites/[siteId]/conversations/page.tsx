@@ -122,9 +122,12 @@ function Inbox({ siteId }: { siteId: string }) {
     });
   }, [all, filter, query]);
 
-  // An absent or stale `?c=` opens the top of the list rather than an empty
-  // pane, which is what the old mount-time initialiser did.
-  const selected = all.find((c) => c.id === selectedId) ?? all[0] ?? null;
+  // Nothing selected means nothing selected. Falling back to the first
+  // conversation looked harmless on a desktop, but the queue is full-width on a
+  // phone and only hides once something IS selected — so the fallback put the
+  // list and a conversation on screen at the same time, side by side. It also
+  // overrode the "Pick a conversation" pane this surface is designed around.
+  const selected = all.find((c) => c.id === selectedId) ?? null;
 
   // A site with no conversations at all is a different page to a filter that
   // matched nothing.
@@ -272,7 +275,7 @@ function ConversationDetail({
   onBack: () => void;
 }) {
   const lead = useLeads(siteId).find((l) => l.id === c.leadId);
-  const { updateConversation } = useSimActions();
+  const { updateConversation, reportFlag } = useSimActions();
 
   // A person taking the thread, and anything they send, lives here until
   // there is an API behind it. Remounting on conversation change keeps one
@@ -443,8 +446,26 @@ function ConversationDetail({
                         {Math.round(m.confidence * 100)}% confidence
                       </span>
                     )}
-                    {/* Anyone can say "that was wrong", from the answer itself. */}
-                    {m.author === "agent" && <FlagAnswerButton said={m.body} />}
+                    {/* Anyone can say "that was wrong", from the answer itself.
+                        The citations travel with it, so the knowledge that
+                        produced the answer is what gets corrected. */}
+                    {m.author === "agent" && (
+                      <FlagAnswerButton
+                        said={m.body}
+                        cites={m.citations ?? []}
+                        onFlagged={(reason, note) =>
+                          reportFlag({
+                            conversationId: c.id,
+                            messageId: m.id,
+                            said: m.body,
+                            cites: m.citations ?? [],
+                            reason,
+                            note,
+                            flaggedBy: "Olaifa Promise",
+                          })
+                        }
+                      />
+                    )}
                     {m.citations?.map((cit) => (
                       <span
                         key={cit.itemId}

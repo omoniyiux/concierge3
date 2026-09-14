@@ -977,6 +977,10 @@ export interface UnansweredQuestion {
   lastAskedAt: string;
   suggestedCategory: KnowledgeCategory;
   status: "open" | "resolved" | "dismissed";
+  /** When the owner answered it. The clock attribution is measured from. */
+  resolvedAt?: string;
+  /** The knowledge the answer became, so what it earned can be traced. */
+  knowledgeItemId?: ID;
 }
 
 export interface IntentBreakdown {
