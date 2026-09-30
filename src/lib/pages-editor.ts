@@ -92,6 +92,13 @@ export type EditorAction =
   | { type: "duplicateSection"; sectionId: ID }
   /** Replace everything. Used by the setup flow when a site is created. */
   | { type: "load"; doc: PageDocument; site: EditorSite }
+  /**
+   * A new version of the whole document, as one undoable step. Vibe Chat and
+   * the agent panel use it: their changes are worked out as a pure function of
+   * the document, and landing them here means Undo reverses an instruction
+   * exactly the way it reverses a keystroke.
+   */
+  | { type: "apply"; doc: PageDocument; mergeKey?: string }
   | { type: "undo" }
   | { type: "redo" };
 
@@ -317,6 +324,14 @@ export function reduce(state: EditorState, action: EditorAction): EditorState {
        yours any more. */
     case "load":
       return { ...initialState(), doc: action.doc, site: action.site };
+
+    case "apply": {
+      /* A rebuild can take the selected section with it; an inspector left
+         pointing at a section that no longer exists would show nothing. */
+      const next = commit(state, action.doc, action.mergeKey);
+      const stillThere = action.doc.pages.some((p) => p.sections.some((s) => s.id === state.selectedId));
+      return stillThere ? next : { ...next, selectedId: null };
+    }
 
     case "undo": {
       if (state.past.length === 0) return state;

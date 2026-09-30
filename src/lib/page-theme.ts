@@ -10,7 +10,14 @@
    leak into one another. This module is the whole of the customer's side.
    ========================================================================== */
 
-import type { PageTheme, ThemeButtonShape, ThemeDensity, ThemeFontPairing, ThemeRadius } from "./types";
+import type {
+  PageTheme,
+  ThemeButtonShape,
+  ThemeDensity,
+  ThemeFontPairing,
+  ThemeRadius,
+  ThemeSurface,
+} from "./types";
 
 /* ---- Contrast ------------------------------------------------------------ */
 
@@ -54,29 +61,89 @@ const darken = (hex: string, amount: number): string => {
 
 /* ---- Scales -------------------------------------------------------------- */
 
+interface FontPairing {
+  display: string;
+  body: string;
+  /** Poster faces are single-weight; asking them for 600 fakes a bold. */
+  displayWeight: number;
+  /** Tracking for the big type, which each face wants differently. */
+  displayTracking: string;
+  displayCase: "none" | "uppercase";
+  /** The Google Fonts families to load, or none for a system pairing. */
+  load?: string[];
+}
+
+const SANS = '"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif';
+const SERIF = 'Georgia, "Iowan Old Style", "Times New Roman", serif';
+
 /**
- * System stacks only. A published page must render correctly with no network,
- * and a webfont that arrives late is worse than one that was never promised.
- * Phase 3 can add real faces on top of these as the fallback.
+ * The first four are system stacks and need no network. The rest name a real
+ * typeface first and keep a system face behind it, so a page whose font never
+ * arrives still reads as intended rather than falling back to Times.
  */
-const FONTS: Record<ThemeFontPairing, { display: string; body: string }> = {
-  grotesk: {
-    display: '"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif',
-    body: '"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif',
-  },
-  editorial: {
-    display: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
-    body: '"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif',
-  },
+const FONTS: Record<ThemeFontPairing, FontPairing> = {
+  grotesk: { display: SANS, body: SANS, displayWeight: 600, displayTracking: "-0.02em", displayCase: "none" },
+  editorial: { display: SERIF, body: SANS, displayWeight: 600, displayTracking: "-0.02em", displayCase: "none" },
   humanist: {
     display: 'Seravek, "Gill Sans Nova", Ubuntu, Calibri, system-ui, sans-serif',
     body: 'Seravek, "Gill Sans Nova", Ubuntu, Calibri, system-ui, sans-serif',
+    displayWeight: 600,
+    displayTracking: "-0.02em",
+    displayCase: "none",
   },
-  classic: {
-    display: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
-    body: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+  classic: { display: SERIF, body: SERIF, displayWeight: 600, displayTracking: "-0.02em", displayCase: "none" },
+  garamond: {
+    display: `"Cormorant Garamond", ${SERIF}`,
+    body: `"Inter", ${SANS}`,
+    displayWeight: 500,
+    displayTracking: "-0.015em",
+    displayCase: "none",
+    load: ["Cormorant+Garamond:ital,wght@0,500;0,600;1,500", "Inter:wght@400;500;600"],
+  },
+  fraunces: {
+    display: `"Fraunces", ${SERIF}`,
+    body: `"DM Sans", ${SANS}`,
+    displayWeight: 500,
+    displayTracking: "-0.025em",
+    displayCase: "none",
+    load: ["Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600", "DM+Sans:wght@400;500;600"],
+  },
+  poster: {
+    display: `"Anton", Impact, "Arial Narrow Bold", ${SANS}`,
+    body: `"Inter", ${SANS}`,
+    displayWeight: 400,
+    displayTracking: "-0.005em",
+    displayCase: "uppercase",
+    load: ["Anton", "Inter:wght@400;500;600"],
+  },
+  heavy: {
+    display: `"Archivo Black", "Arial Black", ${SANS}`,
+    body: `"Archivo", ${SANS}`,
+    displayWeight: 400,
+    displayTracking: "-0.035em",
+    displayCase: "none",
+    load: ["Archivo+Black", "Archivo:wght@400;500;600"],
+  },
+  modern: {
+    display: `"Manrope", ${SANS}`,
+    body: `"Manrope", ${SANS}`,
+    displayWeight: 700,
+    displayTracking: "-0.035em",
+    displayCase: "none",
+    load: ["Manrope:wght@400;500;600;700;800"],
   },
 };
+
+/**
+ * The stylesheet import for a theme's typefaces, or an empty string for a
+ * system pairing. It has to be the very first rule in a stylesheet, so the
+ * caller puts it there.
+ */
+export function fontImport(theme: PageTheme): string {
+  const families = FONTS[theme.fonts]?.load;
+  if (!families) return "";
+  return `@import url("https://fonts.googleapis.com/css2?${families.map((f) => `family=${f}`).join("&")}&display=swap");`;
+}
 
 const RADIUS: Record<ThemeRadius, string> = { square: "0px", soft: "8px", round: "18px" };
 
@@ -113,6 +180,78 @@ const PALETTE = {
   },
 } as const;
 
+/**
+ * Considered papers, each with the ink that reads on it. The inverse is what a
+ * "dark" section becomes on that paper, so a cream site's dark band is a warm
+ * charcoal rather than a cold black.
+ */
+type Palette = Record<keyof (typeof PALETTE)["light"], string>;
+
+const SURFACES: Record<ThemeSurface, Palette> = {
+  white: PALETTE.light,
+  cream: {
+    bg: "#f4efe4",
+    fg: "#27241f",
+    muted: "#6b6558",
+    subtle: "#ebe4d4",
+    line: "#d9d0bd",
+    inverseBg: "#2b2926",
+    inverseFg: "#f4efe4",
+    inverseMuted: "#b9b19f",
+  },
+  sand: {
+    bg: "#e9e3d3",
+    fg: "#23211c",
+    muted: "#625d50",
+    subtle: "#ddd5c1",
+    line: "#c9c0a9",
+    inverseBg: "#23211c",
+    inverseFg: "#e9e3d3",
+    inverseMuted: "#aba38e",
+  },
+  blush: {
+    bg: "#f7ece8",
+    fg: "#2b1f1c",
+    muted: "#735f59",
+    subtle: "#efddd6",
+    line: "#e0c9c0",
+    inverseBg: "#3a2622",
+    inverseFg: "#f7ece8",
+    inverseMuted: "#c7aca4",
+  },
+  sage: {
+    bg: "#eef0e8",
+    fg: "#1f2620",
+    muted: "#5b665c",
+    subtle: "#e1e6d9",
+    line: "#cdd5c4",
+    inverseBg: "#263027",
+    inverseFg: "#eef0e8",
+    inverseMuted: "#a8b3a6",
+  },
+  mist: {
+    bg: "#f3f5f7",
+    fg: "#161b22",
+    muted: "#57606b",
+    subtle: "#e7ebef",
+    line: "#d5dbe1",
+    inverseBg: "#161b22",
+    inverseFg: "#f3f5f7",
+    inverseMuted: "#9ba5b1",
+  },
+  charcoal: {
+    bg: "#262522",
+    fg: "#efeadf",
+    muted: "#b3ad9f",
+    subtle: "#302e2a",
+    line: "#45423c",
+    inverseBg: "#efeadf",
+    inverseFg: "#262522",
+    inverseMuted: "#6b6558",
+  },
+  night: PALETTE.dark,
+};
+
 /* ---- The variables the stylesheet reads ---------------------------------- */
 
 /**
@@ -121,8 +260,8 @@ const PALETTE = {
  * be confused with a Concierge token even if the two ever share a document.
  */
 export function themeVars(theme: PageTheme): Record<string, string> {
-  const palette = PALETTE[theme.mode];
-  const fonts = FONTS[theme.fonts];
+  const palette = theme.surface ? SURFACES[theme.surface] : PALETTE[theme.mode];
+  const fonts = FONTS[theme.fonts] ?? FONTS.grotesk;
   const brandInk = readableInk(theme.brandColor);
 
   return {
@@ -141,6 +280,9 @@ export function themeVars(theme: PageTheme): Record<string, string> {
 
     "--ps-font-display": fonts.display,
     "--ps-font-body": fonts.body,
+    "--ps-display-weight": String(fonts.displayWeight),
+    "--ps-display-tracking": fonts.displayTracking,
+    "--ps-display-case": fonts.displayCase,
 
     "--ps-radius": RADIUS[theme.radius],
     "--ps-btn-radius": BUTTON_RADIUS[theme.buttonShape],

@@ -12,6 +12,7 @@ import { ThemeForm } from "./inspector/theme";
 import {
   AboutForm,
   ContactForm,
+  CtaForm,
   FaqForm,
   GalleryForm,
   HeroForm,
@@ -52,6 +53,8 @@ function SectionForm({ section }: { section: PageSection }) {
       return <ContactForm content={section.content} onChange={patch} />;
     case "gallery":
       return <GalleryForm content={section.content} onChange={patch} />;
+    case "cta":
+      return <CtaForm content={section.content} onChange={patch} />;
   }
 }
 

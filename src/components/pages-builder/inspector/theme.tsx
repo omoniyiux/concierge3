@@ -10,6 +10,7 @@ import type {
   ThemeDensity,
   ThemeFontPairing,
   ThemeRadius,
+  ThemeSurface,
 } from "@/lib/types";
 
 /* ============================================================================
@@ -25,10 +26,27 @@ import type {
    ========================================================================== */
 
 const FONTS: { value: ThemeFontPairing; label: string }[] = [
-  { value: "grotesk", label: "Clean and modern" },
-  { value: "editorial", label: "Serif headings" },
-  { value: "humanist", label: "Warm and friendly" },
-  { value: "classic", label: "Traditional" },
+  { value: "garamond", label: "Garamond — elegant serif" },
+  { value: "fraunces", label: "Fraunces — soft serif" },
+  { value: "modern", label: "Manrope — clean and modern" },
+  { value: "heavy", label: "Archivo Black — bold" },
+  { value: "poster", label: "Anton — poster capitals" },
+  { value: "grotesk", label: "System sans" },
+  { value: "editorial", label: "System serif headings" },
+  { value: "humanist", label: "System humanist" },
+  { value: "classic", label: "System traditional" },
+];
+
+/* The paper, as a swatch of its own colour — the name alone says too little. */
+const SURFACES: { value: ThemeSurface; label: string; swatch: string }[] = [
+  { value: "white", label: "White", swatch: "#ffffff" },
+  { value: "cream", label: "Cream", swatch: "#f4efe4" },
+  { value: "sand", label: "Sand", swatch: "#e9e3d3" },
+  { value: "blush", label: "Blush", swatch: "#f7ece8" },
+  { value: "sage", label: "Sage", swatch: "#eef0e8" },
+  { value: "mist", label: "Mist", swatch: "#f3f5f7" },
+  { value: "charcoal", label: "Charcoal", swatch: "#262522" },
+  { value: "night", label: "Night", swatch: "#121417" },
 ];
 
 const RADII: { value: ThemeRadius; label: string }[] = [
@@ -112,16 +130,25 @@ export function ThemeForm({ theme }: { theme: PageTheme }) {
     <div className="space-y-5">
       <BrandColour theme={theme} />
 
-      <Field label="Page colour" htmlFor="theme-mode">
-        <SegmentedControl
-          label="Page colour"
-          value={theme.mode}
-          onChange={(mode) => set({ mode })}
-          options={[
-            { value: "light", label: "Light" },
-            { value: "dark", label: "Dark" },
-          ]}
-        />
+      <Field label="Paper" htmlFor="theme-surface" hint="The colour the whole site is printed on.">
+        <div id="theme-surface" role="radiogroup" aria-label="Paper" className="grid grid-cols-4 gap-1.5">
+          {SURFACES.map((o) => {
+            const selected = (theme.surface ?? (theme.mode === "dark" ? "night" : "white")) === o.value;
+            return (
+              <button
+                key={o.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => set({ surface: o.value, mode: o.value === "night" || o.value === "charcoal" ? "dark" : "light" })}
+                className={`flex flex-col items-center gap-1 border px-1 py-2 text-[10.5px] ${selected ? "border-ink ring-1 ring-ink" : "border-line-strong hover:border-line-hover"}`}
+              >
+                <span className="h-5 w-full border border-line-strong" style={{ background: o.swatch }} />
+                {o.label}
+              </button>
+            );
+          })}
+        </div>
       </Field>
 
       <Field label="Typeface" htmlFor={fontId}>

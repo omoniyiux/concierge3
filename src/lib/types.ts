@@ -587,7 +587,7 @@ export interface Integration {
  * never built a site.
  */
 export type PageSectionKind =
-  "hero" | "services" | "about" | "testimonials" | "pricing" | "faq" | "contact" | "gallery";
+  "hero" | "services" | "about" | "testimonials" | "pricing" | "faq" | "contact" | "gallery" | "cta";
 
 /* -- Shared content pieces ------------------------------------------------- */
 
@@ -624,12 +624,38 @@ export type SiteIconRef = string;
 
 /* -- Per-kind content ------------------------------------------------------ */
 
+/**
+ * How a hero is arranged. Each one is a composition the renderer was designed
+ * against — not a set of positions — so any of them looks deliberate with
+ * whatever copy and pictures the owner puts in.
+ *
+ * - `classic`: headline beside a picture, or beside the page's services
+ * - `cover`: one photograph fills the screen, words on top of it
+ * - `poster`: a giant headline over a wide photograph
+ * - `editorial`: a photo half, a colour half, the headline across both
+ * - `split`: words on a colour panel, a full-height photograph beside them
+ * - `arch`: the same, with the photograph in an arch
+ * - `centered`: words centred above a wide photograph
+ */
+export type HeroLayout = "classic" | "cover" | "poster" | "editorial" | "split" | "arch" | "centered";
+
+export type ServicesLayout = "cards" | "photo" | "rows" | "list";
+export type AboutLayout = "classic" | "statement";
+export type GalleryLayout = "grid" | "mosaic" | "strip";
+export type TestimonialsLayout = "cards" | "quote";
+
 export interface HeroContent {
+  /** Unset means `classic`, which is what every hero was before layouts. */
+  layout?: HeroLayout;
+  /** A short line above the headline: "Landscaping · Austin". */
+  eyebrow?: string;
   headline: string;
   subheadline: string;
   cta?: PageCta;
   secondaryCta?: PageCta;
   image?: PageImage;
+  /** The inset in `editorial`. Ignored by layouts with one picture. */
+  secondaryImage?: PageImage;
 }
 
 export interface ServiceItem {
@@ -643,12 +669,14 @@ export interface ServiceItem {
 }
 
 export interface ServicesContent {
+  layout?: ServicesLayout;
   heading: string;
   intro?: string;
   items: ServiceItem[];
 }
 
 export interface AboutContent {
+  layout?: AboutLayout;
   heading: string;
   body: string;
   image?: PageImage;
@@ -668,6 +696,7 @@ export interface Testimonial {
 }
 
 export interface TestimonialsContent {
+  layout?: TestimonialsLayout;
   heading: string;
   items: Testimonial[];
 }
@@ -728,9 +757,22 @@ export interface GalleryItem {
 }
 
 export interface GalleryContent {
+  layout?: GalleryLayout;
   heading: string;
   intro?: string;
   items: GalleryItem[];
+}
+
+/**
+ * The closing ask: one heading, one button, usually over a photograph. Most
+ * good pages end by asking once more, and a visitor who scrolled this far is
+ * the one most likely to say yes.
+ */
+export interface CtaContent {
+  heading: string;
+  body?: string;
+  cta?: PageCta;
+  image?: PageImage;
 }
 
 /* -- Look: a closed set, not CSS ------------------------------------------- */
@@ -786,7 +828,8 @@ export type PageSection =
   | (PageSectionBase & { kind: "pricing"; content: PricingContent })
   | (PageSectionBase & { kind: "faq"; content: FaqContent })
   | (PageSectionBase & { kind: "contact"; content: ContactContent })
-  | (PageSectionBase & { kind: "gallery"; content: GalleryContent });
+  | (PageSectionBase & { kind: "gallery"; content: GalleryContent })
+  | (PageSectionBase & { kind: "cta"; content: CtaContent });
 
 /* -- Responsive ------------------------------------------------------------ */
 
@@ -827,7 +870,29 @@ export type SectionStyleOverrides = Record<SectionStyleDeclKey, SectionStyleDecl
 
 /* -- Theme ----------------------------------------------------------------- */
 
-export type ThemeFontPairing = "grotesk" | "editorial" | "humanist" | "classic";
+/**
+ * The first four are system faces and need no network. The rest are real
+ * typefaces loaded from Google Fonts, with a system face behind each so a page
+ * still reads properly if the font never arrives.
+ */
+export type ThemeFontPairing =
+  | "grotesk"
+  | "editorial"
+  | "humanist"
+  | "classic"
+  | "garamond"
+  | "fraunces"
+  | "poster"
+  | "heavy"
+  | "modern";
+
+/**
+ * The paper the site is printed on. Unset means the plain light or dark
+ * palette `mode` already describes; a surface replaces it with a considered
+ * one — cream, sand, charcoal — which is most of what makes a template feel
+ * like a particular kind of business.
+ */
+export type ThemeSurface = "white" | "cream" | "sand" | "blush" | "sage" | "mist" | "charcoal" | "night";
 export type ThemeRadius = "square" | "soft" | "round";
 export type ThemeButtonShape = "square" | "rounded" | "pill";
 export type ThemeDensity = "tight" | "regular" | "airy";
@@ -847,6 +912,99 @@ export interface PageTheme {
   radius: ThemeRadius;
   buttonShape: ThemeButtonShape;
   density: ThemeDensity;
+  /** A data URI or URL. Shown beside the name in the site header. */
+  logo?: string;
+  surface?: ThemeSurface;
+}
+
+/* -- The embedded agent ---------------------------------------------------- */
+
+/**
+ * What the Concierge agent on a Pages site is allowed to do for a visitor.
+ * Each one is a promise the page makes out loud — a quick action in the
+ * widget, a button on the page — so the list is closed rather than free text.
+ */
+export type AgentCapability =
+  | "answer" // answer questions from the page and the Site Brain
+  | "guide" // help a visitor choose a service
+  | "leads" // capture a lead into Leads
+  | "booking" // book an appointment
+  | "handoff" // route to a human
+  | "promotions" // show the current offer
+  | "contact" // collect a contact or callback request
+  | "payment"; // send to a payment or checkout link
+
+export type PageAgentTone = "friendly" | "professional" | "premium";
+
+/**
+ * An offer the page and the agent both know about. It is one object on
+ * purpose: the banner, the popup and the agent's answer about "any deals?"
+ * all read it, so they cannot tell a visitor three different things.
+ */
+export interface PagePromotion {
+  headline: string;
+  detail: string;
+  /** What the popup asks for in exchange for the offer. */
+  collects: "phone" | "email";
+  cta: string;
+}
+
+/**
+ * The agent that ships with every Pages site. It lives on the document rather
+ * than beside it because the page and the agent change together — adding a
+ * promotion to one without the other is exactly the drift this product exists
+ * to prevent.
+ *
+ * Quick actions are not stored. They are read off the capabilities, so a
+ * switched-off capability can never leave a button behind in the widget.
+ */
+export interface PageAgent {
+  capabilities: AgentCapability[];
+  tone: PageAgentTone;
+  /** Unset means the greeting is derived from the site and its capabilities. */
+  greeting?: string;
+  /** Topics the owner explicitly asked it to handle well, e.g. "pricing". */
+  focus: string[];
+  promotion?: PagePromotion;
+  paymentUrl?: string;
+}
+
+/* -- The brief: what the page was generated from --------------------------- */
+
+export type PageGoal =
+  | "opportunities"
+  | "customers"
+  | "appointments"
+  | "sell"
+  | "event"
+  | "emails"
+  | "questions";
+
+/** `signature` is the template's own look, as its designer intended it. */
+export type PageStylePreset = "signature" | "bold" | "clean" | "warm" | "premium" | "sales";
+
+export interface BusinessInfo {
+  name: string;
+  /** What they sell, in their words: "Landscaping, lawn care and patios". */
+  offer: string;
+  industry: string;
+  /** A phone number or an email — whichever they gave. */
+  contact: string;
+  location: string;
+}
+
+/**
+ * The answers the guided flow or Vibe Chat collected. Kept on the document so
+ * "turn this into a restaurant page" can rebuild from what the owner actually
+ * told us, rather than guessing it back out of edited copy.
+ */
+export interface PageBrief {
+  goal: PageGoal;
+  templateId: string;
+  style: PageStylePreset;
+  business: BusinessInfo;
+  /** The main button's label. */
+  cta: string;
 }
 
 /* -- Pages and the document ------------------------------------------------ */
@@ -892,6 +1050,10 @@ export interface PageDocument {
   siteId: ID;
   theme: PageTheme;
   pages: ConciergePage[];
+  /** Absent on documents made before the agent moved onto the page. */
+  agent?: PageAgent;
+  /** Absent on documents that were not generated from a brief. */
+  brief?: PageBrief;
   updatedAt: string;
 }
 

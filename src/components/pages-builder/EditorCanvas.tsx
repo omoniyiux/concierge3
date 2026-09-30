@@ -180,7 +180,7 @@ export function EditorCanvas({
               className="h-full w-full border-0 bg-white"
               onDocument={onDocument}
             >
-              <PageRenderer document={doc} page={page} site={site} breakpoint={breakpoint} />
+              <PageRenderer document={doc} page={page} site={site} breakpoint={breakpoint} mode="edit" />
             </PageFrame>
           </div>
         </div>

@@ -7,8 +7,10 @@ import { EditorCanvas } from "@/components/pages-builder/EditorCanvas";
 import { Inspector } from "@/components/pages-builder/Inspector";
 import { SectionsRail } from "@/components/pages-builder/SectionsRail";
 import { PublishDialog } from "@/components/pages-builder/PublishDialog";
+import { EditorAgentPanel } from "@/components/smart-pages/AgentControls";
+import { AskConcierge } from "@/components/smart-pages/Chat";
 import { Badge, Button, EmptyState, IconButton, LinkButton, Panel, SegmentedControl } from "@/components/ui";
-import { ExternalIcon, PagesIcon } from "@/components/icons";
+import { AgentIcon, EditIcon, ExternalIcon, PagesIcon, SparkIcon } from "@/components/icons";
 import { cx } from "@/lib/cx";
 import { saveDocument, useDocument, useHydrated, useSite } from "@/lib/sim/store";
 import { BREAKPOINTS, findPage, pagePath } from "@/lib/pages-builder";
@@ -39,6 +41,10 @@ export default function PageEditor({
   const { siteId, pageId } = use(params);
   const [breakpoint, setBreakpoint] = useState<PageBreakpoint>("desktop");
   const [publishing, setPublishing] = useState(false);
+  /* Manual controls, the conversation, and the agent: three ways to change the
+     same document, one tab apart, so switching between them never loses work. */
+  const [panel, setPanel] = useState<"edit" | "ask" | "agent">("edit");
+  const [seenSelection, setSeenSelection] = useState<string | null>(null);
   const editor = useEditor();
   const stored = useDocument(siteId);
   const worldSite = useSite(siteId);
@@ -94,6 +100,13 @@ export default function PageEditor({
   /* Scoped to this page, so switching pages never leaves the inspector
      pointing at a section that is no longer on screen. */
   const selected = page?.sections.find((s) => s.id === editor.selectedId);
+
+  /* Clicking a section on the canvas means "edit this", whichever tab was
+     open — so a new selection brings the inspector forward. */
+  if (editor.selectedId !== seenSelection) {
+    setSeenSelection(editor.selectedId);
+    if (editor.selectedId !== null) setPanel("edit");
+  }
 
   /* Before the stored world is back there is nothing to be wrong about. */
   if (!hydrated) return null;
@@ -245,14 +258,39 @@ export default function PageEditor({
             <EditorCanvas document={doc} page={page} site={site} breakpoint={breakpoint} />
           </div>
 
-          {/* Inspector ----------------------------------------------------- */}
-          <aside className="hidden w-[340px] shrink-0 border-l border-divider bg-surface xl:block">
-            <Inspector
-              section={selected}
-              page={page}
-              theme={doc.theme}
-              breakpoint={breakpoint}
-            />
+          {/* Inspector, Ask Concierge and the agent ------------------------ */}
+          <aside className="hidden w-[360px] shrink-0 flex-col border-l border-divider bg-surface xl:flex">
+            <div role="tablist" aria-label="Editing panel" className="grid shrink-0 grid-cols-3 border-b border-divider">
+              {(
+                [
+                  { id: "edit", label: "Edit", icon: <EditIcon size={13} /> },
+                  { id: "ask", label: "Ask Concierge", icon: <SparkIcon size={13} /> },
+                  { id: "agent", label: "Agent", icon: <AgentIcon size={13} /> },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={panel === tab.id}
+                  onClick={() => setPanel(tab.id)}
+                  className={cx(
+                    "relative flex h-11 items-center justify-center gap-1.5 text-[12px] font-medium transition-colors",
+                    panel === tab.id ? "text-text-primary" : "text-text-tertiary hover:text-text-primary",
+                  )}
+                >
+                  <span className={panel === tab.id && tab.id === "ask" ? "text-accent" : undefined}>{tab.icon}</span>
+                  {tab.label}
+                  {panel === tab.id && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-accent" aria-hidden />}
+                </button>
+              ))}
+            </div>
+            <div className="min-h-0 flex-1">
+              {panel === "edit" && (
+                <Inspector section={selected} page={page} theme={doc.theme} breakpoint={breakpoint} />
+              )}
+              {panel === "ask" && <AskConcierge document={doc} siteName={site.name} />}
+              {panel === "agent" && <EditorAgentPanel document={doc} siteName={site.name} />}
+            </div>
           </aside>
         </div>
       </div>

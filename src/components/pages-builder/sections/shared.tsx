@@ -33,11 +33,28 @@ export function Media({ image, label = "Image" }: { image?: PageImage; label?: s
     return (
       <div className="ps-media">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={image.src} alt={image.alt} />
+        <img src={image.src} alt={image.alt} loading="lazy" />
       </div>
     );
   }
   return <div className="ps-media">{image?.alt || label}</div>;
+}
+
+/**
+ * A photograph that fills whatever box the layout gives it. With no picture
+ * yet it draws a quiet brand-tinted block instead, so a full-bleed layout
+ * keeps its shape while the owner finds one.
+ */
+export function Photo({ image, className }: { image?: PageImage; className?: string }) {
+  if (image?.src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img className={`ps-photo ${className ?? ""}`} src={image.src} alt={image.alt} loading="lazy" />;
+  }
+  return (
+    <div className={`ps-photo ps-photo--empty ${className ?? ""}`} role="img" aria-label={image?.alt || "Photograph"}>
+      <span>{image?.alt || "Add a photograph"}</span>
+    </div>
+  );
 }
 
 /** Shown when a section is on the page but has nothing in it yet. */

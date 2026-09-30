@@ -30,6 +30,8 @@ import {
 import { cx } from "@/lib/cx";
 import { saveDocument, useDocument, useSite } from "@/lib/sim/store";
 import { sectionHint, sectionSummary } from "@/lib/pages-builder";
+import { agentOf, quickActions } from "@/lib/page-agent";
+import { PhoneFrame, SitePreview } from "@/components/smart-pages/SitePreview";
 import { relativeTime } from "@/lib/format";
 import type { ConciergePage } from "@/lib/types";
 
@@ -52,6 +54,7 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
   const selected: ConciergePage | undefined = pages.find((p) => p.id === selectedId) ?? pages[0];
   const sections = selected?.sections ?? [];
   const setSelected = (p: ConciergePage) => setSelectedId(p.id);
+  const agentActions = doc ? quickActions(agentOf(doc)) : [];
 
   /* Toggling a section writes to the document in the world, so the change is
      there when the editor opens and after a reload. It used to write to a copy
@@ -272,32 +275,17 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
             </div>
 
             <div className="bg-surface-subtle p-4">
-              <div
-                className={cx(
-                  "mx-auto overflow-hidden bg-surface-subtle transition-[max-width] duration-[var(--dur-base)]",
-                  device === "mobile" ? "max-w-[200px]" : "max-w-full",
-                )}
-              >
-                <div className="border-b border-divider px-3 py-2">
-                  <div className="h-1.5 w-16 bg-surface-sunken" />
+              {/* The real page, rendered by the same renderer visitors get —
+                  not a sketch of one. */}
+              {device === "desktop" ? (
+                <div className="border border-line-strong">
+                  <SitePreview document={doc!} site={site} pageId={selected.id} aspect={1280 / 1100} agentOpen />
                 </div>
-                <div className="space-y-3 p-3">
-                  {sections
-                    .filter((s) => s.enabled)
-                    .map((s) => (
-                      <div key={s.id} className="bg-surface-subtle p-2.5">
-                        <div className="h-1.5 w-14 bg-line-strong" />
-                        <div className="mt-1.5 h-1 w-full bg-line" />
-                        <div className="mt-1 h-1 w-3/4 bg-line" />
-                      </div>
-                    ))}
-                </div>
-                <div className="flex justify-end p-2">
-                  <span className="flex h-6 w-6 items-center justify-center bg-ink text-[8px] font-semibold text-text-inverse">
-                    C+
-                  </span>
-                </div>
-              </div>
+              ) : (
+                <PhoneFrame className="mx-auto w-[210px]">
+                  <SitePreview document={doc!} site={site} pageId={selected.id} device="mobile" aspect={390 / 760} agentOpen />
+                </PhoneFrame>
+              )}
             </div>
 
             <div className="border-t border-divider p-4">
@@ -306,11 +294,12 @@ export default function PagesWorkspace({ params }: { params: Promise<{ siteId: s
                 Concierge is on every page
               </p>
               <p className="mt-1.5 text-[12.5px] leading-[1.55] text-text-tertiary">
-                It answers from the same Site Brain as your Agent, and uses the same actions and routing.
+                Visitors can {agentActions.map((a) => a.toLowerCase()).join(", ") || "ask a question"}. Change what
+                it does — or the page — by asking Concierge in the editor.
               </p>
               <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-success">
                 <CheckIcon size={12} strokeWidth={2.4} />
-                Site Brain ready · 3 actions placed
+                Site and agent in sync · {agentOf(doc!).capabilities.length} agent actions on
               </p>
             </div>
           </Card>

@@ -87,6 +87,7 @@ export const STYLE_PROPERTIES_BY_KIND: Record<PageSectionKind, SectionStylePrope
   faq: ["background", "spacing", "align", "width"],
   contact: ["background", "spacing", "align", "width"],
   gallery: ["background", "spacing", "align", "width", "columns"],
+  cta: ["background", "spacing", "align", "width"],
 };
 
 export const styleDeclKey = (
@@ -237,6 +238,7 @@ export const SECTION_CATALOGUE: {
   { kind: "faq", label: "FAQ", hint: "The questions you answer most" },
   { kind: "contact", label: "Contact", hint: "How to reach a person" },
   { kind: "gallery", label: "Gallery", hint: "Work you have done" },
+  { kind: "cta", label: "Call to action", hint: "One last ask, at the end of the page" },
 ];
 
 export const sectionLabel = (kind: PageSectionKind): string =>
@@ -339,6 +341,17 @@ export function createSection(kind: PageSectionKind): PageSection {
         kind,
         content: { heading: "Our work", items: [] },
       };
+    case "cta":
+      return {
+        ...base,
+        style: { ...base.style, background: "inverse", align: "center" },
+        kind,
+        content: {
+          heading: "Ready when you are",
+          body: "One line on what happens when someone gets in touch.",
+          cta: { label: "Get in touch" },
+        },
+      };
   }
 }
 
@@ -381,6 +394,8 @@ export function sectionSummary(section: PageSection): string {
     }
     case "gallery":
       return count(section.content.items.length, "image");
+    case "cta":
+      return section.content.heading || "No heading yet";
   }
 }
 

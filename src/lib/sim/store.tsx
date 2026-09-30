@@ -21,6 +21,7 @@ import {
 } from "@/lib/sim/world";
 import { LEDGER, METRICS } from "@/lib/demo-data";
 import { RETRACTS_KNOWLEDGE, type AnswerFlag, type FlagReason } from "@/lib/quality";
+import { reconcileActions } from "@/lib/page-agent";
 import type {
   ActionDef,
   KnowledgeItem,
@@ -247,6 +248,9 @@ export function createSite(
       ...snapshot.world,
       sites: [...snapshot.world.sites.filter((s) => s.id !== site.id), created],
       documents: { ...snapshot.world.documents, [site.id]: doc },
+      /* The agent's capabilities imply real Actions — the main button opens
+         one — so they exist from the first moment the site does. */
+      actions: reconcileActions(site.id, doc, snapshot.world.actions),
       brains: { ...snapshot.world.brains, [site.id]: brainFrom(site.id, [], now) },
     },
   });
@@ -326,7 +330,14 @@ export function saveDocument(siteId: string, doc: PageDocument) {
   if (!snapshot.hydrated) return;
   if (documentOf(snapshot.world, siteId) === doc) return;
   emit({
-    world: { ...snapshot.world, documents: { ...snapshot.world.documents, [siteId]: doc } },
+    world: {
+      ...snapshot.world,
+      documents: { ...snapshot.world.documents, [siteId]: doc },
+      /* Page and agent change together, so the Actions they imply do too:
+         switching booking off in the editor disables the booking Action. A
+         document with no agent of its own implies nothing. */
+      actions: doc.agent ? reconcileActions(siteId, doc, snapshot.world.actions) : snapshot.world.actions,
+    },
   });
   save();
 }

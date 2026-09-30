@@ -5,7 +5,13 @@ import { Field, Select, Toggle } from "@/components/ui";
 import { ACTIONS } from "@/lib/demo-data";
 import type {
   AboutContent,
+  AboutLayout,
   ContactContent,
+  CtaContent,
+  GalleryLayout,
+  HeroLayout,
+  ServicesLayout,
+  TestimonialsLayout,
   FaqContent,
   GalleryContent,
   HeroContent,
@@ -43,11 +49,83 @@ export type FormProps<C> = {
   onChange: (patch: Partial<C>, mergeKey?: string) => void;
 };
 
+/* ---- Layout ---------------------------------------------------------------- */
+
+/**
+ * The arrangement of a section, from a closed list the renderer was designed
+ * against. It sits at the top of each form because it changes what the rest
+ * of the fields are for — a cover hero is mostly its photograph.
+ */
+function LayoutRow<L extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: L;
+  options: { value: L; label: string }[];
+  onChange: (value: L) => void;
+}) {
+  const id = useId();
+  return (
+    <Field label="Layout" htmlFor={id}>
+      <Select id={id} value={value} onChange={(e) => onChange(e.target.value as L)}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </Select>
+    </Field>
+  );
+}
+
+const HERO_LAYOUTS: { value: HeroLayout; label: string }[] = [
+  { value: "classic", label: "Classic — words beside a picture" },
+  { value: "cover", label: "Full-screen photograph" },
+  { value: "poster", label: "Poster — giant headline" },
+  { value: "editorial", label: "Editorial — photo and colour halves" },
+  { value: "split", label: "Split — colour panel and photo" },
+  { value: "arch", label: "Arch — photo in an arch" },
+  { value: "centered", label: "Centred over a wide photo" },
+];
+
+const SERVICES_LAYOUTS: { value: ServicesLayout; label: string }[] = [
+  { value: "cards", label: "Cards" },
+  { value: "photo", label: "Photo cards" },
+  { value: "rows", label: "Alternating rows" },
+  { value: "list", label: "Numbered list" },
+];
+
+const ABOUT_LAYOUTS: { value: AboutLayout; label: string }[] = [
+  { value: "classic", label: "Text and picture" },
+  { value: "statement", label: "One large statement" },
+];
+
+const GALLERY_LAYOUTS: { value: GalleryLayout; label: string }[] = [
+  { value: "grid", label: "Even grid" },
+  { value: "mosaic", label: "Mosaic — first picture large" },
+  { value: "strip", label: "Strip of tall portraits" },
+];
+
+const TESTIMONIAL_LAYOUTS: { value: TestimonialsLayout; label: string }[] = [
+  { value: "cards", label: "Cards" },
+  { value: "quote", label: "One large quote" },
+];
+
 /* ---- Hero ---------------------------------------------------------------- */
 
 export function HeroForm({ content, onChange }: FormProps<HeroContent>) {
+  const layout = content.layout ?? "classic";
   return (
     <>
+      <LayoutRow value={layout} options={HERO_LAYOUTS} onChange={(v) => onChange({ layout: v })} />
+      <TextRow
+        label="Eyebrow"
+        value={content.eyebrow ?? ""}
+        placeholder="Landscaping · Austin"
+        onChange={(v) => onChange({ eyebrow: v || undefined }, "eyebrow")}
+        hint="Optional. A few words above the headline."
+      />
       <TextRow
         label="Headline"
         value={content.headline}
@@ -71,8 +149,16 @@ export function HeroForm({ content, onChange }: FormProps<HeroContent>) {
         label="Picture"
         image={content.image}
         onChange={(image) => onChange({ image })}
-        hint="Adding one puts the hero into two columns."
+        hint={layout === "classic" ? "Adding one puts the hero into two columns." : "The main photograph of this layout."}
       />
+      {layout === "editorial" && (
+        <ImageField
+          label="Inset picture"
+          image={content.secondaryImage}
+          onChange={(secondaryImage) => onChange({ secondaryImage })}
+          hint="The smaller photograph on the colour half."
+        />
+      )}
     </>
   );
 }
@@ -83,6 +169,7 @@ export function ServicesForm({ content, onChange }: FormProps<ServicesContent>) 
   const { items } = content;
   return (
     <>
+      <LayoutRow value={content.layout ?? "cards"} options={SERVICES_LAYOUTS} onChange={(v) => onChange({ layout: v })} />
       <TextRow
         label="Heading"
         value={content.heading}
@@ -153,6 +240,7 @@ export function ServicesForm({ content, onChange }: FormProps<ServicesContent>) 
 export function AboutForm({ content, onChange }: FormProps<AboutContent>) {
   return (
     <>
+      <LayoutRow value={content.layout ?? "classic"} options={ABOUT_LAYOUTS} onChange={(v) => onChange({ layout: v })} />
       <TextRow
         label="Heading"
         value={content.heading}
@@ -189,6 +277,11 @@ export function TestimonialsForm({ content, onChange }: FormProps<TestimonialsCo
   const ratingId = useId();
   return (
     <>
+      <LayoutRow
+        value={content.layout ?? "cards"}
+        options={TESTIMONIAL_LAYOUTS}
+        onChange={(v) => onChange({ layout: v })}
+      />
       <TextRow
         label="Heading"
         value={content.heading}
@@ -435,6 +528,7 @@ export function GalleryForm({ content, onChange }: FormProps<GalleryContent>) {
   const { items } = content;
   return (
     <>
+      <LayoutRow value={content.layout ?? "grid"} options={GALLERY_LAYOUTS} onChange={(v) => onChange({ layout: v })} />
       <TextRow label="Heading" value={content.heading} onChange={(v) => onChange({ heading: v }, "heading")} />
       <TextRow
         label="Intro"
@@ -477,6 +571,30 @@ export function GalleryForm({ content, onChange }: FormProps<GalleryContent>) {
       <p className="text-[12.5px] text-text-tertiary">
         Uploaded files are held in the page for now. Publishing moves them to proper hosting.
       </p>
+    </>
+  );
+}
+
+/* ---- Call to action ------------------------------------------------------ */
+
+export function CtaForm({ content, onChange }: FormProps<CtaContent>) {
+  return (
+    <>
+      <TextRow label="Heading" value={content.heading} onChange={(v) => onChange({ heading: v }, "heading")} />
+      <TextRow
+        label="Supporting line"
+        multiline
+        rows={2}
+        value={content.body ?? ""}
+        onChange={(v) => onChange({ body: v || undefined }, "body")}
+      />
+      <CtaRow label="Button" cta={content.cta} onChange={(cta) => onChange({ cta })} removable />
+      <ImageField
+        label="Background photograph"
+        image={content.image}
+        onChange={(image) => onChange({ image })}
+        hint="With one, this becomes a full-width band with the words over it."
+      />
     </>
   );
 }
